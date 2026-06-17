@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import neymarAsset from "@/assets/neymar.png.asset.json";
+import neymarAsset from "@/assets/neymar-new.png.asset.json";
 import endrickAsset from "@/assets/endrick.png.asset.json";
 import vinijrAsset from "@/assets/vinijr.png.asset.json";
 import rodrygoImg from "@/assets/rodrygo.png";
