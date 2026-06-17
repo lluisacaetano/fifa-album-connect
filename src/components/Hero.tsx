@@ -9,17 +9,17 @@ const YELLOW = "#F4D000";
 const GREEN = "#2D892C";
 const GREEN_DEEP = "#0f3d12";
 
-// Two interpolable point sets describing the same path command sequence
-// M  L  L  C(c1,c2,end) C(c1,c2,end) Z   — viewBox 100 x 100, preserveAspectRatio none
+// Two interpolable point sets — coords are 0..1 (objectBoundingBox units)
+// Command sequence: M L L C C Z
 const START = [
-  100, -2,  100, 102,  58, 102,
-  28, 82,  72, 56,  42, 28,
-  22, 10,  56, 4,   62, -2,
+  1.00, -0.02,  1.00, 1.02,  0.58, 1.02,
+  0.28, 0.82,  0.72, 0.56,  0.42, 0.28,
+  0.22, 0.10,  0.56, 0.04,  0.62, -0.02,
 ];
 const END = [
-  -2, -2,  102, 102,  -2, 102,
-  -2, 80,  -2, 55,  -2, 30,
-  -2, 10,  -2, 4,   -2, -2,
+  -0.02, -0.02,  1.02, 1.02,  -0.02, 1.02,
+  -0.02, 0.80,  -0.02, 0.55,  -0.02, 0.30,
+  -0.02, 0.10,  -0.02, 0.04,  -0.02, -0.02,
 ];
 
 function buildPath(p: number) {
