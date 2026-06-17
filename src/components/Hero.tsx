@@ -164,12 +164,36 @@ export function Hero() {
         <Content variant="top" />
       </div>
 
-      {/* Scroll hint */}
+      {/* Vertical badge — right side */}
       <div
-        className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-[0.4em]"
-        style={{ color: GREEN_DEEP, mixBlendMode: "difference", opacity: 0.7 }}
+        className="pointer-events-none absolute inset-0"
+        style={{ color: GREEN_DEEP }}
       >
-        Role para revelar ↓
+        <div className="relative mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-6 text-center">
+          <span
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold uppercase tracking-[0.25em] sm:right-4 sm:text-xs"
+            style={{ writingMode: "vertical-rl" }}
+          >
+            Canadá · EUA · México · 19 de Julho
+          </span>
+        </div>
+      </div>
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          color: YELLOW,
+          clipPath: "url(#hero-green-clip)",
+          WebkitClipPath: "url(#hero-green-clip)",
+        }}
+      >
+        <div className="relative mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-6 text-center">
+          <span
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold uppercase tracking-[0.25em] sm:right-4 sm:text-xs"
+            style={{ writingMode: "vertical-rl" }}
+          >
+            Canadá · EUA · México · 19 de Julho
+          </span>
+        </div>
       </div>
     </section>
   );
