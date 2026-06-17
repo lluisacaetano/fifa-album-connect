@@ -137,14 +137,11 @@ export function Hero() {
       className="relative h-screen w-full overflow-hidden"
       style={{ background: YELLOW }}
     >
-      {/* SVG defs holding the animated clipPath */}
+      {/* SVG defs holding the animated clipPath (objectBoundingBox: 0..1 coords) */}
       <svg className="absolute h-0 w-0" aria-hidden>
         <defs>
           <clipPath id="hero-green-clip" clipPathUnits="objectBoundingBox">
-            {/* objectBoundingBox needs 0–1 coords; we use userSpaceOnUse fallback below */}
-          </clipPath>
-          <clipPath id="hero-green-clip-user" clipPathUnits="userSpaceOnUse">
-            <path ref={clipPathRef} d={buildPath(0)} transform="scale(0.01)" />
+            <path ref={clipPathRef} d={buildPath(0)} />
           </clipPath>
         </defs>
       </svg>
@@ -157,7 +154,7 @@ export function Hero() {
       {/* Green organic shape — fills screen as user scrolls */}
       <svg
         className="pointer-events-none absolute inset-0 h-full w-full"
-        viewBox="0 0 100 100"
+        viewBox="0 0 1 1"
         preserveAspectRatio="none"
         aria-hidden
       >
@@ -170,8 +167,8 @@ export function Hero() {
         className="pointer-events-auto absolute inset-0"
         style={{
           color: YELLOW,
-          clipPath: "url(#hero-green-clip-user)",
-          WebkitClipPath: "url(#hero-green-clip-user)",
+          clipPath: "url(#hero-green-clip)",
+          WebkitClipPath: "url(#hero-green-clip)",
         }}
       >
         <Content variant="top" />
