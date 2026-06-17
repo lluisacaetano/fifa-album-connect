@@ -1,132 +1,185 @@
-import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
 import { ArrowRight, Sparkles } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const YELLOW = "#F4D000";
+const GREEN = "#2D892C";
+const GREEN_DEEP = "#0f3d12";
+
+// Two interpolable point sets — coords are 0..1 (objectBoundingBox units)
+// Command sequence: M L L C C Z
+const START = [
+  1.00, -0.02,  1.00, 1.02,  0.58, 1.02,
+  0.28, 0.82,  0.72, 0.56,  0.42, 0.28,
+  0.22, 0.10,  0.56, 0.04,  0.62, -0.02,
+];
+const END = [
+  -0.02, -0.02,  1.02, 1.02,  -0.02, 1.02,
+  -0.02, 0.80,  -0.02, 0.55,  -0.02, 0.30,
+  -0.02, 0.10,  -0.02, 0.04,  -0.02, -0.02,
+];
+
+function buildPath(p: number) {
+  const v = START.map((s, i) => s + (END[i] - s) * p);
+  return `M ${v[0]} ${v[1]} L ${v[2]} ${v[3]} L ${v[4]} ${v[5]} C ${v[6]} ${v[7]} ${v[8]} ${v[9]} ${v[10]} ${v[11]} C ${v[12]} ${v[13]} ${v[14]} ${v[15]} ${v[16]} ${v[17]} Z`;
+}
+
+function lerpColor(a: [number, number, number], b: [number, number, number], t: number) {
+  const r = Math.round(a[0] + (b[0] - a[0]) * t);
+  const g = Math.round(a[1] + (b[1] - a[1]) * t);
+  const bl = Math.round(a[2] + (b[2] - a[2]) * t);
+  return `rgb(${r}, ${g}, ${bl})`;
+}
 
 export function Hero() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const fillPathRef = useRef<SVGPathElement>(null);
+  const clipPathRef = useRef<SVGPathElement>(null);
+  const topTextRef = useRef<HTMLDivElement>(null); // yellow text inside green (clipped)
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const obj = { p: 0 };
+      const tl = gsap.to(obj, {
+        p: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "+=100%",
+          scrub: 0.6,
+          pin: true,
+          anticipatePin: 1,
+        },
+        onUpdate: () => {
+          const d = buildPath(obj.p);
+          fillPathRef.current?.setAttribute("d", d);
+          clipPathRef.current?.setAttribute("d", d);
+
+          // After the green has flooded the screen, morph the yellow text → deep green
+          const t = Math.min(1, Math.max(0, (obj.p - 0.78) / 0.22));
+          const color = lerpColor([244, 208, 0], [15, 61, 18], t);
+          if (topTextRef.current) topTextRef.current.style.color = color;
+        },
+      });
+      return () => {
+        tl.scrollTrigger?.kill();
+        tl.kill();
+      };
+    }, sectionRef);
+    return () => ctx.revert();
+  }, []);
+
+  const Content = ({ variant }: { variant: "base" | "top" }) => (
+    <div className="relative mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-6 text-center">
+      <div
+        className="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.25em]"
+        style={{
+          borderColor: variant === "base" ? GREEN_DEEP : YELLOW,
+          color: variant === "base" ? GREEN_DEEP : YELLOW,
+        }}
+      >
+        <Sparkles className="h-3.5 w-3.5" /> Canadá · EUA · México · 19 de Julho
+      </div>
+
+      <h1
+        className="mt-6 font-display leading-[0.88] text-6xl sm:text-8xl lg:text-[9.5rem]"
+        style={{ color: "currentColor" }}
+      >
+        ÁLBUM
+        <span className="block">DE FIGURINHAS</span>
+        <span className="mt-2 block text-2xl sm:text-3xl lg:text-4xl tracking-[0.4em]">
+          FIFA WORLD CUP 2026
+        </span>
+      </h1>
+
+      <p
+        className="mt-8 max-w-xl text-base sm:text-lg"
+        style={{ opacity: 0.92 }}
+      >
+        Colecione, troque e complete seu álbum digital. Encontre colecionadores
+        perto de você e conquiste cada figurinha que falta.
+      </p>
+
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <a
+          href="#album"
+          className="group inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold shadow-xl transition-all hover:scale-[1.03]"
+          style={{
+            background: variant === "base" ? GREEN_DEEP : YELLOW,
+            color: variant === "base" ? YELLOW : GREEN_DEEP,
+          }}
+        >
+          Começar Agora
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        </a>
+        <a
+          href="#jogadores"
+          className="inline-flex items-center gap-2 rounded-full border-2 px-6 py-3 text-sm font-semibold transition-all hover:scale-[1.03]"
+          style={{
+            borderColor: variant === "base" ? GREEN_DEEP : YELLOW,
+            color: variant === "base" ? GREEN_DEEP : YELLOW,
+          }}
+        >
+          Explorar Jogadores
+        </a>
+      </div>
+    </div>
+  );
+
   return (
     <section
       id="home"
-      className="relative isolate overflow-hidden bg-fifa-gradient pt-32 pb-24 text-foreground"
+      ref={sectionRef}
+      className="relative h-screen w-full overflow-hidden"
+      style={{ background: YELLOW }}
     >
-      {/* Floating elements */}
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute -left-20 top-40 h-72 w-72 rounded-full bg-white/20 blur-3xl animate-float-slow"
-      />
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute -right-10 top-10 h-56 w-56 rounded-full bg-[color:var(--fifa-blue)]/30 blur-3xl animate-float-slow"
-        style={{ animationDelay: "2s" }}
-      />
-      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-30 [mask-image:radial-gradient(circle,white,transparent_70%)]">
-        <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1.2" fill="currentColor" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#dots)" className="text-white/40" />
-        </svg>
+      {/* SVG defs holding the animated clipPath (objectBoundingBox: 0..1 coords) */}
+      <svg className="absolute h-0 w-0" aria-hidden>
+        <defs>
+          <clipPath id="hero-green-clip" clipPathUnits="objectBoundingBox">
+            <path ref={clipPathRef} d={buildPath(0)} />
+          </clipPath>
+        </defs>
+      </svg>
+
+      {/* Base layer: green-text on yellow bg */}
+      <div className="absolute inset-0" style={{ color: GREEN_DEEP }}>
+        <Content variant="base" />
       </div>
 
-      <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[1.2fr_1fr]">
-        <div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-white backdrop-blur"
-          >
-            <Sparkles className="h-3.5 w-3.5" /> Canadá · EUA · México · 19 de Julho
-          </motion.div>
+      {/* Green organic shape — fills screen as user scrolls */}
+      <svg
+        className="pointer-events-none absolute inset-0 h-full w-full"
+        viewBox="0 0 1 1"
+        preserveAspectRatio="none"
+        aria-hidden
+      >
+        <path ref={fillPathRef} d={buildPath(0)} fill={GREEN} />
+      </svg>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="mt-6 font-display text-5xl leading-[0.95] text-white sm:text-7xl lg:text-8xl"
-          >
-            ÁLBUM DE FIGURINHAS
-            <span className="block text-[color:var(--fifa-green-deep)]">FIFA WORLD CUP 2026</span>
-          </motion.h1>
+      {/* Top layer: yellow-text (becomes deep green at end), clipped to green shape */}
+      <div
+        ref={topTextRef}
+        className="pointer-events-auto absolute inset-0"
+        style={{
+          color: YELLOW,
+          clipPath: "url(#hero-green-clip)",
+          WebkitClipPath: "url(#hero-green-clip)",
+        }}
+      >
+        <Content variant="top" />
+      </div>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.25 }}
-            className="mt-6 max-w-xl text-lg text-white/90"
-          >
-            Colecione, troque e complete seu álbum digital. Encontre colecionadores
-            perto de você e conquiste cada figurinha que falta.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.35 }}
-            className="mt-8 flex flex-wrap items-center gap-3"
-          >
-            <a
-              href="#album"
-              className="group inline-flex items-center gap-2 rounded-full bg-[color:var(--fifa-blue)] px-6 py-3 text-sm font-semibold text-white shadow-xl shadow-black/20 transition-all hover:scale-[1.03] hover:shadow-2xl"
-            >
-              Começar Agora
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </a>
-            <a
-              href="#jogadores"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-white/80 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur transition-all hover:scale-[1.03] hover:bg-white/20"
-            >
-              Explorar Jogadores
-            </a>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
-            className="mt-12 grid max-w-md grid-cols-3 gap-6 text-white"
-          >
-            {[
-              { n: "48", l: "Seleções" },
-              { n: "736", l: "Jogadores" },
-              { n: "1.2k+", l: "Trocas/dia" },
-            ].map((s) => (
-              <div key={s.l}>
-                <div className="font-display text-4xl">{s.n}</div>
-                <div className="text-xs uppercase tracking-widest text-white/80">{s.l}</div>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-
-        {/* Floating sticker mockups */}
-        <div className="relative hidden h-[500px] lg:block">
-          {[
-            { rot: -10, x: 0, y: 20, c: "var(--fifa-blue)", label: "BRA · 10", delay: 0 },
-            { rot: 8, x: 160, y: 80, c: "var(--fifa-green-deep)", label: "ARG · 09", delay: 0.15 },
-            { rot: -4, x: 60, y: 240, c: "#c2410c", label: "FRA · 07", delay: 0.3 },
-            { rot: 12, x: 220, y: 280, c: "#1f2937", label: "GER · 11", delay: 0.45 },
-          ].map((s, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 80, rotate: 0 }}
-              animate={{ opacity: 1, y: s.y, rotate: s.rot }}
-              transition={{ delay: 0.4 + s.delay, type: "spring", stiffness: 60, damping: 14 }}
-              whileHover={{ scale: 1.08, rotate: s.rot * 0.3 }}
-              style={{ left: s.x, top: 0 }}
-              className="absolute h-56 w-40 rounded-2xl border-4 border-white bg-white p-3 shadow-2xl"
-            >
-              <div
-                className="flex h-full w-full flex-col items-center justify-between rounded-lg p-3 text-white"
-                style={{ background: s.c }}
-              >
-                <div className="text-[10px] font-bold tracking-widest opacity-80">FIFA 2026</div>
-                <div className="grid h-16 w-16 place-items-center rounded-full bg-white/20 text-2xl font-display">★</div>
-                <div className="font-display text-lg">{s.label}</div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+      {/* Scroll hint */}
+      <div
+        className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-[0.4em]"
+        style={{ color: GREEN_DEEP, mixBlendMode: "difference", opacity: 0.7 }}
+      >
+        Role para revelar ↓
       </div>
     </section>
   );
