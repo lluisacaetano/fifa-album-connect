@@ -75,18 +75,8 @@ export function Hero() {
 
   const Content = ({ variant }: { variant: "base" | "top" }) => (
     <div className="relative mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-6 text-center">
-      <div
-        className="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.25em]"
-        style={{
-          borderColor: variant === "base" ? GREEN_DEEP : YELLOW,
-          color: variant === "base" ? GREEN_DEEP : YELLOW,
-        }}
-      >
-        <Sparkles className="h-3.5 w-3.5" /> Canadá · EUA · México · 19 de Julho
-      </div>
-
       <h1
-        className="mt-6 font-display leading-[0.88] text-6xl sm:text-8xl lg:text-[9.5rem]"
+        className="font-display leading-[0.88] text-6xl sm:text-8xl lg:text-[9.5rem]"
         style={{ color: "currentColor" }}
       >
         ÁLBUM
