@@ -75,18 +75,8 @@ export function Hero() {
 
   const Content = ({ variant }: { variant: "base" | "top" }) => (
     <div className="relative mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-6 text-center">
-      <div
-        className="inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.25em]"
-        style={{
-          borderColor: variant === "base" ? GREEN_DEEP : YELLOW,
-          color: variant === "base" ? GREEN_DEEP : YELLOW,
-        }}
-      >
-        <Sparkles className="h-3.5 w-3.5" /> Canadá · EUA · México · 19 de Julho
-      </div>
-
       <h1
-        className="mt-6 font-display leading-[0.88] text-6xl sm:text-8xl lg:text-[9.5rem]"
+        className="font-display leading-[0.88] text-6xl sm:text-8xl lg:text-[9.5rem]"
         style={{ color: "currentColor" }}
       >
         ÁLBUM
@@ -174,12 +164,36 @@ export function Hero() {
         <Content variant="top" />
       </div>
 
-      {/* Scroll hint */}
+      {/* Vertical badge — right side */}
       <div
-        className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-[0.4em]"
-        style={{ color: GREEN_DEEP, mixBlendMode: "difference", opacity: 0.7 }}
+        className="pointer-events-none absolute inset-0"
+        style={{ color: GREEN_DEEP }}
       >
-        Role para revelar ↓
+        <div className="relative mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-6 text-center">
+          <span
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold uppercase tracking-[0.25em] sm:right-4 sm:text-xs"
+            style={{ writingMode: "vertical-rl" }}
+          >
+            Canadá · EUA · México · 19 de Julho
+          </span>
+        </div>
+      </div>
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          color: YELLOW,
+          clipPath: "url(#hero-green-clip)",
+          WebkitClipPath: "url(#hero-green-clip)",
+        }}
+      >
+        <div className="relative mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-6 text-center">
+          <span
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold uppercase tracking-[0.25em] sm:right-4 sm:text-xs"
+            style={{ writingMode: "vertical-rl" }}
+          >
+            Canadá · EUA · México · 19 de Julho
+          </span>
+        </div>
       </div>
     </section>
   );
