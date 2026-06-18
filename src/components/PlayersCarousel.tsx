@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import neymarAsset from "@/assets/neymar-new.png.asset.json";
 import endrickAsset from "@/assets/endrick.png.asset.json";
 import vinijrAsset from "@/assets/vinijr.png.asset.json";
-import rodrygoImg from "@/assets/rodrygo.png";
+import paquetaAsset from "@/assets/lucaspaqueta.png.asset.json";
 import alissonAsset from "@/assets/alisson.png.asset.json";
 import starsAsset from "@/assets/stars.png.asset.json";
 const alissonImg = alissonAsset.url;
@@ -72,19 +72,19 @@ const players: Player[] = [
     ],
   },
   {
-    name: "RODRYGO",
+    name: "LUCAS PAQUETÁ",
     team: "Brasil",
-    club: "Real Madrid",
-    position: "Atacante",
-    age: 24,
-    number: "11",
-    image: rodrygoImg,
+    club: "West Ham",
+    position: "Meia",
+    age: 28,
+    number: "08",
+    image: paquetaAsset.url,
     description:
-      "Rodrygo Silva de Goes é um dos pilares ofensivos da Seleção. Formado pelo Santos, brilha pelo Real Madrid ao lado de Vini Jr. com sua técnica e finalização precisa.",
+      "Lucas Tolentino Coelho de Lima, conhecido como Lucas Paquetá, é um meia brasileiro que se destacou pelo Flamengo e atualmente defende o West Ham na Premier League. Titular da Seleção Brasileira, é conhecido por sua visão de jogo e qualidade técnica.",
     stats: [
-      { label: "Gols", value: "82" },
-      { label: "Assist.", value: "54" },
-      { label: "Jogos", value: "267" },
+      { label: "Gols", value: "76" },
+      { label: "Assist.", value: "48" },
+      { label: "Jogos", value: "342" },
     ],
   },
   {
