@@ -119,12 +119,13 @@ export function PlayersCarousel() {
   return (
     <section id="jogadores" className="relative overflow-hidden bg-[color:var(--fifa-yellow)] py-20">
       {/* Star scribbles */}
-      <svg className="pointer-events-none absolute left-4 top-10 h-24 w-24 text-[color:var(--fifa-green)]/40" viewBox="0 0 100 100" fill="currentColor">
-        <path d="M50 5l10 30h32l-26 19 10 30-26-19-26 19 10-30L8 35h32z" />
-      </svg>
-      <svg className="pointer-events-none absolute left-20 top-32 h-12 w-12 text-[color:var(--fifa-green)]/30" viewBox="0 0 100 100" fill="currentColor">
-        <path d="M50 5l10 30h32l-26 19 10 30-26-19-26 19 10-30L8 35h32z" />
-      </svg>
+      <img
+        src={starsAsset.url}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute left-4 top-8 h-40 w-40 select-none"
+      />
+
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-10 flex flex-col items-center text-center">
