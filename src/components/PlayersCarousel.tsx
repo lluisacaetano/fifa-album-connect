@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import neymarAsset from "@/assets/neymar-new.png.asset.json";
 import endrickAsset from "@/assets/endrick.png.asset.json";
 import vinijrAsset from "@/assets/vinijr.png.asset.json";
-import rodrygoImg from "@/assets/rodrygo.png";
+import paquetaAsset from "@/assets/lucaspaqueta.png.asset.json";
 import alissonAsset from "@/assets/alisson.png.asset.json";
 import starsAsset from "@/assets/stars.png.asset.json";
 const alissonImg = alissonAsset.url;
