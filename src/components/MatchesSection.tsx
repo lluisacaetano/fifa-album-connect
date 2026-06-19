@@ -28,7 +28,7 @@ export function MatchesSection() {
           >
             PARTIDAS
           </motion.h2>
-          <div className="mt-3 inline-block rounded-md border-2 border-[color:var(--fifa-yellow)] px-6 py-1.5 text-sm font-bold tracking-[0.4em]">
+          <div className="mt-3 inline-block rounded-md border-2 border-[#0a2e0a] px-6 py-1.5 text-sm font-bold tracking-[0.4em]">
             COPA DO MUNDO 2026
           </div>
         </div>
