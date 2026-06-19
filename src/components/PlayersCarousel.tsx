@@ -117,13 +117,13 @@ export function PlayersCarousel() {
   };
 
   return (
-    <section id="jogadores" className="relative overflow-hidden bg-[color:var(--fifa-yellow)] py-20">
+    <section id="jogadores" className="relative overflow-hidden bg-[#fcd305] py-20">
       {/* Star scribbles */}
       <img
         src={starsAsset.url}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute left-4 top-8 h-40 w-40 select-none"
+        className="pointer-events-none absolute left-4 top-8 h-64 w-64 select-none"
       />
 
 
