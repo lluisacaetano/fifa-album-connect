@@ -11,7 +11,7 @@ export function MatchesSection() {
   return (
     <section
       id="partidas"
-      className="relative overflow-hidden bg-[color:var(--fifa-green)] py-24 text-white"
+      className="relative overflow-hidden bg-[#fcd305] py-24 text-[#0a2e0a]"
     >
       {/* Ribbon decoration */}
       <div aria-hidden className="pointer-events-none absolute -right-20 top-0 h-full w-1/3 opacity-30">
@@ -28,7 +28,7 @@ export function MatchesSection() {
           >
             PARTIDAS
           </motion.h2>
-          <div className="mt-3 inline-block rounded-md border-2 border-[color:var(--fifa-yellow)] px-6 py-1.5 text-sm font-bold tracking-[0.4em]">
+          <div className="mt-3 inline-block rounded-md border-2 border-[#0a2e0a] px-6 py-1.5 text-sm font-bold tracking-[0.4em]">
             COPA DO MUNDO 2026
           </div>
         </div>
