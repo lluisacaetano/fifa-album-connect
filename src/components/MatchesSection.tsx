@@ -11,7 +11,7 @@ export function MatchesSection() {
   return (
     <section
       id="partidas"
-      className="relative overflow-hidden bg-[#FFEA5C] py-24 text-[#0a2e0a]"
+      className="relative overflow-hidden bg-[#FFFF01] py-24 text-[#0a2e0a]"
     >
       {/* Ribbon decoration */}
       <div aria-hidden className="pointer-events-none absolute -right-20 top-0 h-full w-1/3 opacity-30">
