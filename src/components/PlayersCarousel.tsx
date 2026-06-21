@@ -2,13 +2,12 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import neymarAsset from "@/assets/neymar-new.png.asset.json";
-import endrickAsset from "@/assets/endrick.png.asset.json";
-import vinijrAsset from "@/assets/vinijr.png.asset.json";
-import paquetaAsset from "@/assets/lucaspaqueta.png.asset.json";
-import alissonAsset from "@/assets/alisson.png.asset.json";
-import starsAsset from "@/assets/stars.png.asset.json";
-const alissonImg = alissonAsset.url;
+// Fotos recortadas baixadas para /public/players (TheSportsDB).
+const neymarImg = "/players/neymar.png";
+const endrickImg = "/players/17.png";
+const vinijrImg = "/players/12.png";
+const paquetaImg = "/players/10.png";
+const alissonImg = "/players/1.png";
 
 type Player = {
   name: string;
@@ -30,7 +29,7 @@ const players: Player[] = [
     position: "Meia-atacante",
     age: 34,
     number: "10",
-    image: neymarAsset.url,
+    image: neymarImg,
     description:
       "Neymar da Silva Santos Júnior é um futebolista brasileiro que atua como meia-atacante. Revelado pelo Santos, conquistou Libertadores, Copa do Brasil e o prêmio Puskás. Em 2013 foi vendido ao Barcelona na maior transferência do futebol brasileiro.",
     stats: [
@@ -46,7 +45,7 @@ const players: Player[] = [
     position: "Ponta-esquerda",
     age: 25,
     number: "07",
-    image: vinijrAsset.url,
+    image: vinijrImg,
     description:
       "Vinícius José Paixão de Oliveira Júnior, conhecido como Vini Jr., é ponta-esquerda do Real Madrid. Marcou o gol do título da Champions de 2022 e é um dos principais nomes da nova geração brasileira.",
     stats: [
@@ -62,7 +61,7 @@ const players: Player[] = [
     position: "Atacante",
     age: 19,
     number: "09",
-    image: endrickAsset.url,
+    image: endrickImg,
     description:
       "Endrick Felipe Moreira de Sousa é uma das maiores promessas do futebol mundial. Revelado pelo Palmeiras, foi contratado pelo Real Madrid e disputa Copa do Mundo aos 19 anos.",
     stats: [
@@ -78,7 +77,7 @@ const players: Player[] = [
     position: "Meia",
     age: 28,
     number: "08",
-    image: paquetaAsset.url,
+    image: paquetaImg,
     description:
       "Lucas Tolentino Coelho de Lima, conhecido como Lucas Paquetá, é um meia brasileiro que se destacou pelo Flamengo e atualmente defende o West Ham na Premier League. Titular da Seleção Brasileira, é conhecido por sua visão de jogo e qualidade técnica.",
     stats: [
@@ -118,13 +117,13 @@ export function PlayersCarousel() {
 
   return (
     <section id="jogadores" className="relative overflow-hidden bg-[#fcd305] py-20">
-      {/* Star scribbles */}
-      <img
-        src={starsAsset.url}
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none absolute left-4 top-8 h-64 w-64 select-none"
-      />
+      {/* Decoração: estrela grande translúcida no canto */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-10 top-4 select-none font-display text-[16rem] leading-none text-[color:var(--fifa-green-deep)]/10"
+      >
+        ★
+      </div>
 
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
