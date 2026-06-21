@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { squads, squadByCode } from "@/data/squads";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function PlayersCarousel() {
   const [code, setCode] = useState("br");
@@ -26,11 +27,25 @@ export function PlayersCarousel() {
     setIndex([0, 0]);
   };
 
+  // Descrição: usa a bio real quando houver; senão monta uma frase informativa
+  // a partir dos dados do jogador (padrão consistente até preencher todas).
   const bio =
     p.desc ??
-    `${p.position} da seleção ${squad.name}${p.number ? ` · camisa ${p.number}` : ""}. Uma das figurinhas para colecionar nesta Copa.`;
+    (() => {
+      let s = p.position;
+      if (p.age != null) s += ` de ${p.age} anos`;
+      if (p.club) s += `, atua pelo ${p.club}`;
+      s += ".";
+      const camisa = p.number ? `, com a camisa ${p.number}` : "";
+      return `${s} Convocado pela seleção ${squad.name} para a Copa do Mundo de 2026${camisa}.`;
+    })();
 
   const hasStats = p.goals != null || p.assists != null || p.apps != null;
+
+  // Só usa a foto quando é um cutout hi-res; senão mostra um card com a inicial
+  // (evita as fotos pequenas/borradas da API-Football).
+  const goodPhoto = p.photo && p.photoCutout;
+  const initial = p.name.replace(/^\p{Lu}\.\s*/u, "").trim().charAt(0).toUpperCase() || p.name.charAt(0).toUpperCase();
 
   return (
     <section id="jogadores" className="relative overflow-hidden py-20 text-white" style={{ background: sectionBg }}>
@@ -52,24 +67,26 @@ export function PlayersCarousel() {
           <p className="mt-2 text-sm text-white/70">Escolha uma seleção e conheça os craques, um a um.</p>
         </div>
 
-        {/* Seletor de seleção */}
-        <div className="mx-auto mb-10 flex max-w-4xl flex-wrap justify-center gap-2.5 pb-1">
-          {squads.map((s) => {
-            const active = s.code === code;
-            return (
-              <button
-                key={s.code}
-                type="button"
-                onClick={() => selectCountry(s.code)}
-                className={`flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold transition-all ${
-                  active ? "border-white bg-white text-[color:var(--fifa-green-deep)] shadow-md" : "border-white/25 bg-white/10 text-white hover:bg-white/20"
-                }`}
-              >
-                <img src={`https://flagcdn.com/w40/${s.code}.png`} alt="" className="h-4 w-6 rounded-sm object-cover ring-1 ring-black/10" />
-                {s.name}
-              </button>
-            );
-          })}
+        {/* Seletor de seleção (dropdown compacto) */}
+        <div className="mx-auto mb-10 flex max-w-xs justify-center">
+          <Select value={code} onValueChange={selectCountry}>
+            <SelectTrigger className="h-12 rounded-full border-white/25 bg-white/10 px-5 text-base font-semibold text-white backdrop-blur hover:bg-white/20 focus:ring-white/40 [&>span]:flex [&>span]:items-center [&>span]:gap-2">
+              <SelectValue>
+                <img src={`https://flagcdn.com/w40/${squad.code}.png`} alt="" className="h-4 w-6 rounded-sm object-cover ring-1 ring-black/10" />
+                {squad.name}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="max-h-80">
+              {squads.map((s) => (
+                <SelectItem key={s.code} value={s.code} className="cursor-pointer">
+                  <span className="flex items-center gap-2">
+                    <img src={`https://flagcdn.com/w40/${s.code}.png`} alt="" className="h-4 w-6 rounded-sm object-cover ring-1 ring-black/10" />
+                    {s.name}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="relative grid min-h-[520px] items-center gap-6 lg:grid-cols-2">
@@ -117,21 +134,40 @@ export function PlayersCarousel() {
             </AnimatePresence>
           </div>
 
-          {/* Foto */}
+          {/* Foto (cutout hi-res) ou fallback com inicial */}
           <div className="relative order-1 h-[380px] sm:h-[500px] lg:order-2">
             <AnimatePresence mode="wait" custom={dir}>
-              <motion.img
-                key={`${code}-${p.id}-img`}
-                src={p.photo ?? ""}
-                alt={p.name}
-                custom={dir}
-                initial={{ opacity: 0, x: dir * 120, scale: 0.9 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: dir * -120, scale: 0.9 }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_10px_25px_rgba(0,0,0,0.4)]"
-                loading="lazy"
-              />
+              {goodPhoto ? (
+                <motion.img
+                  key={`${code}-${p.id}-img`}
+                  src={p.photo ?? ""}
+                  alt={p.name}
+                  custom={dir}
+                  initial={{ opacity: 0, x: dir * 120, scale: 0.9 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: dir * -120, scale: 0.9 }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_10px_25px_rgba(0,0,0,0.4)]"
+                  loading="lazy"
+                />
+              ) : (
+                <motion.div
+                  key={`${code}-${p.id}-fallback`}
+                  custom={dir}
+                  initial={{ opacity: 0, x: dir * 120, scale: 0.9 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: dir * -120, scale: 0.9 }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 grid place-items-center"
+                >
+                  <div
+                    className="grid h-64 w-64 place-items-center rounded-full ring-4 ring-white/30 sm:h-80 sm:w-80"
+                    style={{ background: `linear-gradient(160deg, ${squad.colors[0]}, ${squad.colors[1]})` }}
+                  >
+                    <span className="font-display text-[10rem] leading-none text-white drop-shadow-[0_6px_12px_rgba(0,0,0,0.35)]">{initial}</span>
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
         </div>

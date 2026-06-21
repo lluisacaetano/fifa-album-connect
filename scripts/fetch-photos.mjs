@@ -50,15 +50,34 @@ async function search(name) {
   return json;
 }
 
-function pickImage(players, natEn) {
+const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+
+// Confere se o nome da TheSportsDB bate com o (abreviado) da API-Football:
+// sobrenome igual + primeira inicial igual. Rejeita xará ("E. Fernández" != "Federico").
+function nameMatches(apiName, fullName) {
+  const tokens = apiName.split(/\s+/).filter(Boolean);
+  const surname = norm(tokens[tokens.length - 1]);
+  const f = norm(fullName);
+  if (surname.length < 3 || !f.includes(surname)) return false;
+  const first = tokens[0];
+  const fFirst = norm(fullName.split(/\s+/)[0]);
+  if (/^\p{Lu}\.?$/u.test(first) && first.length <= 2) {
+    return fFirst.startsWith(norm(first[0])); // inicial abreviada
+  }
+  return f.includes(norm(first)); // primeiro nome por extenso
+}
+
+function pickImage(players, natEn, apiName) {
   if (!players || !players.length) return null;
   const wanted = NAT_ALIAS[natEn] ?? [natEn];
-  // Prefere mesma nacionalidade; senão usa o primeiro resultado.
-  const sameNat = players.filter((p) => wanted.includes(p.strNationality));
-  const cands = sameNat.length ? sameNat : players;
+  // ESTRITO: mesma nacionalidade E nome compatível (inicial + sobrenome).
+  const cands = players.filter((p) => wanted.includes(p.strNationality) && nameMatches(apiName, p.strPlayer));
   for (const p of cands) {
     const img = p.strCutout || p.strRender || p.strThumb;
-    if (img) return { img, isCutout: !!(p.strCutout || p.strRender), nat: p.strNationality };
+    if (img) {
+      const club = p.strTeam && p.strTeam !== natEn && !/national|seleç/i.test(p.strTeam) ? p.strTeam : null;
+      return { img, isCutout: !!(p.strCutout || p.strRender), nat: p.strNationality, club, fullName: p.strPlayer };
+    }
   }
   return null;
 }
@@ -73,16 +92,23 @@ for (const [code, squad] of Object.entries(data)) {
     if (p.photoTsdbDone) continue; // resumível
     total++;
     const j = await search(p.name);
-    const got = j ? pickImage(j.player, natEn) : null;
+    const got = j ? pickImage(j.player, natEn, p.nameApi ?? p.name) : null;
     if (got) {
       if (p.photoApi === undefined) p.photoApi = p.photo; // guarda fallback
       p.photo = got.img;
       p.photoCutout = got.isCutout;
+      if (got.club && !p.club) p.club = got.club; // clube de graça via TheSportsDB
+      // Nome completo p/ exibição (a API-Football abrevia: "S. Giménez").
+      if (got.fullName && /^\p{Lu}\.\s/u.test(p.name)) { p.nameApi = p.name; p.name = got.fullName; }
       hit++;
-      console.log(`✓ ${code.padEnd(7)} ${p.name.padEnd(24)} ${got.isCutout ? "cutout" : "thumb"} (${got.nat})`);
+      console.log(`✓ ${code.padEnd(7)} ${(got.fullName || p.name).padEnd(24)} ${got.isCutout ? "cutout" : "thumb"}${got.club ? " · " + got.club : ""} (${got.nat})`);
     } else {
+      // Sem match confiável: desfaz qualquer foto/nome de rodada anterior (frouxa).
+      if (p.photoApi !== undefined) { p.photo = p.photoApi; delete p.photoApi; }
+      if (p.nameApi !== undefined) { p.name = p.nameApi; delete p.nameApi; }
+      delete p.photoCutout;
       miss++;
-      console.log(`– ${code.padEnd(7)} ${p.name.padEnd(24)} sem imagem (mantém foto atual)`);
+      console.log(`– ${code.padEnd(7)} ${p.name.padEnd(24)} sem imagem (mantém foto da API)`);
     }
     p.photoTsdbDone = true;
   }

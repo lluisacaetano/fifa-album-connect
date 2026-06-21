@@ -23,6 +23,7 @@ const KNOWN = {
   au: 20, de: 25, ec: 2382, nl: 1118, jp: 12, tn: 28, be: 1, ir: 22,
   es: 9, sa: 23, uy: 7, fr: 2, sn: 13, ar: 26, pt: 27, "gb-eng": 10,
   hr: 3, gh: 1504,
+  nz: 4673, // a busca trazia "New Zealand W" (feminino) primeiro; este é o masculino
 };
 
 // code -> nome em inglês para busca (apenas os faltantes).
@@ -70,8 +71,10 @@ async function resolveId(t) {
   if (KNOWN[t.code]) return KNOWN[t.code];
   const q = SEARCH_NAME[t.code] ?? t.name_en;
   const j = await api(`/teams?search=${encodeURIComponent(q)}`, `search_${t.code}`);
-  const national = (j.response || []).filter((r) => r.team.national);
-  const pick = national[0] ?? (j.response || [])[0];
+  // Seleção principal masculina: national=true e SEM sufixos " W" (feminino) ou "U17/U20/U23" (base).
+  const isSenior = (name) => !/\bW$|\bU-?\d{2}\b|\bWomen\b/i.test(name);
+  const national = (j.response || []).filter((r) => r.team.national && isSenior(r.team.name));
+  const pick = national[0] ?? (j.response || []).find((r) => r.team.national) ?? (j.response || [])[0];
   if (!pick) { console.error(`  ! sem time para ${t.code} (${q})`); return null; }
   return pick.team.id;
 }

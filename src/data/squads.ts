@@ -1,13 +1,8 @@
-// Junta todas as seleções num formato único para o álbum e o carrossel de jogadores.
-// Brasil usa o elenco curado (players.ts, com foto real + bio de todos).
-// As demais vêm da API-Football (squads.generated.json): nome, idade, nº, posição,
-// foto oficial e — quando enriquecido — clube e estatísticas da temporada.
+// Junta todas as 48 seleções num formato único para o álbum e o carrossel.
+// Todos os elencos vêm da API-Football (squads.generated.json): nome, idade, nº,
+// posição, foto e — quando enriquecido — clube e estatísticas da temporada.
 import rawSquads from "./squads.generated.json";
-import brDesc from "./players-br-desc.json";
-import { players as brPlayers } from "./players";
 import { nations } from "./nations";
-
-const brDescById = brDesc as Record<string, string>;
 
 export type SquadPlayer = {
   id: number;
@@ -16,6 +11,7 @@ export type SquadPlayer = {
   number?: string | null;
   age?: number | null;
   photo: string | null;
+  photoCutout?: boolean; // true = foto recortada hi-res (não a foto pequena da API)
   club?: string | null;
   goals?: number | null;
   assists?: number | null;
@@ -45,35 +41,18 @@ function byNumber(players: SquadPlayer[]): SquadPlayer[] {
   });
 }
 
-const brazil: CountrySquad = {
-  code: "br",
-  name: "Brasil",
-  colors: meta["br"]?.colors ?? DEFAULT_COLORS,
-  players: byNumber(
-    brPlayers.map((p) => ({
-      id: p.id,
-      name: p.name,
-      position: p.position,
-      number: String(p.number),
-      photo: p.photo,
-      desc: brDescById[String(p.id)] ?? null,
-    })),
-  ),
-};
-
-const others: CountrySquad[] = Object.entries(generated)
-  .filter(([code]) => code !== "br") // Brasil é curado acima
+const squadList: CountrySquad[] = Object.entries(generated)
   .map(([code, squad]) => ({
     code,
     name: squad.name ?? meta[code]?.name ?? code,
     colors: meta[code]?.colors ?? DEFAULT_COLORS,
-    players: byNumber(squad.players ?? []),
+    players: byNumber(squad.players ?? []).slice(0, 26), // elenco da Copa = máx. 26
   }))
   .filter((s) => s.players.length > 0)
-  .sort((a, b) => a.name.localeCompare(b.name, "pt"));
+  // Brasil sempre primeiro, depois as outras em ordem alfabética.
+  .sort((a, b) => (a.code === "br" ? -1 : b.code === "br" ? 1 : a.name.localeCompare(b.name, "pt")));
 
-// Brasil sempre primeiro, depois as outras em ordem alfabética.
-export const squads: CountrySquad[] = [brazil, ...others];
+export const squads: CountrySquad[] = squadList;
 
 export function squadByCode(code: string): CountrySquad | undefined {
   return squads.find((s) => s.code === code);
