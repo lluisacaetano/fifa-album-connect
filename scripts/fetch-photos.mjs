@@ -40,14 +40,19 @@ const slug = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").rep
 async function search(name) {
   const file = `${CACHE}/${slug(name)}.json`;
   if (existsSync(file)) return JSON.parse(readFileSync(file));
-  await sleep(THROTTLE);
-  let json = { player: null };
-  try {
-    const res = await fetch(`${BASE}/searchplayers.php?p=${encodeURIComponent(name)}`);
-    json = await res.json();
-  } catch (e) { console.error("  ! fetch", name, e.message); return null; }
-  writeFileSync(file, JSON.stringify(json));
-  return json;
+  // Retry com backoff: a TheSportsDB às vezes devolve HTML de rate-limit.
+  for (let attempt = 0; attempt < 5; attempt++) {
+    await sleep(THROTTLE + attempt * 4000);
+    try {
+      const res = await fetch(`${BASE}/searchplayers.php?p=${encodeURIComponent(name)}`);
+      const text = await res.text();
+      if (!text.trim().startsWith("{")) { if (attempt === 0) console.error(`  … rate-limit TSDB, retry (${name})`); continue; }
+      const json = JSON.parse(text);
+      writeFileSync(file, JSON.stringify(json));
+      return json;
+    } catch (e) { if (attempt === 4) console.error("  ! fetch", name, e.message); }
+  }
+  return null; // sem sucesso: não marca como feito, tenta de novo na próxima leva
 }
 
 const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
@@ -89,10 +94,12 @@ for (const [code, squad] of Object.entries(data)) {
   if (ONLY && !ONLY.includes(code)) continue;
   const natEn = nationalityByCode[code];
   for (const p of squad.players) {
+    if (p.photoCustom) continue; // foto manual tem prioridade
     if (p.photoTsdbDone) continue; // resumível
     total++;
     const j = await search(p.name);
-    const got = j ? pickImage(j.player, natEn, p.nameApi ?? p.name) : null;
+    if (j === null) { console.error(`  ⏭  ${code} ${p.name}: TSDB indisponível, tenta na próxima leva`); continue; } // não marca feito
+    const got = pickImage(j.player, natEn, p.nameApi ?? p.name);
     if (got) {
       if (p.photoApi === undefined) p.photoApi = p.photo; // guarda fallback
       p.photo = got.img;
@@ -111,6 +118,7 @@ for (const [code, squad] of Object.entries(data)) {
       console.log(`– ${code.padEnd(7)} ${p.name.padEnd(24)} sem imagem (mantém foto da API)`);
     }
     p.photoTsdbDone = true;
+    if (total % 25 === 0) writeFileSync("src/data/squads.generated.json", JSON.stringify(data, null, 1)); // salva progresso
   }
 }
 

@@ -24,16 +24,18 @@ const slug = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").rep
 async function get(path, cacheKey) {
   const file = `${CACHE}/${cacheKey}.json`;
   if (existsSync(file)) return JSON.parse(readFileSync(file));
-  await sleep(THROTTLE);
-  try {
-    const res = await fetch(`${BASE}${path}`, { headers: { accept: "application/json" } });
-    const j = await res.json();
-    if (!j.error) writeFileSync(file, JSON.stringify(j));
-    return j;
-  } catch (e) {
-    console.error("  ! fetch", path, e.message);
-    return null;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    await sleep(THROTTLE + attempt * 3000);
+    try {
+      const res = await fetch(`${BASE}${path}`, { headers: { accept: "application/json" } });
+      const text = await res.text();
+      if (!text.trim().startsWith("{")) continue; // HTML/erro -> retry
+      const j = JSON.parse(text);
+      if (!j.error) writeFileSync(file, JSON.stringify(j));
+      return j;
+    } catch (e) { if (attempt === 3) console.error("  ! fetch", path, e.message); }
   }
+  return null;
 }
 
 const FOOT = { right: "destro", left: "canhoto", both: "ambidestro" };
