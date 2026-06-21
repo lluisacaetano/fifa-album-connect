@@ -30,18 +30,10 @@ export function PlayersCarousel() {
     p.desc ??
     `${p.position} da seleção ${squad.name}${p.number ? ` · camisa ${p.number}` : ""}. Uma das figurinhas para colecionar nesta Copa.`;
 
-  return (
-    <section id="jogadores" className="relative overflow-hidden py-20 text-white">
-      {/* Fundo que muda com a seleção (crossfade) */}
-      <motion.div
-        key={code}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        className="absolute inset-0 -z-10"
-        style={{ background: sectionBg }}
-      />
+  const hasStats = p.goals != null || p.assists != null || p.apps != null;
 
+  return (
+    <section id="jogadores" className="relative overflow-hidden py-20 text-white" style={{ background: sectionBg }}>
       {/* Decoração: estrela grande translúcida no canto */}
       <div aria-hidden className="pointer-events-none absolute -left-10 top-4 select-none font-display text-[16rem] leading-none text-white/10">
         ★
@@ -97,6 +89,8 @@ export function PlayersCarousel() {
                 <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-widest">
                   <span className="rounded-full bg-[color:var(--fifa-green)] px-3 py-1 text-white">{p.position}</span>
                   {p.number && <span className="rounded-full bg-[color:var(--fifa-blue)] px-3 py-1 text-white">#{p.number}</span>}
+                  {p.club && <span className="rounded-full bg-white px-3 py-1 text-[color:var(--fifa-green-deep)]">{p.club}</span>}
+                  {p.age != null && <span className="rounded-full bg-white/15 px-3 py-1 text-white ring-1 ring-white/25">{p.age} anos</span>}
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[color:var(--fifa-green-deep)]">
                     <img src={`https://flagcdn.com/w40/${squad.code}.png`} alt="" className="h-3 w-4 rounded-[2px] object-cover" />
                     {squad.name}
@@ -104,6 +98,21 @@ export function PlayersCarousel() {
                 </div>
 
                 <p className="mt-5 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">{bio}</p>
+
+                {hasStats && (
+                  <div className="mt-6 flex max-w-md gap-3">
+                    {[
+                      { label: "Gols", value: p.goals },
+                      { label: "Assist.", value: p.assists },
+                      { label: "Jogos", value: p.apps },
+                    ].map((s) => (
+                      <div key={s.label} className="flex-1 rounded-2xl bg-white/10 px-3 py-3 text-center ring-1 ring-white/20">
+                        <div className="font-display text-3xl text-white">{s.value ?? 0}</div>
+                        <div className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-white/70">{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             </AnimatePresence>
           </div>

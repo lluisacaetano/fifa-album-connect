@@ -14,7 +14,7 @@ type Card = { id: number; name: string; position: string; number?: string | null
 const BRAZIL_COLORS: [string, string] = ["#009739", "#FFDF00"];
 
 export function AlbumSection() {
-  const [code, setCode] = useState("all");
+  const [code, setCode] = useState("br");
   const [query, setQuery] = useState("");
   const [ownedMap, setOwnedMap] = useState<Record<string, Set<number>>>({});
 
@@ -74,17 +74,7 @@ export function AlbumSection() {
   const titleLabel = isAll ? "Todas as seleções" : squad!.name;
 
   return (
-    <section id="album" className="relative overflow-hidden py-24 text-white">
-      {/* Fundo que muda com a seleção (crossfade) */}
-      <motion.div
-        key={code}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        className="absolute inset-0 -z-10"
-        style={{ background: sectionBg }}
-      />
-
+    <section id="album" className="relative overflow-hidden py-24 text-white" style={{ background: sectionBg }}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-6">
           <div>
