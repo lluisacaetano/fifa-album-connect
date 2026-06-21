@@ -88,7 +88,7 @@ export function AlbumSection() {
         </div>
 
         {/* Seletor de seleção (chips com bandeira) */}
-        <div className="mb-5 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin]">
+        <div className="mb-6 flex gap-2.5 overflow-x-auto pb-4 [scrollbar-width:thin]">
           {squads.map((s) => {
             const active = s.code === code;
             return (
