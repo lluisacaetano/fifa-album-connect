@@ -95,7 +95,7 @@ export function AlbumSection() {
               <div className={`flex h-full w-full flex-col items-center justify-between rounded-lg p-2 ${s.owned ? "" : "opacity-40 grayscale"}`}>
                 <div className="text-[8px] font-bold tracking-widest opacity-80">FIFA 2026</div>
                 <div className="grid h-10 w-10 place-items-center rounded-full bg-white/20 font-display text-lg">★</div>
-                <div className="font-display text-[11px]">{s.code}</div>
+                <div className="font-display text-[11px] text-center leading-tight">{s.name}</div>
               </div>
             </motion.div>
           ))}
