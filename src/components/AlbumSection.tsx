@@ -1,9 +1,30 @@
 import { motion } from "framer-motion";
 
+const players = [
+  "Alisson",
+  "Bento",
+  "Marquinhos",
+  "Éder Militão",
+  "Gabriel Magalhães",
+  "Danilo",
+  "Guilherme Arana",
+  "Bruno Guimarães",
+  "André",
+  "Lucas Paquetá",
+  "Gerson",
+  "Vinícius Júnior",
+  "Rodrygo",
+  "Raphinha",
+  "Savinho",
+  "Estêvão",
+  "Endrick",
+  "Igor Jesus",
+];
+
 const stickers = Array.from({ length: 18 }, (_, i) => ({
   id: i + 1,
   owned: [0, 1, 3, 4, 6, 8, 9, 11, 13, 15, 17].includes(i),
-  code: `${["BRA", "ARG", "FRA", "GER", "ESP", "ENG"][i % 6]}-${String(i + 1).padStart(2, "0")}`,
+  name: players[i],
 }));
 
 const owned = stickers.filter((s) => s.owned).length;
