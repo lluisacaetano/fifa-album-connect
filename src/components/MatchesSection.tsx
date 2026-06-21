@@ -4,7 +4,7 @@ import { Calendar, Clock, MapPin } from "lucide-react";
 const matches = [
   { home: "Brasil", homeFlag: "🇧🇷", away: "Marrocos", awayFlag: "🇲🇦", date: "12 Jun", time: "16:00", stadium: "MetLife Stadium · New Jersey" },
   { home: "Brasil", homeFlag: "🇧🇷", away: "Haiti", awayFlag: "🇭🇹", date: "17 Jun", time: "19:00", stadium: "SoFi Stadium · Los Angeles" },
-  { home: "Brasil", homeFlag: "🇧🇷", away: "Escócia", awayFlag: "🏴", date: "23 Jun", time: "21:00", stadium: "Estadio Azteca · Cidade do México" },
+  { home: "Brasil", homeFlag: "🇧🇷", away: "Escócia", awayFlag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", date: "23 Jun", time: "21:00", stadium: "Estadio Azteca · Cidade do México" },
 ];
 
 export function MatchesSection() {
