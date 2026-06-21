@@ -206,8 +206,13 @@ export function MatchesSection() {
                 <h3 className="mb-3 font-display text-xl tracking-wide text-[color:var(--fifa-yellow)]">{fmtDate(grp.date)}</h3>
                 <div className="space-y-2.5">
                   {grp.items.map((m) => {
-                    const sc = scoreFor(m);
-                    const live = sc?.state === "in";
+                    const raw = scoreFor(m);
+                    // ESPN: "pre" = agendado, "in" = ao vivo, "post" = encerrado.
+                    // Só trata como placar quando já começou (evita "0-0 encerrado" em jogo futuro).
+                    const started = raw?.state === "in" || raw?.state === "post";
+                    const sc = started ? raw : null;
+                    const live = raw?.state === "in";
+                    const finished = raw?.state === "post";
                     const home = m.homeId ? teams[m.homeId] : null;
                     const away = m.awayId ? teams[m.awayId] : null;
                     const starOn = starred.has(m.id);
@@ -231,7 +236,7 @@ export function MatchesSection() {
                             <span className="font-display text-xl leading-none text-[color:var(--fifa-green)]">{m.time}</span>
                           )}
                           <span className={`mt-0.5 text-[9px] font-bold uppercase tracking-wider ${live ? "text-red-600" : "text-muted-foreground"}`}>
-                            {live ? "● ao vivo" : sc ? "encerrado" : m.stage}
+                            {live ? "● ao vivo" : finished ? "encerrado" : m.stage}
                           </span>
                         </div>
 
