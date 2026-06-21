@@ -1,119 +1,30 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-// Fotos recortadas baixadas para /public/players (TheSportsDB).
-const neymarImg = "/players/neymar.png";
-const endrickImg = "/players/17.png";
-const vinijrImg = "/players/12.png";
-const paquetaImg = "/players/10.png";
-const alissonImg = "/players/1.png";
-
-type Player = {
-  name: string;
-  team: string;
-  club: string;
-  position: string;
-  age: number;
-  number: string;
-  image: string;
-  description: string;
-  stats: { label: string; value: string }[];
-};
-
-const players: Player[] = [
-  {
-    name: "NEYMAR",
-    team: "Brasil",
-    club: "Santos FC",
-    position: "Meia-atacante",
-    age: 34,
-    number: "10",
-    image: neymarImg,
-    description:
-      "Neymar da Silva Santos Júnior é um futebolista brasileiro que atua como meia-atacante. Revelado pelo Santos, conquistou Libertadores, Copa do Brasil e o prêmio Puskás. Em 2013 foi vendido ao Barcelona na maior transferência do futebol brasileiro.",
-    stats: [
-      { label: "Gols", value: "437" },
-      { label: "Assist.", value: "265" },
-      { label: "Jogos", value: "812" },
-    ],
-  },
-  {
-    name: "VINI JR",
-    team: "Brasil",
-    club: "Real Madrid",
-    position: "Ponta-esquerda",
-    age: 25,
-    number: "07",
-    image: vinijrImg,
-    description:
-      "Vinícius José Paixão de Oliveira Júnior, conhecido como Vini Jr., é ponta-esquerda do Real Madrid. Marcou o gol do título da Champions de 2022 e é um dos principais nomes da nova geração brasileira.",
-    stats: [
-      { label: "Gols", value: "118" },
-      { label: "Assist.", value: "92" },
-      { label: "Jogos", value: "324" },
-    ],
-  },
-  {
-    name: "ENDRICK",
-    team: "Brasil",
-    club: "Real Madrid",
-    position: "Atacante",
-    age: 19,
-    number: "09",
-    image: endrickImg,
-    description:
-      "Endrick Felipe Moreira de Sousa é uma das maiores promessas do futebol mundial. Revelado pelo Palmeiras, foi contratado pelo Real Madrid e disputa Copa do Mundo aos 19 anos.",
-    stats: [
-      { label: "Gols", value: "47" },
-      { label: "Assist.", value: "18" },
-      { label: "Jogos", value: "112" },
-    ],
-  },
-  {
-    name: "LUCAS PAQUETÁ",
-    team: "Brasil",
-    club: "West Ham",
-    position: "Meia",
-    age: 28,
-    number: "08",
-    image: paquetaImg,
-    description:
-      "Lucas Tolentino Coelho de Lima, conhecido como Lucas Paquetá, é um meia brasileiro que se destacou pelo Flamengo e atualmente defende o West Ham na Premier League. Titular da Seleção Brasileira, é conhecido por sua visão de jogo e qualidade técnica.",
-    stats: [
-      { label: "Gols", value: "76" },
-      { label: "Assist.", value: "48" },
-      { label: "Jogos", value: "342" },
-    ],
-  },
-  {
-    name: "ALISSON",
-    team: "Brasil",
-    club: "Liverpool",
-    position: "Goleiro",
-    age: 33,
-    number: "01",
-    image: alissonImg,
-    description:
-      "Alisson Becker é considerado um dos melhores goleiros do mundo. Pelo Liverpool conquistou Champions e Premier League, e é titular absoluto da Seleção Brasileira.",
-    stats: [
-      { label: "Defesas", value: "1.3k" },
-      { label: "Sem sofrer", value: "184" },
-      { label: "Jogos", value: "498" },
-    ],
-  },
-];
+import { squads, squadByCode } from "@/data/squads";
 
 export function PlayersCarousel() {
+  const [code, setCode] = useState("br");
   const [[index, dir], setIndex] = useState<[number, number]>([0, 0]);
-  const p = players[index];
+
+  const squad = squadByCode(code) ?? squads[0];
+  const p = squad.players[Math.min(index, squad.players.length - 1)];
 
   const paginate = (delta: number) => {
     setIndex(([i]) => {
-      const next = (i + delta + players.length) % players.length;
+      const next = (i + delta + squad.players.length) % squad.players.length;
       return [next, delta];
     });
   };
+
+  const selectCountry = (newCode: string) => {
+    setCode(newCode);
+    setIndex([0, 0]);
+  };
+
+  const bio =
+    p.desc ??
+    `${p.position} da seleção ${squad.name}${p.number ? ` · camisa ${p.number}` : ""}. Uma das figurinhas para colecionar nesta Copa.`;
 
   return (
     <section id="jogadores" className="relative overflow-hidden bg-[#fcd305] py-20">
@@ -125,9 +36,8 @@ export function PlayersCarousel() {
         ★
       </div>
 
-
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-10 flex flex-col items-center text-center">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mb-7 flex flex-col items-center text-center">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -136,70 +46,81 @@ export function PlayersCarousel() {
           >
             JOGADORES
           </motion.h2>
-          <div className="mt-2 inline-block rounded-md bg-[color:var(--fifa-green)] px-8 py-2 font-display text-2xl tracking-[0.5em] text-white">
-            BRASIL
-          </div>
+          <p className="mt-2 text-sm text-[color:var(--fifa-green-deep)]/70">Escolha uma seleção e conheça os craques, um a um.</p>
+        </div>
+
+        {/* Seletor de seleção */}
+        <div className="mx-auto mb-10 flex max-w-4xl flex-wrap justify-center gap-2.5 pb-1">
+          {squads.map((s) => {
+            const active = s.code === code;
+            return (
+              <button
+                key={s.code}
+                type="button"
+                onClick={() => selectCountry(s.code)}
+                className={`flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold transition-all ${
+                  active
+                    ? "border-transparent bg-[color:var(--fifa-green-deep)] text-white shadow-md"
+                    : "border-[color:var(--fifa-green-deep)]/15 bg-white/70 text-[color:var(--fifa-green-deep)] hover:bg-white"
+                }`}
+              >
+                <img src={`https://flagcdn.com/w40/${s.code}.png`} alt="" className="h-4 w-6 rounded-sm object-cover ring-1 ring-black/10" />
+                {s.name}
+              </button>
+            );
+          })}
         </div>
 
         <div className="relative grid min-h-[520px] items-center gap-6 lg:grid-cols-2">
-          {/* Text side */}
-          <div className="relative">
+          {/* Texto */}
+          <div className="relative order-2 lg:order-1">
             <AnimatePresence mode="wait" custom={dir}>
               <motion.div
-                key={p.name + "-text"}
+                key={`${code}-${p.id}-text`}
                 custom={dir}
                 initial={{ opacity: 0, x: dir * -80 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: dir * 80 }}
-                transition={{ duration: 0.45, ease: "easeOut" }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
               >
-                <h3 className="font-display text-7xl text-white drop-shadow-[3px_3px_0_color-mix(in_oklab,var(--fifa-green-deep)_50%,transparent)] sm:text-8xl">
+                <h3 className="font-display text-6xl text-white drop-shadow-[3px_3px_0_color-mix(in_oklab,var(--fifa-green-deep)_50%,transparent)] sm:text-7xl">
                   {p.name}
                 </h3>
 
                 <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-widest">
                   <span className="rounded-full bg-[color:var(--fifa-green)] px-3 py-1 text-white">{p.position}</span>
-                  <span className="rounded-full bg-[color:var(--fifa-blue)] px-3 py-1 text-white">#{p.number}</span>
-                  <span className="rounded-full bg-white px-3 py-1 text-[color:var(--fifa-green-deep)]">{p.club}</span>
-                  <span className="rounded-full border border-[color:var(--fifa-green-deep)] px-3 py-1 text-[color:var(--fifa-green-deep)]">{p.age} anos</span>
+                  {p.number && <span className="rounded-full bg-[color:var(--fifa-blue)] px-3 py-1 text-white">#{p.number}</span>}
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[color:var(--fifa-green-deep)]">
+                    <img src={`https://flagcdn.com/w40/${squad.code}.png`} alt="" className="h-3 w-4 rounded-[2px] object-cover" />
+                    {squad.name}
+                  </span>
                 </div>
 
-                <p className="mt-5 max-w-xl text-sm leading-relaxed text-[color:var(--fifa-green-deep)] sm:text-base">
-                  {p.description}
-                </p>
-
-                <div className="mt-6 grid max-w-md grid-cols-3 gap-3">
-                  {p.stats.map((s) => (
-                    <div key={s.label} className="rounded-2xl border-2 border-[color:var(--fifa-green-deep)]/20 bg-white/60 p-3 text-center backdrop-blur">
-                      <div className="font-display text-2xl text-[color:var(--fifa-green-deep)]">{s.value}</div>
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--fifa-green-deep)]/70">{s.label}</div>
-                    </div>
-                  ))}
-                </div>
+                <p className="mt-5 max-w-xl text-sm leading-relaxed text-[color:var(--fifa-green-deep)] sm:text-base">{bio}</p>
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* Image side */}
-          <div className="relative h-[420px] sm:h-[520px]">
+          {/* Foto */}
+          <div className="relative order-1 h-[380px] sm:h-[500px] lg:order-2">
             <AnimatePresence mode="wait" custom={dir}>
               <motion.img
-                key={p.name + "-img"}
-                src={p.image}
+                key={`${code}-${p.id}-img`}
+                src={p.photo ?? ""}
                 alt={p.name}
                 custom={dir}
                 initial={{ opacity: 0, x: dir * 120, scale: 0.9 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, x: dir * -120, scale: 0.9 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-0 h-full w-full object-contain"
+                className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.25)]"
                 loading="lazy"
               />
             </AnimatePresence>
           </div>
         </div>
 
-        {/* Controls */}
+        {/* Controles */}
         <div className="mt-8 flex items-center justify-center gap-6">
           <button
             onClick={() => paginate(-1)}
@@ -209,17 +130,8 @@ export function PlayersCarousel() {
             <ChevronLeft className="h-6 w-6" />
           </button>
 
-          <div className="flex items-center gap-2">
-            {players.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setIndex([i, i > index ? 1 : -1])}
-                aria-label={`Ir para ${players[i].name}`}
-                className={`h-2.5 rounded-full transition-all ${
-                  i === index ? "w-8 bg-[color:var(--fifa-green-deep)]" : "w-2.5 bg-[color:var(--fifa-green-deep)]/30"
-                }`}
-              />
-            ))}
+          <div className="min-w-[5rem] rounded-full bg-[color:var(--fifa-green-deep)] px-4 py-2 text-center font-display text-lg tracking-wider text-white">
+            {index + 1} / {squad.players.length}
           </div>
 
           <button

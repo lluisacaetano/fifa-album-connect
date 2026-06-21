@@ -2,8 +2,11 @@
 // Brasil usa o elenco curado (players.ts, com foto real de todos).
 // As demais vêm da TheSportsDB (squads.generated.json).
 import rawSquads from "./squads.generated.json";
+import brDesc from "./players-br-desc.json";
 import { players as brPlayers } from "./players";
 import { nations } from "./nations";
+
+const brDescById = brDesc as Record<string, string>;
 
 export type SquadPlayer = {
   id: number;
@@ -33,6 +36,7 @@ const brazil: CountrySquad = {
     position: p.position,
     number: String(p.number),
     photo: p.photo,
+    desc: brDescById[String(p.id)] ?? null,
   })),
 };
 
