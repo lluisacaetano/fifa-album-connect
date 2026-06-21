@@ -1,36 +1,44 @@
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { players, initials } from "@/data/players";
 
-const players = [
-  "Alisson",
-  "Bento",
-  "Marquinhos",
-  "Éder Militão",
-  "Gabriel Magalhães",
-  "Danilo",
-  "Guilherme Arana",
-  "Bruno Guimarães",
-  "André",
-  "Lucas Paquetá",
-  "Gerson",
-  "Vinícius Júnior",
-  "Rodrygo",
-  "Raphinha",
-  "Savinho",
-  "Estêvão",
-  "Endrick",
-  "Igor Jesus",
-];
+const STORAGE_KEY = "album-figurinhas-owned";
 
-const stickers = Array.from({ length: 18 }, (_, i) => ({
-  id: i + 1,
-  owned: [0, 1, 3, 4, 6, 8, 9, 11, 13, 15, 17].includes(i),
-  name: players[i],
-}));
-
-const owned = stickers.filter((s) => s.owned).length;
-const progress = Math.round((owned / stickers.length) * 100);
+// Quais figurinhas já vêm marcadas como "tenho" na 1ª visita (por id).
+const defaultOwned = [1, 2, 4, 5, 7, 9, 10, 12, 14, 16, 18];
 
 export function AlbumSection() {
+  const [ownedIds, setOwnedIds] = useState<Set<number>>(() => new Set(defaultOwned));
+
+  // Carrega o que estiver salvo no navegador.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) setOwnedIds(new Set(JSON.parse(saved) as number[]));
+    } catch {
+      /* mantém o padrão */
+    }
+  }, []);
+
+  function toggle(id: number) {
+    setOwnedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
+      } catch {
+        /* ignora */
+      }
+      return next;
+    });
+  }
+
+  const cards = useMemo(() => players.map((p) => ({ ...p, owned: ownedIds.has(p.id) })), [ownedIds]);
+
+  const owned = cards.filter((c) => c.owned).length;
+  const progress = Math.round((owned / cards.length) * 100);
+
   return (
     <section id="album" className="bg-muted/30 py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -44,14 +52,16 @@ export function AlbumSection() {
             >
               MEU ÁLBUM
             </motion.h2>
-            <p className="mt-2 text-sm text-muted-foreground">Acompanhe seu progresso rumo à coleção completa.</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Clique numa figurinha para marcar se você <strong>tem</strong> ou <strong>não tem</strong>. Seu progresso fica salvo neste navegador.
+            </p>
           </div>
 
           <div className="flex gap-4">
             {[
-              { l: "Total", v: stickers.length },
+              { l: "Total", v: cards.length },
               { l: "Obtidas", v: owned },
-              { l: "Faltando", v: stickers.length - owned },
+              { l: "Faltando", v: cards.length - owned },
             ].map((s) => (
               <div key={s.l} className="rounded-2xl border border-border bg-card px-5 py-3 text-center">
                 <div className="font-display text-3xl text-[color:var(--fifa-green)]">{s.v}</div>
@@ -68,36 +78,74 @@ export function AlbumSection() {
           </div>
           <div className="h-3 overflow-hidden rounded-full bg-border">
             <motion.div
-              initial={{ width: 0 }}
-              whileInView={{ width: `${progress}%` }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
               className="h-full rounded-full bg-fifa-gradient"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-6 lg:grid-cols-9">
-          {stickers.map((s, i) => (
-            <motion.div
-              key={s.id}
+          {cards.map((c, i) => (
+            <motion.button
+              key={c.id}
+              type="button"
+              onClick={() => toggle(c.id)}
+              aria-pressed={c.owned}
+              title={c.owned ? `Você tem ${c.name} — clique para desmarcar` : `Falta ${c.name} — clique se conseguiu`}
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.03, duration: 0.3 }}
-              whileHover={{ y: -6, rotate: s.owned ? -2 : 0 }}
-              className={`group relative aspect-[3/4] cursor-pointer rounded-xl border-2 p-2 transition-all ${
-                s.owned
+              whileHover={{ y: -6, rotate: c.owned ? -2 : 0 }}
+              whileTap={{ scale: 0.92 }}
+              className={`group foil-sheen relative aspect-[3/4] cursor-pointer rounded-xl border-2 p-[3px] text-left transition-all ${
+                c.owned
                   ? "border-[color:var(--fifa-yellow)] bg-fifa-gradient text-white shadow-lg"
                   : "border-dashed border-border bg-muted text-muted-foreground"
               }`}
             >
-              <div className={`flex h-full w-full flex-col items-center justify-between rounded-lg p-2 ${s.owned ? "" : "opacity-40 grayscale"}`}>
-                <div className="text-[8px] font-bold tracking-widest opacity-80">FIFA 2026</div>
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-white/20 font-display text-lg">★</div>
-                <div className="font-display text-[11px] text-center leading-tight">{s.name}</div>
+              {c.owned && <span className="foil-sheen-layer rounded-xl" aria-hidden />}
+
+              {/* selo de status */}
+              <span
+                className={`absolute right-1 top-1 z-10 grid h-5 w-5 place-items-center rounded-full text-[11px] font-bold shadow ${
+                  c.owned ? "bg-white text-[color:var(--fifa-green)]" : "bg-card text-muted-foreground"
+                }`}
+              >
+                {c.owned ? "✓" : "+"}
+              </span>
+
+              {/* número da camisa */}
+              <span className={`absolute left-1.5 top-1 z-10 font-display text-lg leading-none ${c.owned ? "text-white/90" : "text-muted-foreground/60"}`}>
+                {c.number}
+              </span>
+
+              <div className={`relative flex h-full w-full flex-col items-center justify-end overflow-hidden rounded-lg ${c.owned ? "" : "opacity-60 grayscale"}`}>
+                {c.photo ? (
+                  <img
+                    src={c.photo}
+                    alt={c.name}
+                    loading="lazy"
+                    className="absolute inset-x-0 bottom-0 mx-auto h-[88%] w-auto object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.35)]"
+                  />
+                ) : (
+                  // Fallback para quem não tem foto (ex.: André)
+                  <div className="absolute inset-0 grid place-items-center">
+                    <span className="font-display text-4xl opacity-80">{initials(c.name)}</span>
+                  </div>
+                )}
+
+                {/* faixa com o nome */}
+                <div
+                  className={`relative z-[1] w-full rounded-md px-1 py-1 text-center font-display text-[11px] leading-tight ${
+                    c.owned ? "bg-black/35 text-white" : "bg-foreground/5"
+                  }`}
+                >
+                  {c.name}
+                </div>
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
       </div>
