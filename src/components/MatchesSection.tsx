@@ -23,6 +23,7 @@ type Match = {
 
 const teams = wc.teams as Record<string, Team>;
 const stadiums = wc.stadiums as Record<string, Stadium>;
+const BRAZIL_ID = Object.keys(teams).find((id) => teams[id].name_en === "Brazil") ?? "all";
 const matches = (wc.matches as Match[]).slice().sort((a, b) => a.iso.localeCompare(b.iso));
 
 const MONTHS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
@@ -46,7 +47,7 @@ const STAR_KEY = "partidas-marcadas";
 
 export function MatchesSection() {
   const [scores, setScores] = useState<Record<string, Score>>({});
-  const [country, setCountry] = useState("all");
+  const [country, setCountry] = useState(BRAZIL_ID);
   const [phase, setPhase] = useState<"all" | "groups" | "knockout">("all");
   const [onlyStarred, setOnlyStarred] = useState(false);
   const [starred, setStarred] = useState<Set<number>>(new Set());
