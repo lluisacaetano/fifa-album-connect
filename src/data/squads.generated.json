@@ -1,1192 +1,1675 @@
 {
- "ar": [
-  {
-   "id": 1,
-   "name": "Alexis Mac Allister",
-   "position": "Meio",
-   "number": "10",
-   "desc": "Alexis Mac Allister (born 24 December 1998) is an Argentine professional footballer who plays as a central midfielder for Premier League club Liverpool, and the Argentina national team.",
-   "photo": "/players/ar/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Cristian Romero",
-   "position": "Defesa",
-   "number": "17",
-   "desc": "Cristian \"Cuti\" Gabriel Romero (born 27 April 1998) is an Argentine professional footballer who plays as a centre-back for Premier League club Tottenham Hotspur and the Argentina national team.",
-   "photo": "/players/ar/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Emiliano Martinez",
-   "position": "Goleiro",
-   "number": "23",
-   "desc": "Damián Emiliano Martínez Romero (born 2 September 1992) is an Argentine professional footballer who plays as a goalkeeper for Premier League club Aston Villa and the Argentina national team. Martínez trained at Independiente's youth ranks before moving to Arsenal in 2010. At Arsenal, he served as understudy, being loaned to various Englis…",
-   "photo": "/players/ar/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Enzo Fernández",
-   "position": "Meio",
-   "number": "8",
-   "desc": "Enzo Jeremías Fernández (born 17 January 2001) is an Argentine professional footballer who plays as a central midfielder for Premier League club Chelsea.",
-   "photo": "/players/ar/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Exequiel Palacios",
-   "position": "Meio",
-   "number": "25",
-   "desc": "Exequiel Alejandro Palacios (5 October 1998) is an Argentine footballer who plays as a midfielder for Bayer Leverkusen and the Argentina national team.",
-   "photo": "/players/ar/5.png"
-  },
-  {
-   "id": 6,
-   "name": "Facundo Medina",
-   "position": "Defesa",
-   "number": "32",
-   "desc": "Facundo Axel Medina (born 28 May 1999) is an Argentine professional footballer who plays as a centre-back or left-back for Ligue 1 club Marseille, on loan from Lens, and the Argentina national team. Club career Medina's career got underway with a stint with River Plate, who he was an unused substitute for four times during the 2016–17 Arg…",
-   "photo": "/players/ar/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Gerónimo Rulli",
-   "position": "Goleiro",
-   "number": "1",
-   "desc": "Gerónimo Rulli (Spanish pronunciation: ; born 20 May 1992) is an Argentine footballer who plays as a goalkeeper for Ligue 1 club Marseille and the Argentina national team. Rulli joined Estudiantes's youth team in 2009, making his professional debut for them in 2013. Between 2014 and 2020, he played for Real Sociedad, twice on loan before …",
-   "photo": "/players/ar/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Giovani Lo Celso",
-   "position": "Meio",
-   "number": "20",
-   "desc": "Giovani Lo Celso (born 9 April 1996) is an Argentine professional footballer who plays as an attacking midfielder for La Liga side Real Betis and the Argentina national team. .",
-   "photo": "/players/ar/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Giuliano Simeone",
-   "position": "Ataque",
-   "number": "20",
-   "desc": "Giuliano Simeone Baldini (born 18 December 2002) is an Argentine professional footballer who plays as a forward for La Liga club Atlético Madrid. Born in Italy, he is a youth international for Argentina.",
-   "photo": "/players/ar/9.png"
-  },
-  {
-   "id": 10,
-   "name": "Gonzalo Montiel",
-   "position": "Defesa",
-   "number": "4",
-   "desc": "Gonzalo Ariel Montiel (born 1 January 1997) is an Argentine professional footballer who plays as right-back for the Argentine Primera División club River Plate and the Argentina national team. Montiel began his professional career with River Plate in 2016, playing 140 games and winning honours including the Argentine Primera División in 2…",
-   "photo": "/players/ar/10.png"
-  }
- ],
- "fr": [
-  {
-   "id": 1,
-   "name": "Adrien Rabiot",
-   "position": "Meio",
-   "number": "12",
-   "desc": "Adrien Thibault Marie Rabiot (born 3 April 1995) is a French professional footballer who plays as a midfielder for Serie A club AC Milan and the France national team. Rabiot spent most of his career with PSG, making his debut with the first team in 2012 and winning eighteen major honours, including five Ligue 1 titles and a domestic trebl…",
-   "photo": "/players/fr/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Aurélien Tchouaméni",
-   "position": "Meio",
-   "number": "14",
-   "desc": "Aurélien Djani Tchouaméni (born 27 January 2000) is a French professional footballer who plays as a defensive midfielder for Ligue 1 club Monaco and the France national team. He will join La Liga club Real Madrid on 1 July 2022.",
-   "photo": "/players/fr/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Bradley Barcola",
-   "position": "Meio",
-   "number": "29",
-   "desc": "Bradley Laurent Barcola (born 2 September 2002) is a French professional footballer who plays as a forward or winger for Ligue 1 club Paris Saint-Germain.",
-   "photo": "/players/fr/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Brice Samba",
-   "position": "Goleiro",
-   "number": "30",
-   "desc": "Brice Lauriche Samba (born 25 April 1994) is a professional footballer who plays as a goalkeeper for Ligue 1 club Rennes. Born in the Republic of Congo, he plays for the France national team.",
-   "photo": "/players/fr/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Dayot Upamecano",
-   "position": "Defesa",
-   "number": "2",
-   "desc": "Dayotchanculle Oswald Upamecano (born 27 October 1998) is a French professional footballer who plays as a centre-back for Bundesliga club Bayern Munich and the France national team.",
-   "photo": "/players/fr/5.png"
-  },
-  {
-   "id": 6,
-   "name": "Désiré Doué",
-   "position": "Meio",
-   "number": "14",
-   "desc": "Désiré Nonka-Maho Doué (born 3 June 2005) is a French professional footballer who plays as a winger for Ligue 1 club Paris Saint-Germain. He is widely considered to be one of the most talented prospects in European football. Doué is a youth international for France, having played for the national team at the under-17, under-19 and under-2…",
-   "photo": "/players/fr/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Ibrahima Konaté",
-   "position": "Defesa",
-   "number": "5",
-   "desc": "Ibrahima Konaté (born 25 May 1999) is a French professional footballer who plays as a centre-back for Premier League club Liverpool and the France U21 national team.",
-   "photo": "/players/fr/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Jean-Philippe Mateta",
-   "position": "Ataque",
-   "number": "14",
-   "desc": "Jean-Philippe Mateta (born 28 June 1997) is a French professional footballer who plays as a striker for Premier League club Crystal Palace. He has represented France internationally at U19 and U21 youth levels.",
-   "photo": "/players/fr/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Jules Koundé",
-   "position": "Defesa",
-   "number": "23",
-   "desc": "Jules Olivier Koundé (born 12 November 1998) is a French professional footballer who plays as a defender for Spanish La Liga club FC Barcelona",
-   "photo": "/players/fr/9.png"
-  }
- ],
- "gb-eng": [
-  {
-   "id": 1,
-   "name": "Anthony Gordon",
-   "position": "Meio",
-   "number": "10",
-   "desc": "Anthony Michael Gordon (born 24 February 2001) is an English professional footballer who plays primarily as a winger for Premier League club Newcastle United and the England national team. He will join La Liga club Barcelona on 1 July 2026. Gordon began his professional career with Everton, making his senior debut in December 2017 in a Eu…",
-   "photo": "/players/gb-eng/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Bukayo Saka",
-   "position": "Ataque",
-   "number": "7",
-   "desc": "Bukayo Ayoyinka Temidayo Saka (born 5 September 2001) is an English professional footballer who plays as a right winger for Premier League club Arsenal and the England national team. He is considered to be one of the best young players in the world. Saka has spent his entire first-team club career with Arsenal, where he has won an FA Cup …",
-   "photo": "/players/gb-eng/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Dan Burn",
-   "position": "Defesa",
-   "number": "33",
-   "desc": "Daniel Johnson Burn (born 9 May 1992) is an English professional footballer who plays as a defender for Premier League club Newcastle United. He plays as a defender. Burn made his debut in the Football League for Darlington in 2009 and joined Fulham at the end of the 2010–11 season, having made 19 appearances for Darlington. He spent the …",
-   "photo": "/players/gb-eng/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Dean Henderson",
-   "position": "Goleiro",
-   "number": "1",
-   "desc": "Dean Bradley Henderson (born 12 March 1997) is an English professional footballer who plays as a goalkeeper for Premier League club Crystal Palace and the England national team. Henderson signed his first professional contract with Manchester United in 2015 and extended it in 2018 for a further two years until 2022. He made his debut for …",
-   "photo": "/players/gb-eng/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Declan Rice",
-   "position": "Meio",
-   "number": "41",
-   "desc": "Declan Rice (born 14 January 1999) is an English professional footballer who plays as a defensive midfielder for Premier League club Arsenal and the England national team. Born in England, Rice has paternal Irish grandparents and previously represented the Republic of Ireland internationally at both youth and senior levels, before switchi…",
-   "photo": "/players/gb-eng/5.png"
-  },
-  {
-   "id": 6,
-   "name": "Djed Spence",
-   "position": "Defesa",
-   "number": "24",
-   "desc": "Diop Tehuti Djed-Hotep Spence (born 9 August 2000) is an English professional footballer who plays as a full-back for Premier League club Tottenham Hotspur.",
-   "photo": "/players/gb-eng/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Eberechi Eze",
-   "position": "Meio",
-   "number": "10",
-   "desc": "Eberechi Oluchi \"Ebere\" Eze is an English professional footballer who plays as an attacking midfielder or winger for Premier League club Arsenal and the England national team. A product of numerous English academies, Eze began his senior career with Queens Park Rangers in 2016. His breakthrough came in the 2019–20 season, in which he scor…",
-   "photo": "/players/gb-eng/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Elliot Anderson",
-   "position": "Meio",
-   "number": "8",
-   "desc": "Elliot Junior Anderson (born 6 November 2002) is an English professional footballer who plays for Premier League club Nottingham Forest as a midfielder. Born in England, he represented Scotland's youth teams internationally, until he switched nationalities to play for England U21.",
-   "photo": "/players/gb-eng/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Ezri Konsa",
-   "position": "Defesa",
-   "number": "4",
-   "desc": "Ezri Konsa Ngoyo (born 23 October 1997) is an English professional footballer who plays as a central defender for Aston Villa. He came to prominence at Charlton Athletic and is an England U21 international.",
-   "photo": "/players/gb-eng/9.png"
-  }
- ],
- "pt": [
-  {
-   "id": 1,
-   "name": "Bernardo Silva",
-   "position": "Meio",
-   "number": "20",
-   "desc": "Bernardo Mota Veiga de Carvalho e Silva (born 10 August 1994), known as Bernardo Silva or simply Bernardo, is a Portuguese professional footballer who plays as a midfielder for English Premier League club Manchester City and the Portugal national team. Born in Lisbon, Silva came through Benfica's youth academy. He began playing for Benfic…",
-   "photo": "/players/pt/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Bruno Fernandes",
-   "position": "Meio",
-   "number": "8",
-   "desc": "Bruno Miguel Borges Fernandes (European Portuguese: ; born 8 September 1994) is a Portuguese professional footballer who plays as a midfielder for Premier League club Manchester United and the Portugal national team. Born in Maia, Porto, Fernandes started his career at Italian Serie B side Novara but soon made a move to Serie A side Udine…",
-   "photo": "/players/pt/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Cristiano Ronaldo",
-   "position": "Ataque",
-   "number": "7",
-   "desc": "Cristiano Ronaldo dos Santos Aveiro GOIH ComM (Portuguese pronunciation: ; born 5 February 1985) is a Portuguese professional footballer who plays as a forward for and captains both Saudi Pro League club Al Nassr and the Portugal national team. Widely regarded as one of the greatest players of all time, Ronaldo has won five Ballon d'Or aw…",
-   "photo": "/players/pt/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Diogo Costa",
-   "position": "Goleiro",
-   "number": "99",
-   "desc": "Diogo Meireles da Costa ComM (Portuguese pronunciation: ; born 19 September 1999) is a Portuguese professional footballer who plays as a goalkeeper for Primeira Liga club Porto and the Portugal national team. Coming through Porto's youth system, Costa won the UEFA Youth League in 2019. He was promoted from the reserve side to the first-te…",
-   "photo": "/players/pt/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Diogo Dalot",
-   "position": "Defesa",
-   "number": "2",
-   "desc": "José Diogo Dalot Teixeira (born 18 March 1999) is a Portuguese professional footballer who plays as a full-back and occasionally as a winger for English Premier League club Manchester United.",
-   "photo": "/players/pt/5.png"
-  },
-  {
-   "id": 6,
-   "name": "Francisco Conceição",
-   "position": "Meio",
-   "number": "7",
-   "desc": "Francisco Fernandes da Conceição (Portuguese pronunciation: ; born 14 December 2002) is a Portuguese professional footballer who plays as a winger for Serie A club Juventus and the Portugal national team. Coming through Porto's youth system, Conceição was promoted to the first-team in 2021, winning a domestic double of the Primeira Liga a…",
-   "photo": "/players/pt/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Francisco Trincão",
-   "position": "Meio",
-   "number": "17",
-   "desc": "Francisco António Machado Mota de Castro Trincão (European Portuguese: ; born 29 December 1999) is a Portuguese professional footballer who plays as a winger for Primeira Liga club Sporting CP and the Portugal national team. He started his career with Braga B, making his debut with the first team in 2018 and winning the 2019–20 Taça da Li…",
-   "photo": "/players/pt/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Gonçalo Guedes",
-   "position": "Meio",
-   "number": "11",
-   "desc": "Gonçalo Manuel Ganchinho Guedes (born 29 November 1996) is a Portuguese professional footballer who plays as a winger or forward for La Liga club Real Sociedad. Guedes began his career at Benfica, making his professional debut for the reserves in April 2014 and the first team six months later. After 11 goals in 63 matches across all compe…",
-   "photo": "/players/pt/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Gonçalo Inácio",
-   "position": "Defesa",
-   "number": "25",
-   "desc": "Gonçalo Bernardo Inácio (Portuguese pronunciation: ; born 25 August 2001) is a Portuguese professional footballer who plays as a centre-back for Primeira Liga club Sporting CP and the Portugal national team.",
-   "photo": "/players/pt/9.png"
-  },
-  {
-   "id": 10,
-   "name": "Gonçalo Ramos",
-   "position": "Ataque",
-   "number": "9",
-   "desc": "Gonçalo Matias Ramos (Portuguese pronunciation: ; born 20 June 2001) is a Portuguese professional footballer who plays as a striker for Ligue 1 club Paris Saint-Germain and the Portugal national team. Born in Olhão, Ramos came through Benfica's youth academy. He began playing for Benfica B in 2019 and was promoted to the first team a year…",
-   "photo": "/players/pt/10.png"
-  }
- ],
- "es": [
-  {
-   "id": 1,
-   "name": "Álex Baena",
-   "position": "Meio",
-   "number": "10",
-   "desc": "Alejandro \"Álex\" Baena Rodríguez (born 20 July 2001) is a Spanish professional footballer who plays as a left winger or attacking midfielder for La Liga club Atlético Madrid and the Spain national team.",
-   "photo": "/players/es/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Álex Grimaldo",
-   "position": "Defesa",
-   "number": "20",
-   "desc": "Alejandro \"Álex\" Grimaldo García (born 20 September 1995) is a Spanish professional footballer who plays as a left wing-back for Bundesliga club Bayer Leverkusen and the Spain national team.",
-   "photo": "/players/es/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Aymeric Laporte",
-   "position": "Defesa",
-   "number": "14",
-   "desc": "Aymeric Jean Louis Gérard Alphonse Laporte (French pronunciation: ; born 27 May 1994) is a professional footballer who plays as a centre-back for La Liga club Athletic Bilbao. Born in France, he plays for the Spain national team. When he joined Athletic Bilbao in 2010 at the age of 16, he became only the second player born in France—after…",
-   "photo": "/players/es/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Borja Iglesias",
-   "position": "Ataque",
-   "number": "7",
-   "desc": "Borja Iglesias Quintas (Spanish pronunciation: ; born 17 January 1993) is a Spanish professional footballer who plays as a striker for La Liga club Celta de Vigo and the Spain national team. Developed at Celta, where he played mainly in the reserves initially, he achieved totals of over 250 La Liga appearances and 75 goals for that club, …",
-   "photo": "/players/es/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Dani Olmo",
-   "position": "Meio",
-   "number": "20",
-   "desc": "Daniel Olmo Carvajal (born 7 May 1998) is a Spanish professional footballer who plays as an attacking midfielder or left winger for La Liga club Barcelona and the Spain national team. After a period at La Masia, Olmo made his professional debut for Dinamo Zagreb in Croatia in 2015. He made 124 total appearances for the club, scoring 34 go…",
-   "photo": "/players/es/5.png"
-  },
-  {
-   "id": 6,
-   "name": "David Raya",
-   "position": "Goleiro",
-   "number": "1",
-   "desc": "David Raya Martín (born 15 September 1995) is a Spanish professional footballer who plays as a goalkeeper for Premier League club Arsenal and the Spain national team. Born in Barcelona, Catalonia, Raya signed for Blackburn Rovers in the summer of 2012, from Barcelona-based club UE Cornellà. His good progress throughout the club's academy …",
-   "photo": "/players/es/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Eric García",
-   "position": "Defesa",
-   "number": "24",
-   "desc": "Eric García Martret (born 9 January 2001) is a Spanish professional footballer from Catalonia who plays as a centre-back for La Liga club Barcelona and the Spain national team. García moved from Barcelona at the age of 17 to Manchester City. He made his Premier League debut on 21 September 2019. In his final season at the club, he won the…",
-   "photo": "/players/es/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Fabián Ruiz",
-   "position": "Meio",
-   "number": "8",
-   "desc": "Fabián Ruiz Peña (born 3 April 1996), simply known as Fabián, is a Spanish professional footballer who plays as a central midfielder for Ligue 1 club Paris Saint-Germain and the Spain national team.",
-   "photo": "/players/es/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Ferran Torres",
-   "position": "Meio",
-   "number": "7",
-   "desc": "Ferran Torres García (born 29 February 2000) is a Spanish professional footballer who plays as a forward for La Liga club Barcelona and the Spain national team. He began his career at Valencia, where he made his senior début in 2017, before moving to Manchester City in 2020 and winning the Premier League championship and the EFL Cup in th…",
-   "photo": "/players/es/9.png"
-  },
-  {
-   "id": 10,
-   "name": "Gavi",
-   "position": "Meio",
-   "number": "6",
-   "desc": "Pablo Martín Páez Gavira (Spanish pronunciation: ; born 5 August 2004), known as Gavi (pronounced ), is a Spanish professional footballer who plays as a central midfielder for La Liga club Barcelona and the Spain national team. In 2022, he won the Golden Boy award and received the Kopa Trophy, awarded by France Football during the 2022 Ba…",
-   "photo": "/players/es/10.png"
-  }
- ],
- "de": [
-  {
-   "id": 1,
-   "name": "Aleksandar Pavlović",
-   "position": "Meio",
-   "number": "45",
-   "desc": "Aleksandar Pavlović (Serbian Cyrillic: Александар Павловић; born 3 May 2004) is a professional footballer who plays as a defensive midfielder for Bundesliga club Bayern Munich.",
-   "photo": "/players/de/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Alexander Nübel",
-   "position": "Goleiro",
-   "number": "33",
-   "desc": "Alexander Nübel (German pronunciation: ; born 30 September 1996) is a German professional footballer who plays as a goalkeeper for Bundesliga club VfB Stuttgart, on loan from Bayern Munich, and the Germany national team.",
-   "photo": "/players/de/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Angelo Stiller",
-   "position": "Meio",
-   "number": "6",
-   "desc": "Angelo Stiller (German pronunciation: ; born 4 April 2001) is a German professional footballer who plays as a defensive midfielder for Bundesliga club VfB Stuttgart and the Germany national team.",
-   "photo": "/players/de/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Antonio Rüdiger",
-   "position": "Defesa",
-   "number": "22",
-   "desc": "Antonio Rüdiger (born 3 March 1993) is a German professional footballer who plays as a centre-back for La Liga club Real Madrid and the Germany national team. Rüdiger began his career at VfB Stuttgart, representing their reserves in 3. Liga and the first team in the Bundesliga. In 2015 he joined Roma, initially on loan and a year later fo…",
-   "photo": "/players/de/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Assan Ouédraogo",
-   "position": "Meio",
-   "number": "20",
-   "desc": "Forzan Assan Ouédraogo (born 9 May 2006) is a German professional footballer who plays as a midfielder for Bundesliga club RB Leipzig.",
-   "photo": "/players/de/5.png"
-  },
-  {
-   "id": 6,
-   "name": "David Raum",
-   "position": "Defesa",
-   "number": "22",
-   "desc": "David Raum (born 22 April 1998) is a German professional footballer who plays as a left midfielder or left back for Bundesliga club RB Leipzig and the Germany national team.",
-   "photo": "/players/de/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Deniz Undav",
-   "position": "Ataque",
-   "number": "26",
-   "desc": "Deniz Undav (born 19 July 1996) is a German professional footballer who plays as a forward for Bundesliga club VfB Stuttgart and the Germany national team.",
-   "photo": "/players/de/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Felix Nmecha",
-   "position": "Meio",
-   "number": "8",
-   "desc": "Felix Kalu Nmecha (born 10 October 2000) is a German footballer who plays as a midfielder for Bundesliga club Borussia Dortmund and the Germany national team.",
-   "photo": "/players/de/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Florian Wirtz",
-   "position": "Meio",
-   "number": "7",
-   "desc": "Florian Richard Wirtz (born 3 May 2003) is a German professional footballer who plays as an attacking midfielder for Premier League club Liverpool and the Germany national team. He is widely regarded as one of the best attacking midfielders in the world. Early life Wirtz was born in the Brauweiler district of Pulheim, North Rhine-Westphal…",
-   "photo": "/players/de/9.png"
-  },
-  {
-   "id": 10,
-   "name": "Jamal Musiala",
-   "position": "Meio",
-   "number": "10",
-   "desc": "Jamal Musiala (German pronunciation: ; born 26 February 2003) is a German professional footballer who plays as an attacking midfielder for Bundesliga club Bayern Munich and the Germany national team. Widely regarded as one of the best attacking midfielders in the world, Musiala is known for his dribbling, passing, goal threat, and technic…",
-   "photo": "/players/de/10.png"
-  }
- ],
- "nl": [
-  {
-   "id": 1,
-   "name": "Bart Verbruggen",
-   "position": "Goleiro",
-   "number": "1",
-   "desc": "Bart Verbruggen (born 18 August 2002) is a Dutch professional footballer who plays as a goalkeeper for Premier League club Brighton & Hove Albion and the Netherlands national team.",
-   "photo": "/players/nl/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Brian Brobbey",
-   "position": "Ataque",
-   "number": "9",
-   "desc": "Brian Ebenezer Adjei Brobbey is a Dutch professional footballer who plays as a striker for Premier League club Sunderland and the Netherlands national team. Born in the Netherlands, Brobbey is of Ghanaian descent. Brobbey represented the Netherlands U17 at both the 2018 and 2019 editions of the UEFA European Under-17 Championship, winning…",
-   "photo": "/players/nl/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Cody Gakpo",
-   "position": "Meio",
-   "number": "18",
-   "desc": "Cody Mathès Gakpo (born 7 May 1999) is a Dutch professional footballer who plays as a winger for Premier League club Liverpool and the Netherlands national team. A PSV academy graduate, Gakpo made his first-team debut in February 2018. In the 2021–22 season, he won the Dutch Footballer of the Year award after scoring 21 goals in 47 games …",
-   "photo": "/players/nl/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Crysencio Summerville",
-   "position": "Ataque",
-   "number": "7",
-   "desc": "Crysencio Jilbert Sylverio Cirro Summerville (born 30 October 2001) is a Dutch professional footballer who plays as a winger for EFL Championship football club West Ham United.",
-   "photo": "/players/nl/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Denzel Dumfries",
-   "position": "Meio",
-   "number": "2",
-   "desc": "Denzel Dumfries (18 April 1996) is a Dutch professional footballer who plays as a right-back for Inter in the Serie A and for the Netherlands national football team.",
-   "photo": "/players/nl/5.png"
-  },
-  {
-   "id": 6,
-   "name": "Donyell Malen",
-   "position": "Ataque",
-   "number": "17",
-   "desc": "Donyell Malen (born 19 January 1999) is a Dutch professional footballer who plays as a forward for Serie A club Roma, on loan from Premier League club Aston Villa, and the Netherlands national team. Malen played youth football for Ajax and Arsenal before joining PSV Eindhoven in 2017, playing for their youth side Jong PSV before graduatin…",
-   "photo": "/players/nl/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Frenkie de Jong",
-   "position": "Meio",
-   "number": "21",
-   "desc": "Frenkie de Jong (born 12 May 1997) is a Dutch professional footballer who plays as a midfielder for La Liga club Barcelona and the Netherlands national team. A versatile midfielder, he is known for his vision, passing, dribbling, technique, along with strong defensive abilities and attacking prowess. De Jong has frequently been ranked amo…",
-   "photo": "/players/nl/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Guus Til",
-   "position": "Meio",
-   "number": "20",
-   "desc": "Guus Berend Til (born 22 December 1997) is a Dutch professional footballer who plays as a midfielder for the Dutch side PSV Eindhoven and the Netherlands national team.",
-   "photo": "/players/nl/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Jan Paul van Hecke",
-   "position": "Defesa",
-   "number": "6",
-   "desc": "Jan Paul van Hecke (born 8 June 2000) is a Dutch professional footballer who plays as a centre-back for Premier League club Brighton & Hove Albion and the Netherlands national team. Club career Early career Born in Arnemuiden, Van Hecke is a youth product of VV Goes, but signed for NAC Breda in 2018. He made his professional debut with NA…",
-   "photo": "/players/nl/9.png"
-  },
-  {
-   "id": 10,
-   "name": "Jorrel Hato",
-   "position": "Defesa",
-   "number": "21",
-   "desc": "Jorrel Evan Hato (born 7 March 2006) is a Dutch professional footballer who plays as a centre-back or left-back for Premier League club Chelsea and the Netherlands national team. Born in Rotterdam, Hato moved from his hometown club Sparta Rotterdam to Ajax in 2018. Born in the Netherlands, Hato is of Curaçaoan descent. In November 2021, h…",
-   "photo": "/players/nl/10.png"
-  }
- ],
- "be": [
-  {
-   "id": 1,
-   "name": "Alexander Bernhardsson",
-   "position": "Ataque",
-   "number": "11",
-   "desc": "Alexander Olof Bernhardsson (born 8 September 1998) is a Swedish professional footballer who plays as a forward for Bundesliga club Holstein Kiel. Bernhardsson made his full international debut for Sweden on 9 January 2023, playing for 90 minutes in a friendly 2–0 win against Finland.",
-   "photo": "/players/be/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Alexander Isak",
-   "position": "Ataque",
-   "number": "9",
-   "desc": "Alexander Isak is a Swedish professional footballer who plays as a striker for Premier League club Liverpool and the Sweden national team. Known for his clinical finishing, pace, and technical ability, he is often considered one of the best strikers in the world. Born and raised in Solna, Sweden, Isak started his professional career with …",
-   "photo": "/players/be/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Anthony Elanga",
-   "position": "Meio",
-   "number": "20",
-   "desc": "Anthony David Junior Elanga (born 27 April 2002) is a Swedish professional footballer who plays as a forward or winger for Premier League club Newcastle United and the Sweden national team. Elanga played twice in the 2019–20 EFL Trophy with Manchester United's under-21 side, both as a substitute. He made his first-team debut for United in…",
-   "photo": "/players/be/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Benjamin Nygren",
-   "position": "Ataque",
-   "number": "8",
-   "desc": "Erik Benjamin Nygren (born 8 July 2001) is a Swedish professional footballer who plays as a winger or attacking midfielder for Scottish Premiership club Celtic and the Sweden national team.",
-   "photo": "/players/be/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Besfort Zeneli",
-   "position": "Meio",
-   "number": "23",
-   "desc": "Besfort Zeneli (born 21 November 2002) is a Swedish professional footballer who plays as a midfielder for Belgian Pro League club Union Saint-Gilloise and the Sweden national team.",
-   "photo": "/players/be/5.png"
-  },
-  {
-   "id": 6,
-   "name": "Carl Starfelt",
-   "position": "Defesa",
-   "number": "2",
-   "desc": "Carl Anders Theodor Starfelt (born 1 June 1995) is a Swedish professional footballer who plays as a centre-back for La Liga club Celta Vigo and the Sweden national team. After having made two appearances for the Sweden U19 team in 2014, Starfelt was called up to the Sweden national team for the first time on 30 September 2020 ahead of the…",
-   "photo": "/players/be/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Daniel Svensson",
-   "position": "Defesa",
-   "number": "24",
-   "desc": "Daniel Jonathan Svensson (born 12 February 2002) is a Swedish professional footballer who plays as a central midfielder or left-back for Bundesliga club Borussia Dortmund and the Sweden national team.",
-   "photo": "/players/be/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Elliot Stroud",
-   "position": "Meio",
-   "number": "17",
-   "desc": "Elliot Karl Stroud (born 22 June 2002) is a Swedish professional footballer who plays as a midfielder for Allsvenskan club Mjällby AIF. Stroud started his youth career in IK Oddevold, joining the senior team in 2019. The club then suffered relegation to Division 2, the fourth tier of Swedish football, but bounced back to compete in the 20…",
-   "photo": "/players/be/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Eric Smith",
-   "position": "Defesa",
-   "number": "8",
-   "desc": "Eric Anders Smith (born 8 January 1997) is a Swedish professional footballer who plays as a central defender for Bundesliga club FC St. Pauli.",
-   "photo": "/players/be/9.png"
-  },
-  {
-   "id": 10,
-   "name": "Gabriel Gudmundsson",
-   "position": "Meio",
-   "number": "3",
-   "desc": "Gabriel Johan Gudmundsson (born 29 April 1999) is a Swedish professional footballer who plays as a left-back for Premier League club Leeds United and the Sweden national team.",
-   "photo": "/players/be/10.png"
-  }
- ],
- "hr": [
-  {
-   "id": 1,
-   "name": "Albert Rrahmani",
-   "position": "Meio",
-   "number": "29",
-   "desc": "Albert Rrahmani (born 11 March 2007) is a Kosovan-Danish footballer who plays as a winger for Danish Superliga club Sønderjyske.",
-   "photo": "/players/hr/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Alberto Vogtmann",
-   "position": "Defesa",
-   "number": "32",
-   "desc": "Alberto Vogtmann (born 10 March 2006) is a Danish footballer who plays as a left-back for Danish Superliga club Sønderjyske.",
-   "photo": "/players/hr/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Alexander Lyng",
-   "position": "Meio",
-   "number": "11",
-   "desc": "Alexander Lyng (born 26 November 2004) is a Danish professional footballer who plays as a winger for Danish Superliga club Sønderjyske.",
-   "photo": "/players/hr/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Andreas Oggesen",
-   "position": "Meio",
-   "number": "22",
-   "desc": "Andreas Oggesen (born 18 March 1994) is a Danish footballer who plays as a winger for SønderjyskE. Born in Viborg but growing up in Aabenraa, Southern Jutland, Oggesen is a product of the SønderjyskE academy, where he arrived from SUB Sønderborg. In 2011, he was on a tryout at German Bundesliga club Hamburger SV, without this materialisin…",
-   "photo": "/players/hr/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Benicio Pená",
-   "position": "Goleiro",
-   "number": "27",
-   "desc": "Benicio Peña (born 21-03-2003) is a professional footballer from Denmark who plays as a Goalkeeper for Sønderjyske.",
-   "photo": "/players/hr/5.png"
-  },
-  {
-   "id": 6,
-   "name": "D. L. Gretarsson",
-   "position": "Defesa",
-   "number": "4",
-   "desc": "Daníel Leó Grétarsson Schmidt (born 2 October 1995) is an Icelandic professional footballer who plays as a centre-back for SønderjyskE and the Iceland national team. He has previously played for Grindavík, Aalesund, Blackpool and Śląsk Wrocław.",
-   "photo": "/players/hr/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Ebube Duru",
-   "position": "Meio",
-   "number": "23",
-   "desc": "Chidiebube Gideon \"Ebube\" Duru // ⓘ (born 31 July 1999) is a Nigerian footballer who plays as a left-back for Danish Superliga side Sønderjyske.",
-   "photo": "/players/hr/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Ivan Nikolov",
-   "position": "Meio",
-   "number": "18",
-   "desc": "Ivan Nikolov (born 17 February 2002) is a Macedonian professional footballer who plays as a midfielder for Danish Superliga club SønderjyskE.",
-   "photo": "/players/hr/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Lirim Qamili",
-   "position": "Ataque",
-   "number": "15",
-   "desc": "Lirim Qamili (born 4 June 1998) is a professional footballer who plays as a winger for Sønderjyske. Born in Denmark, he represents the North Macedonia national football team.",
-   "photo": "/players/hr/9.png"
-  },
-  {
-   "id": 10,
-   "name": "Mads Agger",
-   "position": "Meio",
-   "number": "25",
-   "desc": "Mads Agger (born 21 December 1999) is a Danish footballer who currently plays for Sønderjyske in the Danish Superliga.",
-   "photo": "/players/hr/10.png"
-  }
- ],
- "uy": [
-  {
-   "id": 1,
-   "name": "Amar Dedić",
-   "position": "Defesa",
-   "number": "77",
-   "desc": "Amar Dedić (born 18 August 2002) is a professional footballer who plays as a right-back for Ligue 1 club Marseille. Born in Austria, he plays for the Bosnia and Herzegovina national team. Dedić started his professional career at Red Bull Salzburg, who assigned him to Liefering in 2019 and loaned him to Wolfsberger AC in 2021. In 2025, he …",
-   "photo": "/players/uy/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Amar Memić",
-   "position": "Meio",
-   "number": "99",
-   "desc": "Amar Memić (pronounced ; born 20 January 2001) is a Bosnian professional footballer who plays as a winger for Czech First League club Viktoria Plzeň and the Bosnia and Herzegovina national team. Memić started his professional career at Radnik Hadžići, before joining Bravo in 2021. The following year, he moved to Karviná. In 2025, he signe…",
-   "photo": "/players/uy/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Amir Hadžiahmetović",
-   "position": "Meio",
-   "number": "20",
-   "desc": "Amir Hadžiahmetović is a Bosnian professional footballer who plays as a defensive midfielder for Championship club Hull City, on loan from Beşiktaş. Hadžiahmetović started his professional career at Željezničar, before joining Konyaspor in 2016. A former youth international for Bosnia and Herzegovina, Hadžiahmetović made his senior intern…",
-   "photo": "/players/uy/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Armin Gigović",
-   "position": "Meio",
-   "number": "37",
-   "desc": "Armin Gigović (born 6 April 2002) is a professional footballer who plays as a midfielder Born in Sweden, he plays for the Bosnia and Herzegovina national team. Gigović started his professional career at Helsingborgs IF, before joining Rostov in 2020. He was loaned back to Helsingborgs IF in 2022, to OB later that year and to Midtjylland i…",
-   "photo": "/players/uy/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Benjamin Tahirović",
-   "position": "Meio",
-   "number": "8",
-   "desc": "Benjamin Tahirović (pronounced ; born 3 March 2003) is a professional footballer who plays as a defensive midfielder for Danish Superliga club Brøndby. Born in Sweden, he plays for the Bosnia and Herzegovina national team. Tahirović started his professional career at Vasalunds IF, before joining Roma in 2021. Two years later, he moved to …",
-   "photo": "/players/uy/5.png"
-  },
-  {
-   "id": 6,
-   "name": "Dennis Hadžikadunić",
-   "position": "Defesa",
-   "number": "17",
-   "desc": "Dennis Hadžikadunić (born 9 July 1998) is a professional footballer who plays as a centre-back for Serie B club Sampdoria, on loan from Rostov. Born in Sweden, he plays for the Bosnia and Herzegovina national team. Hadžikadunić started his professional career at Malmö FF, who sent him on loan to Trelleborgs FF in 2018. Later that year, he…",
-   "photo": "/players/uy/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Dženis Burnić",
-   "position": "Meio",
-   "number": "7",
-   "desc": "Dženis Burnić (pronounced ; born 22 May 1998) is a professional footballer who plays as a midfielder for 2. Bundesliga club Karlsruher SC. Born in Germany, he plays for the Bosnia and Herzegovina national team. Burnić started his professional career at Borussia Dortmund, playing mainly in its reserve team, before being loaned to VfB Stutt…",
-   "photo": "/players/uy/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Edin Džeko",
-   "position": "Ataque",
-   "number": "10",
-   "desc": "Edin Džeko (born 17 March 1986) is a Bosnian professional footballer who plays as a striker. Regarded as one of the best strikers of his generation, he is the all-time top goalscorer of the Bosnian national team. Džeko was named Bosnian Footballer of the Year for three years in a row. He has been nicknamed \"Bosnian Diamond\" (Bosnian: Bosa…",
-   "photo": "/players/uy/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Ermedin Demirović",
-   "position": "Ataque",
-   "number": "9",
-   "desc": "Ermedin Demirović is a Bosnian professional footballer who plays as a forward for Bundesliga club FC Augsburg and the Bosnia and Herzegovina national team. Demirović started his professional career at RB Leipzig, playing mainly in its reserve team. In 2017, he joined Alavés, who loaned him to Sochaux the following year, to Almería a year …",
-   "photo": "/players/uy/9.png"
-  },
-  {
-   "id": 10,
-   "name": "Ermin Mahmić",
-   "position": "Meio",
-   "number": "20",
-   "desc": "Ermin Mahmić (pronounced ; born 14 March 2005) is a professional footballer who plays as an attacking midfielder for Czech First League club Slovan Liberec. Born in Austria, he opted to play for the Bosnia and Herzegovina national team. Mahmić started his professional career at SV Lafnitz, before joining Slovan Liberec in 2025.",
-   "photo": "/players/uy/10.png"
-  }
- ],
- "mx": [
-  {
-   "id": 1,
-   "name": "Alejandro Bran",
-   "position": "Meio",
-   "number": "14",
-   "desc": "Alejandro Jesús Bran Flores (born 5 March 2001) is a Costa Rican professional footballer who plays as a midfielder for Liga FPD club Alajuelense on loan from Major League Soccer club Minnesota United FC.",
-   "photo": "/players/mx/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Alvaro Zamora",
-   "position": "Meio",
-   "number": "9",
-   "desc": "Álvaro José Zamora Mata (born 9 March 2002) is a Costa Rican professional footballer who plays as a midfielder for Costa Rican club Deportivo Saprissa and the Costa Rica national team. Zamora made his national team debut for Costa Rica in a friendly against South Korea national football team on 23 September 2022. He came in as a substitut…",
-   "photo": "/players/mx/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Andy Rojas",
-   "position": "Meio",
-   "number": "70",
-   "desc": "Andy Emanuel Rojas Maroto (born 5 December 2005), also known as Tuti, is a Costa Rican professional footballer who plays as a left midfielder or forward for Major League Soccer club New York Red Bulls and the Costa Rica national team. At 18 years, 6 months and 1 day, he currently the youngest Costa Rican player to score in the World Cup q…",
-   "photo": "/players/mx/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Ariel Lassiter",
-   "position": "Ataque",
-   "number": "7",
-   "desc": "Ariel Daniel Lassiter Acuña is a Costa Rican professional footballer who plays as a winger for Major League Soccer club Portland Timbers and the Costa Rica national team.",
-   "photo": "/players/mx/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Brandon Aguilera",
-   "position": "Meio",
-   "number": "16",
-   "desc": "Brandon Aguilera Zamora (born 28 June 2003) is a Costa Rican professional footballer who plays as a midfielder for Primeira Liga club Rio Ave and the Costa Rica national team. In July 2022 Premier League side Nottingham Forest announced they had signed Aguilera on a four-year deal from Alajuelense, and would immediately be loaned to fello…",
-   "photo": "/players/mx/5.png"
-  },
-  {
-   "id": 6,
-   "name": "Francisco Calvo",
-   "position": "Defesa",
-   "number": "4",
-   "desc": "Francisco Javier Calvo Quesada (born 8 July 1992) is a Costa Rican international footballer who currently plays for and captains Minnesota United FC. After starting with Deportivo Saprissa as a youth player from 2005 to 2010, Calvo moved to the United States to study at San Jacinto College after getting a scholarship and played football a…",
-   "photo": "/players/mx/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Gerald Taylor",
-   "position": "Defesa",
-   "number": "17",
-   "desc": "Gerald Gisjiel Taylor Dosman (born 28 May 2001) is a Costa Rican footballer who plays as a right-back for Liga FPD club Deportivo Saprissa. He has previously played for Uruguay de Coronado and Heart of Midlothian.",
-   "photo": "/players/mx/7.png"
-  }
- ],
- "us": [
-  {
-   "id": 1,
-   "name": "Alejandro Zendejas",
-   "position": "Ataque",
-   "number": "10",
-   "desc": "Alejandro \"Alex\" Zendejas Saavedra (born February 7, 1998) is a professional soccer player who plays as a winger for Liga MX club América. Born in Mexico, he represents the United States national team. Early life Zendejas was born in Ciudad Juárez in Mexico before moving to El Paso, Texas, in the United States at a young age. The MLS, U.S…",
-   "photo": "/players/us/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Alex Freeman",
-   "position": "Defesa",
-   "number": "3",
-   "desc": "Alexander Michael Freeman (born August 9, 2004) is an American professional soccer player who plays as a right-back or right winger for La Liga club Villarreal and the United States national team. In 2022, Freeman signed with Major League Soccer franchise Orlando City, but spent the first three seasons of his professional career primarily…",
-   "photo": "/players/us/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Antonee Robinson",
-   "position": "Defesa",
-   "number": "33",
-   "desc": "Antonee Robinson (born August 8, 1997), nicknamed Jedi, is a professional soccer player who plays as a left-back for Premier League club Fulham and the United States national team. Robinson came through Everton's academy and signed his first professional contract with the club in 2015 having been with the academy since the age of 11. Robi…",
-   "photo": "/players/us/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Auston Trusty",
-   "position": "Defesa",
-   "number": "6",
-   "desc": "Auston Levi-Jesaiah Trusty (born August 12, 1998) is an American professional soccer player who plays as a centre-back or left-back for Scottish Premiership club Celtic and the United States national team. In club football, Trusty played in the USL Championship for Bethlehem Steel and in Major League Soccer for the Philadelphia Union and …",
-   "photo": "/players/us/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Brenden Aaronson",
-   "position": "Meio",
-   "number": "11",
-   "desc": "Brenden Russell Aaronson (born October 22, 2000) is an American professional soccer player who plays as an attacking midfielder or winger for Premier League club Leeds United and the United States national team.",
-   "photo": "/players/us/5.png"
-  },
-  {
-   "id": 6,
-   "name": "Chris Brady",
-   "position": "Goleiro",
-   "number": "1",
-   "desc": "Christopher Keith Brady (born March 3, 2004) is an American professional soccer player who plays as a goalkeeper for Major League Soccer club Chicago Fire. Born in Naperville, Illinois, Brady joined the Chicago Fire in 2017, playing with the youth academy. On March 24, 2020, Brady signed a homegrown player deal with the Fire, joining the …",
-   "photo": "/players/us/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Chris Richards",
-   "position": "Defesa",
-   "number": "26",
-   "desc": "Christopher Jeffrey Richards (born March 28, 2000) is an American professional soccer player who plays as a center-back for Premier League club Crystal Palace. He also represents the United States national team.",
-   "photo": "/players/us/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Christian Pulisic",
-   "position": "Ataque",
-   "number": "11",
-   "desc": "Christian Mate Pulisic (/ˈmɑːteɪ pəˈlɪsɪk, ˈpʊlɪʃɪtʃ/; Croatian: Pulišić, pronounced ; born September 18, 1998) is an American professional soccer player who plays as a winger or an attacking midfielder for Italian Serie A club Milan and the United States national team. Due to his high level of play along with his nationality, he has been…",
-   "photo": "/players/us/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Cristian Roldan",
-   "position": "Meio",
-   "number": "7",
-   "desc": "Cristian Roldan (born June 3, 1995) is an American professional soccer player, who currently plays as a midfielder for Seattle Sounders FC in Major League Soccer. Career College and Amateur Roldan was named the 2013 Gatorade National Player of the Year in soccer while attending El Rancho High School in Pico Rivera, California. Roldan spen…",
-   "photo": "/players/us/9.png"
-  },
-  {
-   "id": 10,
-   "name": "Folarin Balogun",
-   "position": "Ataque",
-   "number": "9",
-   "desc": "Folarin Jerry Balogun (born July 3, 2001) is an American professional soccer player who plays as a striker for Ligue 1 club Monaco and the United States national team. A Hale's End academy prospect of Arsenal, Balogun was promoted to the first team in 2020 and featured sparingly for the club, later going on loan to EFL Championship side M…",
-   "photo": "/players/us/10.png"
-  }
- ],
- "ma": [
-  {
-   "id": 1,
-   "name": "Abde Ezzalzouli",
-   "position": "Meio",
-   "number": "10",
-   "desc": "Abdessamad \"Abde\" Ezzalzouli (born 17 December 2001), sometimes known as Ez Abde, is a Moroccan professional footballer who plays as a winger for La Liga club Real Betis and the Morocco national team. Ezzalzouli made his international debut in 2022, after previously being capped by the nation's youth teams at under-20 level. He was chosen…",
-   "photo": "/players/ma/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Achraf Hakimi",
-   "position": "Meio",
-   "number": "2",
-   "desc": "Achraf Hakimi Mouh (Arabic: أشرف حكيمي موح; born 4 November 1998) is a Moroccan professional footballer who plays as a right-back or right winger for Ligue 1 club Paris Saint-Germain and the Morocco national team. He is widely regarded as one of the best defenders in the world. Hakimi began playing for Real Madrid Castilla in 2016 and was…",
-   "photo": "/players/ma/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Ahmed Reda Tagnaouti",
-   "position": "Goleiro",
-   "number": "16",
-   "desc": "Ahmed Reda Tagnaouti (Arabic: أحمد رضا التكناوتي; born 5 April 1996) is a Moroccan professional footballer who plays as goalkeeper for Botola Pro club AS FAR and the Morocco national team.",
-   "photo": "/players/ma/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Anass Salah-Eddine",
-   "position": "Meio",
-   "number": "2",
-   "desc": "Anass Salah-Eddine (Arabic: أنس صلاح الدين; born 18 January 2002) is a professional footballer who plays as a left-back or left wing-back for Eredivisie club PSV, on loan from Serie A club Roma, and the Morocco national team.",
-   "photo": "/players/ma/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Ayoub El Kaabi",
-   "position": "Ataque",
-   "number": "9",
-   "desc": "Ayoub El Kaabi (Arabic: أَيُّوب الْكَعْبِيّ; born 25 June 1993) is a Moroccan professional footballer who plays as a striker for Super League Greece club Olympiacos and the Morocco national team. Born in Casablanca, El Kaabi left school at the age of 15 and worked as a carpenter, before he started his professional career playing for Racin…",
-   "photo": "/players/ma/5.png"
-  },
-  {
-   "id": 6,
-   "name": "Ayoube Amaimouni",
-   "position": "Ataque",
-   "number": "29",
-   "desc": "Ayoube Amaimouni-Echghouyabe (Arabic: أيوب أمايموني; born 30 November 2004) is a Spanish born Moroccan professional footballer who plays as a winger for German Bundesliga club Eintracht Frankfurt.",
-   "photo": "/players/ma/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Ayyoub Bouaddi",
-   "position": "Meio",
-   "number": "32",
-   "desc": "Ayyoub Bouaddi (born 2 October 2007) is a professional footballer who plays as a midfielder for Ligue 1 club Lille. Born in France, he represents Morocco at the international level. A former youth academy player of Creil, Bouaddi joined Lille in 2021. On 21 August 2023, he signed his first professional contract with the club until June 20…",
-   "photo": "/players/ma/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Azzedine Ounahi",
-   "position": "Meio",
-   "number": "18",
-   "desc": "Azzedine Ounahi (Arabic: عز الدين أوناحي, pronounced ; born 19 April 2000) is a Moroccan professional footballer who plays as a midfielder for La Liga club Girona and the Morocco national team. Ounahi made his international debut in 2022, after previously being capped by the nation's youth teams at under-20 level. He was chosen in Morocco…",
-   "photo": "/players/ma/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Bilal El Khannouss",
-   "position": "Meio",
-   "number": "11",
-   "desc": "Bilal El Khannouss (Arabic: بلال الخنوس; born 10 May 2004) is a professional footballer who plays as an attacking midfielder for Bundesliga club VfB Stuttgart and the Morocco national team.",
-   "photo": "/players/ma/9.png"
-  },
-  {
-   "id": 10,
-   "name": "Bono",
-   "position": "Goleiro",
-   "number": "37",
-   "desc": "Yassine Bounou (Arabic: ياسين بونو; born 4 April 1991), also known as Bono, is a Moroccan professional footballer who plays as a goalkeeper for Saudi Professional League club Al-Hilal and the Morocco national team. Bono began his youth career in Morocco, playing for Wydad AC. He spent most of his senior career in Spain, making over 150 La…",
-   "photo": "/players/ma/10.png"
-  }
- ],
- "jp": [
-  {
-   "id": 1,
-   "name": "Alec Anderson",
-   "position": "Meio",
-   "number": null,
-   "desc": null,
-   "photo": "/players/jp/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Austin Corbett",
-   "position": "Meio",
-   "number": null,
-   "desc": "Austin Corbett (born September 5, 1995) is an American football guard for the Carolina Panthers of the National Football League (NFL). Corbett played for Reed High School in Sparks, Nevada. Starting as a walk on, he played college football at Nevada.",
-   "photo": "/players/jp/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Brandon Shell",
-   "position": "Meio",
-   "number": "68",
-   "desc": "Brandon McArthur Shell (born February 6, 1992) is an American football offensive tackle for the Seattle Seahawks of the National Football League (NFL). He attended the University of South Carolina. He is the great nephew of former All-Pro tackle Art Shell. A native of Goose Creek, South Carolina, Shell attended Goose Creek High School, wh…",
-   "photo": "/players/jp/3.png"
-  },
-  {
-   "id": 4,
-   "name": "C.J. Gardner-Johnson",
-   "position": "Meio",
-   "number": "8",
-   "desc": "Chauncey \"C. J.\" Gardner-Johnson (né Gardner Jr.; born December 20, 1997) is an American professional football safety for the Houston Texans of the National Football League (NFL). He played college football for the Florida Gators and was selected by the New Orleans Saints in the fourth round of the 2019 NFL draft. He has also played for t…",
-   "photo": "/players/jp/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Chase Lundt",
-   "position": "Meio",
-   "number": "77",
-   "desc": null,
-   "photo": "/players/jp/5.png"
-  },
-  {
-   "id": 6,
-   "name": "Christian Benford",
-   "position": "Meio",
-   "number": "47",
-   "desc": "Christian Benford (born September 21, 2000) is an American football cornerback for the Buffalo Bills of the National Football League (NFL). He played college football at Villanova.",
-   "photo": "/players/jp/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Cole Bishop",
-   "position": "Meio",
-   "number": "24",
-   "desc": "Cole Bishop (born October 24, 2002) is an American professional football safety for the Buffalo Bills of the National Football League (NFL). He played college football for the Utah Utes. Early life Bishop attended Starr's Mill High School in Fayetteville, Georgia. He committed to the University of Utah to play college football. College ca…",
-   "photo": "/players/jp/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Connor McGovern",
-   "position": "Meio",
-   "number": "66",
-   "desc": "Connor James McGovern (born November 3, 1997) is an American football guard for the Dallas Cowboys of the National Football League (NFL). He was selected by the Cowboys in the third round of the 2019 NFL Draft. He played college football at Penn State. Early years McGovern attended Lake-Lehman High School. He received Wyoming Valley Footb…",
-   "photo": "/players/jp/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Dalton Kincaid",
-   "position": "Meio",
-   "number": null,
-   "desc": null,
-   "photo": "/players/jp/9.png"
-  },
-  {
-   "id": 10,
-   "name": "Damar Hamlin",
-   "position": "Meio",
-   "number": "3",
-   "desc": "Damar Romeyelle Hamlin (born March 24, 1998) is an American football safety for the Buffalo Bills of the National Football League (NFL). He played college football at Pittsburgh.",
-   "photo": "/players/jp/10.png"
-  }
- ],
- "co": [
-  {
-   "id": 1,
-   "name": "Bonke Innocent",
-   "position": "Meio",
-   "number": "8",
-   "desc": "Bonke Innocent (born 20 January 1996) is a Nigerian professional footballer who plays for as a midfielder for Ligue 1 club Lorient and the Nigeria national team.",
-   "photo": "/players/co/1.png"
-  },
-  {
-   "id": 2,
-   "name": "Emmanuel Dennis",
-   "position": "Ataque",
-   "number": null,
-   "desc": "Emmanuel Bonaventure Dennis (born 15 November 1997) is a Nigerian professional footballer who plays as a forward. He is currently a free agent having been released by Premier League club Nottingham Forest",
-   "photo": "/players/co/2.png"
-  },
-  {
-   "id": 3,
-   "name": "Fisayo Dele-Bashiru",
-   "position": "Defesa",
-   "number": "7",
-   "desc": "Oluwafisayo Faruq \"Fisayo\" Dele-Bashiru (born 6 February 2001) is a Nigerian professional footballer who plays as a midfielder for Serie A club Lazio and the Nigeria national team.",
-   "photo": "/players/co/3.png"
-  },
-  {
-   "id": 4,
-   "name": "Frank Onyeka",
-   "position": "Meio",
-   "number": "16",
-   "desc": "Ogochukwu Franklin Onyeka(born 1 January 1998) is a Nigerian professional footballer who plays as a defensive midfielder for EFL Championship club Coventry City, on loan from Brentford, and the Nigeria national team.",
-   "photo": "/players/co/4.png"
-  },
-  {
-   "id": 5,
-   "name": "Josh Maja",
-   "position": "Ataque",
-   "number": "9",
-   "desc": "Joshua Erowoli Orisunmibare Oluwaseun Maja (born 27 December 1998) is a professional footballer who plays as a striker for West Bromwich Albion, he played one match for the Nigeria national team in 2019. He played youth football with Crystal Palace, Fulham and Manchester City and began his professional career with Sunderland, making 49 ap…",
-   "photo": "/players/co/5.png"
-  },
-  {
-   "id": 6,
-   "name": "Kelechi Nwakali",
-   "position": "Meio",
-   "number": "50",
-   "desc": "Kelechi Nwakali (; born 5 June 1998) is a Nigerian professional footballer who plays as a midfielder for EFL League One club Barnsley.",
-   "photo": "/players/co/6.png"
-  },
-  {
-   "id": 7,
-   "name": "Maduka Okoye",
-   "position": "Goleiro",
-   "number": "40",
-   "desc": "Maduka Emilio Okoye (born 28 August 1999) is a professional footballer who plays as a goalkeeper for Serie A club Udinese. Born in Germany, he plays for the Nigeria national team.",
-   "photo": "/players/co/7.png"
-  },
-  {
-   "id": 8,
-   "name": "Paul Onuachu",
-   "position": "Ataque",
-   "number": "30",
-   "desc": "Ebere Paul Onuachu MON listenⓘ (born 28 May 1994) is a Nigerian professional footballer who plays as a striker for Süper Lig club Trabzonspor and the Nigeria national team. Onuachu has won League titles in Denmark and Belgium, and while in the latter country was voted Belgian Footballer of the Year and won the country's top scoring Golden…",
-   "photo": "/players/co/8.png"
-  },
-  {
-   "id": 9,
-   "name": "Ryan Alebiosu",
-   "position": "Defesa",
-   "number": "2",
-   "desc": "Ryan Alebiosu (born 17 December 2001) is a professional footballer who plays as a right back for EFL Championship club Blackburn Rovers. Born in England, he represents Nigeria at international level.",
-   "photo": "/players/co/9.png"
-  },
-  {
-   "id": 10,
-   "name": "Victor Osimhen",
-   "position": "Ataque",
-   "number": "45",
-   "desc": "Victor James Osimhen MFR (born 29 December 1998) is a Nigerian professional footballer who plays as a striker for Galatasaray on loan from Serie A club Napoli and the Nigeria national team. Considered one of the best strikers in the world, he is known for his elite finishing, pace, strength and athleticism. Born in Nigeria, Osimhen began …",
-   "photo": "/players/co/10.png"
-  }
- ]
+ "mx": {
+  "name": "México",
+  "players": [
+   {
+    "id": 1,
+    "apifId": 35769,
+    "name": "C. Acevedo",
+    "position": "Goleiro",
+    "number": "12",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/35769.png"
+   },
+   {
+    "id": 2,
+    "apifId": 2098,
+    "name": "G. Ochoa",
+    "position": "Goleiro",
+    "number": "13",
+    "age": 40,
+    "photo": "https://media.api-sports.io/football/players/2098.png"
+   },
+   {
+    "id": 3,
+    "apifId": 270774,
+    "name": "J. Rangel",
+    "position": "Goleiro",
+    "number": "1",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/270774.png"
+   },
+   {
+    "id": 4,
+    "apifId": 2881,
+    "name": "J. Gallardo",
+    "position": "Defesa",
+    "number": "23",
+    "age": 31,
+    "photo": "https://media.api-sports.io/football/players/2881.png"
+   },
+   {
+    "id": 5,
+    "apifId": 2873,
+    "name": "C. Montes",
+    "position": "Defesa",
+    "number": "3",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/2873.png"
+   },
+   {
+    "id": 6,
+    "apifId": 127227,
+    "name": "I. Reyes",
+    "position": "Defesa",
+    "number": "15",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/127227.png"
+   },
+   {
+    "id": 7,
+    "apifId": 2878,
+    "name": "J. Sánchez",
+    "position": "Defesa",
+    "number": "2",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/2878.png"
+   },
+   {
+    "id": 8,
+    "apifId": 35544,
+    "name": "J. Vásquez",
+    "position": "Defesa",
+    "number": "5",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/35544.png"
+   },
+   {
+    "id": 9,
+    "apifId": 2869,
+    "name": "E. Álvarez",
+    "position": "Defesa",
+    "number": "4",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/2869.png"
+   },
+   {
+    "id": 10,
+    "apifId": 390002,
+    "name": "M. Chávez",
+    "position": "Defesa",
+    "number": "20",
+    "age": 21,
+    "photo": "https://media.api-sports.io/football/players/390002.png"
+   },
+   {
+    "id": 11,
+    "apifId": 313383,
+    "name": "O. Vargas",
+    "position": "Meio",
+    "number": "18",
+    "age": 20,
+    "photo": "https://media.api-sports.io/football/players/313383.png"
+   },
+   {
+    "id": 12,
+    "apifId": 35690,
+    "name": "L. Chávez",
+    "position": "Meio",
+    "number": "24",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/35690.png"
+   },
+   {
+    "id": 13,
+    "apifId": 750,
+    "name": "Álvaro Fidalgo",
+    "position": "Meio",
+    "number": "8",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/750.png"
+   },
+   {
+    "id": 14,
+    "apifId": 212233,
+    "name": "B. Gutiérrez",
+    "position": "Meio",
+    "number": "26",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/212233.png"
+   },
+   {
+    "id": 15,
+    "apifId": 266345,
+    "name": "É. Lira",
+    "position": "Meio",
+    "number": "6",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/266345.png"
+   },
+   {
+    "id": 16,
+    "apifId": 482605,
+    "name": "G. Mora",
+    "position": "Meio",
+    "number": "19",
+    "age": 17,
+    "photo": "https://media.api-sports.io/football/players/482605.png"
+   },
+   {
+    "id": 17,
+    "apifId": 35576,
+    "name": "O. Pineda",
+    "position": "Meio",
+    "number": "17",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/35576.png"
+   },
+   {
+    "id": 18,
+    "apifId": 35970,
+    "name": "L. Romo",
+    "position": "Meio",
+    "number": "7",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/35970.png"
+   },
+   {
+    "id": 19,
+    "apifId": 2879,
+    "name": "R. Alvarado",
+    "position": "Ataque",
+    "number": "25",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/2879.png"
+   },
+   {
+    "id": 20,
+    "apifId": 94562,
+    "name": "S. Giménez",
+    "position": "Ataque",
+    "number": "11",
+    "age": 24,
+    "photo": "https://media.api-sports.io/football/players/94562.png"
+   },
+   {
+    "id": 21,
+    "apifId": 291713,
+    "name": "A. González",
+    "position": "Ataque",
+    "number": "14",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/291713.png"
+   },
+   {
+    "id": 22,
+    "apifId": 36111,
+    "name": "C. Huerta",
+    "position": "Meio",
+    "number": "21",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/36111.png"
+   },
+   {
+    "id": 23,
+    "apifId": 2887,
+    "name": "R. Jiménez",
+    "position": "Ataque",
+    "number": "9",
+    "age": 34,
+    "photo": "https://media.api-sports.io/football/players/2887.png"
+   },
+   {
+    "id": 24,
+    "apifId": 36088,
+    "name": "G. Martínez",
+    "position": "Ataque",
+    "number": "22",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/36088.png"
+   },
+   {
+    "id": 25,
+    "apifId": 35532,
+    "name": "J. Quiñones",
+    "position": "Meio",
+    "number": "16",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/35532.png"
+   },
+   {
+    "id": 26,
+    "apifId": 2889,
+    "name": "A. Vega",
+    "position": "Ataque",
+    "number": "10",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/2889.png"
+   }
+  ]
+ },
+ "za": {
+  "name": "África do Sul",
+  "players": [
+   {
+    "id": 1,
+    "apifId": 46417,
+    "name": "S. Chaine",
+    "position": "Goleiro",
+    "number": "16",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/46417.png"
+   },
+   {
+    "id": 2,
+    "apifId": 46245,
+    "name": "R. Goss",
+    "position": "Goleiro",
+    "number": "22",
+    "age": 31,
+    "photo": "https://media.api-sports.io/football/players/46245.png"
+   },
+   {
+    "id": 3,
+    "apifId": 3275,
+    "name": "R. Williams",
+    "position": "Goleiro",
+    "number": "1",
+    "age": 33,
+    "photo": "https://media.api-sports.io/football/players/3275.png"
+   },
+   {
+    "id": 4,
+    "apifId": 163041,
+    "name": "B. Cross",
+    "position": "Defesa",
+    "number": "26",
+    "age": 24,
+    "photo": "https://media.api-sports.io/football/players/163041.png"
+   },
+   {
+    "id": 5,
+    "apifId": 430078,
+    "name": "S. Kabini",
+    "position": "Defesa",
+    "number": "18",
+    "age": 21,
+    "photo": "https://media.api-sports.io/football/players/430078.png"
+   },
+   {
+    "id": 6,
+    "apifId": 392387,
+    "name": "O. Makhanya",
+    "position": "Defesa",
+    "number": "24",
+    "age": 21,
+    "photo": "https://media.api-sports.io/football/players/392387.png"
+   },
+   {
+    "id": 7,
+    "apifId": 510799,
+    "name": "M. Mbokazi",
+    "position": "Defesa",
+    "number": "14",
+    "age": 20,
+    "photo": "https://media.api-sports.io/football/players/510799.png"
+   },
+   {
+    "id": 8,
+    "apifId": 46334,
+    "name": "A. Modiba",
+    "position": "Defesa",
+    "number": "6",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/46334.png"
+   },
+   {
+    "id": 9,
+    "apifId": 46601,
+    "name": "K. Mudau",
+    "position": "Defesa",
+    "number": "20",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/46601.png"
+   },
+   {
+    "id": 10,
+    "apifId": 474630,
+    "name": "K. Ndamane",
+    "position": "Defesa",
+    "number": "3",
+    "age": 21,
+    "photo": "https://media.api-sports.io/football/players/474630.png"
+   },
+   {
+    "id": 11,
+    "apifId": 406752,
+    "name": "I. Okon",
+    "position": "Defesa",
+    "number": "21",
+    "age": 21,
+    "photo": "https://media.api-sports.io/football/players/406752.png"
+   },
+   {
+    "id": 12,
+    "apifId": 46458,
+    "name": "N. Sibisi",
+    "position": "Defesa",
+    "number": "19",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/46458.png"
+   },
+   {
+    "id": 13,
+    "apifId": 330174,
+    "name": "T. Matuludi",
+    "position": "Defesa",
+    "number": "2",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/330174.png"
+   },
+   {
+    "id": 14,
+    "apifId": 268710,
+    "name": "J. Adams",
+    "position": "Meio",
+    "number": "23",
+    "age": 24,
+    "photo": "https://media.api-sports.io/football/players/268710.png"
+   },
+   {
+    "id": 15,
+    "apifId": 194430,
+    "name": "T. Mbatha",
+    "position": "Meio",
+    "number": "5",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/194430.png"
+   },
+   {
+    "id": 16,
+    "apifId": 3287,
+    "name": "T. Mokoena",
+    "position": "Meio",
+    "number": "4",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/3287.png"
+   },
+   {
+    "id": 17,
+    "apifId": 158433,
+    "name": "S. Sithole",
+    "position": "Meio",
+    "number": "13",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/158433.png"
+   },
+   {
+    "id": 18,
+    "apifId": 3289,
+    "name": "T. Zwane",
+    "position": "Meio",
+    "number": "11",
+    "age": 36,
+    "photo": "https://media.api-sports.io/football/players/3289.png"
+   },
+   {
+    "id": 19,
+    "apifId": 179893,
+    "name": "O. Appollis",
+    "position": "Ataque",
+    "number": "7",
+    "age": 24,
+    "photo": "https://media.api-sports.io/football/players/179893.png"
+   },
+   {
+    "id": 20,
+    "apifId": 98936,
+    "name": "L. Foster",
+    "position": "Ataque",
+    "number": "9",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/98936.png"
+   },
+   {
+    "id": 21,
+    "apifId": 201354,
+    "name": "E. Makgopa",
+    "position": "Ataque",
+    "number": "99",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/201354.png"
+   },
+   {
+    "id": 22,
+    "apifId": 354831,
+    "name": "T. Maseko",
+    "position": "Ataque",
+    "number": "12",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/354831.png"
+   },
+   {
+    "id": 23,
+    "apifId": 414149,
+    "name": "R. Mofokeng",
+    "position": "Ataque",
+    "number": "10",
+    "age": 21,
+    "photo": "https://media.api-sports.io/football/players/414149.png"
+   },
+   {
+    "id": 24,
+    "apifId": 295977,
+    "name": "T. Moremi",
+    "position": "Meio",
+    "number": "8",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/295977.png"
+   },
+   {
+    "id": 25,
+    "apifId": 127429,
+    "name": "I. Rayners",
+    "position": "Ataque",
+    "number": "15",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/127429.png"
+   },
+   {
+    "id": 26,
+    "apifId": 359561,
+    "name": "K. Sebelebele",
+    "position": "Meio",
+    "number": "25",
+    "age": 23,
+    "photo": "https://media.api-sports.io/football/players/359561.png"
+   }
+  ]
+ },
+ "kr": {
+  "name": "Coreia do Sul",
+  "players": [
+   {
+    "id": 1,
+    "apifId": 2890,
+    "name": "Jo Hyeon-Woo",
+    "position": "Goleiro",
+    "number": "21",
+    "age": 34,
+    "photo": "https://media.api-sports.io/football/players/2890.png"
+   },
+   {
+    "id": 2,
+    "apifId": 2892,
+    "name": "Kim Seung-Gyu",
+    "position": "Goleiro",
+    "number": "1",
+    "age": 35,
+    "photo": "https://media.api-sports.io/football/players/2892.png"
+   },
+   {
+    "id": 3,
+    "apifId": 34374,
+    "name": "Song Bum-Keun",
+    "position": "Goleiro",
+    "number": "12",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/34374.png"
+   },
+   {
+    "id": 4,
+    "apifId": 547307,
+    "name": "Cho Wi-Je",
+    "position": "Defesa",
+    "number": "14",
+    "age": 24,
+    "photo": "https://media.api-sports.io/football/players/547307.png"
+   },
+   {
+    "id": 5,
+    "apifId": 2897,
+    "name": "Kim Min-Jae",
+    "position": "Defesa",
+    "number": "4",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/2897.png"
+   },
+   {
+    "id": 6,
+    "apifId": 2912,
+    "name": "Kim Moon-Hwan",
+    "position": "Meio",
+    "number": "15",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/2912.png"
+   },
+   {
+    "id": 7,
+    "apifId": 34418,
+    "name": "Kim Tae-Hyeon",
+    "position": "Defesa",
+    "number": "5",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/34418.png"
+   },
+   {
+    "id": 8,
+    "apifId": 237218,
+    "name": "Lee Han-Beom",
+    "position": "Defesa",
+    "number": "2",
+    "age": 23,
+    "photo": "https://media.api-sports.io/football/players/237218.png"
+   },
+   {
+    "id": 9,
+    "apifId": 99211,
+    "name": "Park Jin-Seop",
+    "position": "Meio",
+    "number": "16",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/99211.png"
+   },
+   {
+    "id": 10,
+    "apifId": 237220,
+    "name": "Lee Tae-Seok",
+    "position": "Meio",
+    "number": "13",
+    "age": 23,
+    "photo": "https://media.api-sports.io/football/players/237220.png"
+   },
+   {
+    "id": 11,
+    "apifId": 197985,
+    "name": "Seol Young-Woo",
+    "position": "Meio",
+    "number": "22",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/197985.png"
+   },
+   {
+    "id": 12,
+    "apifId": 280358,
+    "name": "J. Castrop",
+    "position": "Meio",
+    "number": "23",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/280358.png"
+   },
+   {
+    "id": 13,
+    "apifId": 304951,
+    "name": "Lee Gi-Hyuk",
+    "position": "Defesa",
+    "number": "3",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/304951.png"
+   },
+   {
+    "id": 14,
+    "apifId": 357286,
+    "name": "Bae Jun-Ho",
+    "position": "Ataque",
+    "number": "17",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/357286.png"
+   },
+   {
+    "id": 15,
+    "apifId": 237050,
+    "name": "Eom Ji-Sung",
+    "position": "Ataque",
+    "number": "25",
+    "age": 23,
+    "photo": "https://media.api-sports.io/football/players/237050.png"
+   },
+   {
+    "id": 16,
+    "apifId": 2901,
+    "name": "Hwang In-Beom",
+    "position": "Meio",
+    "number": "6",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/2901.png"
+   },
+   {
+    "id": 17,
+    "apifId": 34168,
+    "name": "Kim Jin-Gyu",
+    "position": "Meio",
+    "number": "24",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/34168.png"
+   },
+   {
+    "id": 18,
+    "apifId": 34431,
+    "name": "Lee Dong-Gyeong",
+    "position": "Ataque",
+    "number": "26",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/34431.png"
+   },
+   {
+    "id": 19,
+    "apifId": 2906,
+    "name": "Lee Jae-Sung",
+    "position": "Ataque",
+    "number": "10",
+    "age": 33,
+    "photo": "https://media.api-sports.io/football/players/2906.png"
+   },
+   {
+    "id": 20,
+    "apifId": 927,
+    "name": "Lee Kang-In",
+    "position": "Ataque",
+    "number": "19",
+    "age": 24,
+    "photo": "https://media.api-sports.io/football/players/927.png"
+   },
+   {
+    "id": 21,
+    "apifId": 2909,
+    "name": "Paik Seung-Ho",
+    "position": "Meio",
+    "number": "8",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/2909.png"
+   },
+   {
+    "id": 22,
+    "apifId": 304958,
+    "name": "Yang Hyun-Jun",
+    "position": "Ataque",
+    "number": "20",
+    "age": 23,
+    "photo": "https://media.api-sports.io/football/players/304958.png"
+   },
+   {
+    "id": 23,
+    "apifId": 24888,
+    "name": "Hwang Hee-Chan",
+    "position": "Ataque",
+    "number": "11",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/24888.png"
+   },
+   {
+    "id": 24,
+    "apifId": 34211,
+    "name": "Cho Gue-Sung",
+    "position": "Ataque",
+    "number": "9",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/34211.png"
+   },
+   {
+    "id": 25,
+    "apifId": 34710,
+    "name": "Oh Hyeon-Gyu",
+    "position": "Ataque",
+    "number": "18",
+    "age": 24,
+    "photo": "https://media.api-sports.io/football/players/34710.png"
+   },
+   {
+    "id": 26,
+    "apifId": 186,
+    "name": "Son Heung-Min",
+    "position": "Ataque",
+    "number": "7",
+    "age": 33,
+    "photo": "https://media.api-sports.io/football/players/186.png"
+   }
+  ]
+ },
+ "cz": {
+  "name": "República Tcheca",
+  "players": [
+   {
+    "id": 1,
+    "apifId": 269349,
+    "name": "L. Hornícek",
+    "position": "Goleiro",
+    "number": "23",
+    "age": 23,
+    "photo": "https://media.api-sports.io/football/players/269349.png"
+   },
+   {
+    "id": 2,
+    "apifId": 138804,
+    "name": "M. Kovár",
+    "position": "Goleiro",
+    "number": "1",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/138804.png"
+   },
+   {
+    "id": 3,
+    "apifId": 66347,
+    "name": "J. Stanek",
+    "position": "Goleiro",
+    "number": "16",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/66347.png"
+   },
+   {
+    "id": 4,
+    "apifId": 337740,
+    "name": "S. Chaloupek",
+    "position": "Defesa",
+    "number": "6",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/337740.png"
+   },
+   {
+    "id": 5,
+    "apifId": 1231,
+    "name": "V. Coufal",
+    "position": "Meio",
+    "number": "5",
+    "age": 33,
+    "photo": "https://media.api-sports.io/football/players/1231.png"
+   },
+   {
+    "id": 6,
+    "apifId": 2252,
+    "name": "T. Holes",
+    "position": "Defesa",
+    "number": "3",
+    "age": 32,
+    "photo": "https://media.api-sports.io/football/players/2252.png"
+   },
+   {
+    "id": 7,
+    "apifId": 162964,
+    "name": "R. Hranác",
+    "position": "Defesa",
+    "number": "4",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/162964.png"
+   },
+   {
+    "id": 8,
+    "apifId": 128793,
+    "name": "D. Jurásek",
+    "position": "Defesa",
+    "number": "14",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/128793.png"
+   },
+   {
+    "id": 9,
+    "apifId": 66407,
+    "name": "L. Krejcí",
+    "position": "Defesa",
+    "number": "7",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/66407.png"
+   },
+   {
+    "id": 10,
+    "apifId": 1237,
+    "name": "J. Zelený",
+    "position": "Meio",
+    "number": "20",
+    "age": 33,
+    "photo": "https://media.api-sports.io/football/players/1237.png"
+   },
+   {
+    "id": 11,
+    "apifId": 128772,
+    "name": "D. Zima",
+    "position": "Defesa",
+    "number": "2",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/128772.png"
+   },
+   {
+    "id": 12,
+    "apifId": 66214,
+    "name": "D. Doudera",
+    "position": "Meio",
+    "number": "21",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/66214.png"
+   },
+   {
+    "id": 13,
+    "apifId": 162194,
+    "name": "L. Cerv",
+    "position": "Meio",
+    "number": "12",
+    "age": 24,
+    "photo": "https://media.api-sports.io/football/players/162194.png"
+   },
+   {
+    "id": 14,
+    "apifId": 25348,
+    "name": "V. Darida",
+    "position": "Meio",
+    "number": "8",
+    "age": 35,
+    "photo": "https://media.api-sports.io/football/players/25348.png"
+   },
+   {
+    "id": 15,
+    "apifId": 66353,
+    "name": "L. Provod",
+    "position": "Ataque",
+    "number": "17",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/66353.png"
+   },
+   {
+    "id": 16,
+    "apifId": 241,
+    "name": "M. Sadílek",
+    "position": "Meio",
+    "number": "18",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/241.png"
+   },
+   {
+    "id": 17,
+    "apifId": 555437,
+    "name": "H. Sochurek",
+    "position": "Meio",
+    "number": "25",
+    "age": 17,
+    "photo": "https://media.api-sports.io/football/players/555437.png"
+   },
+   {
+    "id": 18,
+    "apifId": 386837,
+    "name": "A. Sojka",
+    "position": "Meio",
+    "number": "24",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/386837.png"
+   },
+   {
+    "id": 19,
+    "apifId": 1243,
+    "name": "T. Soucek",
+    "position": "Meio",
+    "number": "22",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/1243.png"
+   },
+   {
+    "id": 20,
+    "apifId": 66387,
+    "name": "P. Sulc",
+    "position": "Ataque",
+    "number": "15",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/66387.png"
+   },
+   {
+    "id": 21,
+    "apifId": 818,
+    "name": "T. Chorý",
+    "position": "Ataque",
+    "number": "19",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/818.png"
+   },
+   {
+    "id": 22,
+    "apifId": 66275,
+    "name": "M. Chytil",
+    "position": "Ataque",
+    "number": "13",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/66275.png"
+   },
+   {
+    "id": 23,
+    "apifId": 66019,
+    "name": "A. Hlozek",
+    "position": "Ataque",
+    "number": "9",
+    "age": 23,
+    "photo": "https://media.api-sports.io/football/players/66019.png"
+   },
+   {
+    "id": 24,
+    "apifId": 66340,
+    "name": "J. Kuchta",
+    "position": "Ataque",
+    "number": "11",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/66340.png"
+   },
+   {
+    "id": 25,
+    "apifId": 794,
+    "name": "P. Schick",
+    "position": "Ataque",
+    "number": "10",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/794.png"
+   },
+   {
+    "id": 26,
+    "apifId": 290212,
+    "name": "D. Visinský",
+    "position": "Meio",
+    "number": "26",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/290212.png"
+   }
+  ]
+ },
+ "ca": {
+  "name": "Canadá",
+  "players": [
+   {
+    "id": 1,
+    "apifId": 51274,
+    "name": "M. Crépeau",
+    "position": "Goleiro",
+    "number": "16",
+    "age": 31,
+    "photo": "https://media.api-sports.io/football/players/51274.png"
+   },
+   {
+    "id": 2,
+    "apifId": 284554,
+    "name": "O. Goodman",
+    "position": "Goleiro",
+    "number": "18",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/284554.png"
+   },
+   {
+    "id": 3,
+    "apifId": 51148,
+    "name": "D. St. Clair",
+    "position": "Goleiro",
+    "number": "1",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/51148.png"
+   },
+   {
+    "id": 4,
+    "apifId": 51295,
+    "name": "D. Cornelius",
+    "position": "Defesa",
+    "number": "13",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/51295.png"
+   },
+   {
+    "id": 5,
+    "apifId": 327738,
+    "name": "L. De Fougerolles",
+    "position": "Defesa",
+    "number": "4",
+    "age": 20,
+    "photo": "https://media.api-sports.io/football/players/327738.png"
+   },
+   {
+    "id": 6,
+    "apifId": 50816,
+    "name": "R. Laryea",
+    "position": "Defesa",
+    "number": "22",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/50816.png"
+   },
+   {
+    "id": 7,
+    "apifId": 78494,
+    "name": "J. Waterman",
+    "position": "Defesa",
+    "number": "5",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/78494.png"
+   },
+   {
+    "id": 8,
+    "apifId": 78547,
+    "name": "A. Johnston",
+    "position": "Defesa",
+    "number": "2",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/78547.png"
+   },
+   {
+    "id": 9,
+    "apifId": 18938,
+    "name": "A. Jones",
+    "position": "Defesa",
+    "number": "3",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/18938.png"
+   },
+   {
+    "id": 10,
+    "apifId": 407017,
+    "name": "M. Bombito",
+    "position": "Defesa",
+    "number": "15",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/407017.png"
+   },
+   {
+    "id": 11,
+    "apifId": 509,
+    "name": "A. Davies",
+    "position": "Defesa",
+    "number": "19",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/509.png"
+   },
+   {
+    "id": 12,
+    "apifId": 416901,
+    "name": "N. Sigur",
+    "position": "Meio",
+    "number": "23",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/416901.png"
+   },
+   {
+    "id": 13,
+    "apifId": 50826,
+    "name": "J. Shaffelburg",
+    "position": "Meio",
+    "number": "14",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/50826.png"
+   },
+   {
+    "id": 14,
+    "apifId": 44798,
+    "name": "L. Millar",
+    "position": "Meio",
+    "number": "11",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/44798.png"
+   },
+   {
+    "id": 15,
+    "apifId": 50788,
+    "name": "M. Choinière",
+    "position": "Meio",
+    "number": "6",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/50788.png"
+   },
+   {
+    "id": 16,
+    "apifId": 35570,
+    "name": "S. Eustáquio",
+    "position": "Meio",
+    "number": "7",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/35570.png"
+   },
+   {
+    "id": 17,
+    "apifId": 328046,
+    "name": "I. Koné",
+    "position": "Meio",
+    "number": "8",
+    "age": 23,
+    "photo": "https://media.api-sports.io/football/players/328046.png"
+   },
+   {
+    "id": 18,
+    "apifId": 50817,
+    "name": "J. Osorio",
+    "position": "Meio",
+    "number": "21",
+    "age": 33,
+    "photo": "https://media.api-sports.io/football/players/50817.png"
+   },
+   {
+    "id": 19,
+    "apifId": 294824,
+    "name": "N. Saliba",
+    "position": "Meio",
+    "number": "25",
+    "age": 21,
+    "photo": "https://media.api-sports.io/football/players/294824.png"
+   },
+   {
+    "id": 20,
+    "apifId": 193279,
+    "name": "J. Nelson",
+    "position": "Ataque",
+    "number": "26",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/193279.png"
+   },
+   {
+    "id": 21,
+    "apifId": 51016,
+    "name": "T. Buchanan",
+    "position": "Meio",
+    "number": "17",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/51016.png"
+   },
+   {
+    "id": 22,
+    "apifId": 8489,
+    "name": "J. David",
+    "position": "Ataque",
+    "number": "10",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/8489.png"
+   },
+   {
+    "id": 23,
+    "apifId": 313353,
+    "name": "P. David",
+    "position": "Ataque",
+    "number": "24",
+    "age": 24,
+    "photo": "https://media.api-sports.io/football/players/313353.png"
+   },
+   {
+    "id": 24,
+    "apifId": 2001,
+    "name": "C. Larin",
+    "position": "Ataque",
+    "number": "9",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/2001.png"
+   },
+   {
+    "id": 25,
+    "apifId": 362145,
+    "name": "A. Ahmed",
+    "position": "Meio",
+    "number": "20",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/362145.png"
+   },
+   {
+    "id": 26,
+    "apifId": 351587,
+    "name": "T. Oluwaseyi",
+    "position": "Ataque",
+    "number": "12",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/351587.png"
+   }
+  ]
+ },
+ "ba": {
+  "name": "Bósnia e Herzegovina",
+  "players": [
+   {
+    "id": 1,
+    "apifId": 446130,
+    "name": "M. Jurkas",
+    "position": "Goleiro",
+    "number": "12",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/446130.png"
+   },
+   {
+    "id": 2,
+    "apifId": 9026,
+    "name": "N. Vasilj",
+    "position": "Goleiro",
+    "number": "1",
+    "age": 30,
+    "photo": "https://media.api-sports.io/football/players/9026.png"
+   },
+   {
+    "id": 3,
+    "apifId": 108370,
+    "name": "M. Zlomislic",
+    "position": "Goleiro",
+    "number": "22",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/108370.png"
+   },
+   {
+    "id": 4,
+    "apifId": 409670,
+    "name": "A. Malic",
+    "position": "Defesa",
+    "number": "24",
+    "age": 19,
+    "photo": "https://media.api-sports.io/football/players/409670.png"
+   },
+   {
+    "id": 5,
+    "apifId": 7318,
+    "name": "A. Dedic",
+    "position": "Defesa",
+    "number": "7",
+    "age": 23,
+    "photo": "https://media.api-sports.io/football/players/7318.png"
+   },
+   {
+    "id": 6,
+    "apifId": 53517,
+    "name": "D. Hadzikadunic",
+    "position": "Defesa",
+    "number": "3",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/53517.png"
+   },
+   {
+    "id": 7,
+    "apifId": 1741,
+    "name": "N. Katic",
+    "position": "Defesa",
+    "number": "18",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/1741.png"
+   },
+   {
+    "id": 8,
+    "apifId": 1442,
+    "name": "S. Kolasinac",
+    "position": "Defesa",
+    "number": "5",
+    "age": 32,
+    "photo": "https://media.api-sports.io/football/players/1442.png"
+   },
+   {
+    "id": 9,
+    "apifId": 271350,
+    "name": "T. Muharemovic",
+    "position": "Defesa",
+    "number": "4",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/271350.png"
+   },
+   {
+    "id": 10,
+    "apifId": 76867,
+    "name": "N. Mujakic",
+    "position": "Defesa",
+    "number": "2",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/76867.png"
+   },
+   {
+    "id": 11,
+    "apifId": 14301,
+    "name": "S. Radeljic",
+    "position": "Defesa",
+    "number": "21",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/14301.png"
+   },
+   {
+    "id": 12,
+    "apifId": 162222,
+    "name": "I. Basic",
+    "position": "Meio",
+    "number": "13",
+    "age": 23,
+    "photo": "https://media.api-sports.io/football/players/162222.png"
+   },
+   {
+    "id": 13,
+    "apifId": 70514,
+    "name": "A. Gigovic",
+    "position": "Meio",
+    "number": "8",
+    "age": 23,
+    "photo": "https://media.api-sports.io/football/players/70514.png"
+   },
+   {
+    "id": 14,
+    "apifId": 50006,
+    "name": "A. Hadziahmetovic",
+    "position": "Meio",
+    "number": "16",
+    "age": 28,
+    "photo": "https://media.api-sports.io/football/players/50006.png"
+   },
+   {
+    "id": 15,
+    "apifId": 340173,
+    "name": "Ermin Mahmic",
+    "position": "Meio",
+    "number": "26",
+    "age": 20,
+    "photo": "https://media.api-sports.io/football/players/340173.png"
+   },
+   {
+    "id": 16,
+    "apifId": 1324,
+    "name": "I. Sunjic",
+    "position": "Meio",
+    "number": "14",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/1324.png"
+   },
+   {
+    "id": 17,
+    "apifId": 264094,
+    "name": "B. Tahirovic",
+    "position": "Meio",
+    "number": "6",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/264094.png"
+   },
+   {
+    "id": 18,
+    "apifId": 322101,
+    "name": "A. Memic",
+    "position": "Meio",
+    "number": "15",
+    "age": 24,
+    "photo": "https://media.api-sports.io/football/players/322101.png"
+   },
+   {
+    "id": 19,
+    "apifId": 25129,
+    "name": "D. Burnic",
+    "position": "Meio",
+    "number": "17",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/25129.png"
+   },
+   {
+    "id": 20,
+    "apifId": 395559,
+    "name": "Kerim-Sam Alajbegovic",
+    "position": "Meio",
+    "number": "19",
+    "age": 18,
+    "photo": "https://media.api-sports.io/football/players/395559.png"
+   },
+   {
+    "id": 21,
+    "apifId": 329409,
+    "name": "E. Bajraktarevic",
+    "position": "Meio",
+    "number": "20",
+    "age": 20,
+    "photo": "https://media.api-sports.io/football/players/329409.png"
+   },
+   {
+    "id": 22,
+    "apifId": 314377,
+    "name": "S. Bazdar",
+    "position": "Ataque",
+    "number": "9",
+    "age": 21,
+    "photo": "https://media.api-sports.io/football/players/314377.png"
+   },
+   {
+    "id": 23,
+    "apifId": 46930,
+    "name": "E. Demirovic",
+    "position": "Ataque",
+    "number": "10",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/46930.png"
+   },
+   {
+    "id": 24,
+    "apifId": 790,
+    "name": "E. Dzeko",
+    "position": "Ataque",
+    "number": "11",
+    "age": 39,
+    "photo": "https://media.api-sports.io/football/players/790.png"
+   },
+   {
+    "id": 25,
+    "apifId": 77037,
+    "name": "J. Lukic",
+    "position": "Ataque",
+    "number": "25",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/77037.png"
+   },
+   {
+    "id": 26,
+    "apifId": 28382,
+    "name": "H. Tabakovic",
+    "position": "Ataque",
+    "number": "23",
+    "age": 31,
+    "photo": "https://media.api-sports.io/football/players/28382.png"
+   }
+  ]
+ },
+ "qa": {
+  "name": "Catar",
+  "players": [
+   {
+    "id": 1,
+    "apifId": 42207,
+    "name": "Mahmud Abunada",
+    "position": "Goleiro",
+    "number": "1",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/42207.png"
+   },
+   {
+    "id": 2,
+    "apifId": 42021,
+    "name": "Meshaal Barsham",
+    "position": "Goleiro",
+    "number": "22",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/42021.png"
+   },
+   {
+    "id": 3,
+    "apifId": 136503,
+    "name": "Salah Zakaria",
+    "position": "Goleiro",
+    "number": "21",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/136503.png"
+   },
+   {
+    "id": 4,
+    "apifId": 175439,
+    "name": "Homam Ahmed",
+    "position": "Defesa",
+    "number": "14",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/175439.png"
+   },
+   {
+    "id": 5,
+    "apifId": 42060,
+    "name": "Sultan Al Braik",
+    "position": "Defesa",
+    "number": "18",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/42060.png"
+   },
+   {
+    "id": 6,
+    "apifId": 542542,
+    "name": "A. Al Hussain",
+    "position": "Defesa",
+    "number": "25",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/542542.png"
+   },
+   {
+    "id": 7,
+    "apifId": 377930,
+    "name": "A. Al Oui",
+    "position": "Defesa",
+    "number": "13",
+    "age": 20,
+    "photo": "https://media.api-sports.io/football/players/377930.png"
+   },
+   {
+    "id": 8,
+    "apifId": 200981,
+    "name": "Jassem Gaber",
+    "position": "Meio",
+    "number": "5",
+    "age": 23,
+    "photo": "https://media.api-sports.io/football/players/200981.png"
+   },
+   {
+    "id": 9,
+    "apifId": 2532,
+    "name": "Boualem Khoukhi",
+    "position": "Defesa",
+    "number": "16",
+    "age": 35,
+    "photo": "https://media.api-sports.io/football/players/2532.png"
+   },
+   {
+    "id": 10,
+    "apifId": 42288,
+    "name": "Lucas Mendes",
+    "position": "Defesa",
+    "number": "3",
+    "age": 35,
+    "photo": "https://media.api-sports.io/football/players/42288.png"
+   },
+   {
+    "id": 11,
+    "apifId": 366516,
+    "name": "G. Laye",
+    "position": "Meio",
+    "number": "4",
+    "age": 27,
+    "photo": "https://media.api-sports.io/football/players/366516.png"
+   },
+   {
+    "id": 12,
+    "apifId": 2530,
+    "name": "Pedro Miguel",
+    "position": "Defesa",
+    "number": "2",
+    "age": 35,
+    "photo": "https://media.api-sports.io/football/players/2530.png"
+   },
+   {
+    "id": 13,
+    "apifId": 2535,
+    "name": "Assim Madibo",
+    "position": "Meio",
+    "number": "23",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/2535.png"
+   },
+   {
+    "id": 14,
+    "apifId": 42286,
+    "name": "Ahmed Al Ganehi",
+    "position": "Ataque",
+    "number": "17",
+    "age": 25,
+    "photo": "https://media.api-sports.io/football/players/42286.png"
+   },
+   {
+    "id": 15,
+    "apifId": 2533,
+    "name": "Abdulaziz Hatem",
+    "position": "Meio",
+    "number": "6",
+    "age": 35,
+    "photo": "https://media.api-sports.io/football/players/2533.png"
+   },
+   {
+    "id": 16,
+    "apifId": 2537,
+    "name": "Karim Boudiaf",
+    "position": "Meio",
+    "number": "12",
+    "age": 35,
+    "photo": "https://media.api-sports.io/football/players/2537.png"
+   },
+   {
+    "id": 17,
+    "apifId": 2539,
+    "name": "Ahmed Fathi",
+    "position": "Meio",
+    "number": "20",
+    "age": 32,
+    "photo": "https://media.api-sports.io/football/players/2539.png"
+   },
+   {
+    "id": 18,
+    "apifId": 2545,
+    "name": "Hassan Al Haydos",
+    "position": "Ataque",
+    "number": "10",
+    "age": 35,
+    "photo": "https://media.api-sports.io/football/players/2545.png"
+   },
+   {
+    "id": 19,
+    "apifId": 283174,
+    "name": "Mohamed Al Manai",
+    "position": "Meio",
+    "number": "26",
+    "age": 22,
+    "photo": "https://media.api-sports.io/football/players/283174.png"
+   },
+   {
+    "id": 20,
+    "apifId": 542541,
+    "name": "Y. Abdurisag",
+    "position": "Ataque",
+    "number": "15",
+    "age": 26,
+    "photo": "https://media.api-sports.io/football/players/542541.png"
+   },
+   {
+    "id": 21,
+    "apifId": 2544,
+    "name": "Akram Afif",
+    "position": "Ataque",
+    "number": "11",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/2544.png"
+   },
+   {
+    "id": 22,
+    "apifId": 2542,
+    "name": "Ahmed Alaa",
+    "position": "Ataque",
+    "number": "7",
+    "age": 32,
+    "photo": "https://media.api-sports.io/football/players/2542.png"
+   },
+   {
+    "id": 23,
+    "apifId": 2543,
+    "name": "Almoez Ali",
+    "position": "Ataque",
+    "number": "19",
+    "age": 29,
+    "photo": "https://media.api-sports.io/football/players/2543.png"
+   },
+   {
+    "id": 24,
+    "apifId": 42075,
+    "name": "Edmilson Junior",
+    "position": "Ataque",
+    "number": "8",
+    "age": 31,
+    "photo": "https://media.api-sports.io/football/players/42075.png"
+   },
+   {
+    "id": 25,
+    "apifId": 423737,
+    "name": "Tahsin Jamshid",
+    "position": "Ataque",
+    "number": "24",
+    "age": 19,
+    "photo": "https://media.api-sports.io/football/players/423737.png"
+   },
+   {
+    "id": 26,
+    "apifId": 42089,
+    "name": "Mohammed Muntari",
+    "position": "Ataque",
+    "number": "9",
+    "age": 32,
+    "photo": "https://media.api-sports.io/football/players/42089.png"
+   }
+  ]
+ }
 }
