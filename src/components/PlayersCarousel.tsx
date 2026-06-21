@@ -10,6 +10,10 @@ export function PlayersCarousel() {
   const squad = squadByCode(code) ?? squads[0];
   const p = squad.players[Math.min(index, squad.players.length - 1)];
 
+  // Fundo muda com a seleção (cor do país misturada com verde-noite para leitura).
+  const [c1] = squad.colors;
+  const sectionBg = `linear-gradient(160deg, ${c1} 0%, color-mix(in srgb, ${c1} 42%, #04140b) 95%)`;
+
   const paginate = (delta: number) => {
     setIndex(([i]) => {
       const next = (i + delta + squad.players.length) % squad.players.length;
@@ -27,12 +31,19 @@ export function PlayersCarousel() {
     `${p.position} da seleção ${squad.name}${p.number ? ` · camisa ${p.number}` : ""}. Uma das figurinhas para colecionar nesta Copa.`;
 
   return (
-    <section id="jogadores" className="relative overflow-hidden bg-[#fcd305] py-20">
+    <section id="jogadores" className="relative overflow-hidden py-20 text-white">
+      {/* Fundo que muda com a seleção (crossfade) */}
+      <motion.div
+        key={code}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="absolute inset-0 -z-10"
+        style={{ background: sectionBg }}
+      />
+
       {/* Decoração: estrela grande translúcida no canto */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-10 top-4 select-none font-display text-[16rem] leading-none text-[color:var(--fifa-green-deep)]/10"
-      >
+      <div aria-hidden className="pointer-events-none absolute -left-10 top-4 select-none font-display text-[16rem] leading-none text-white/10">
         ★
       </div>
 
@@ -42,11 +53,11 @@ export function PlayersCarousel() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="font-display text-5xl text-[color:var(--fifa-green-deep)] sm:text-6xl"
+            className="font-display text-5xl sm:text-6xl"
           >
             JOGADORES
           </motion.h2>
-          <p className="mt-2 text-sm text-[color:var(--fifa-green-deep)]/70">Escolha uma seleção e conheça os craques, um a um.</p>
+          <p className="mt-2 text-sm text-white/70">Escolha uma seleção e conheça os craques, um a um.</p>
         </div>
 
         {/* Seletor de seleção */}
@@ -59,9 +70,7 @@ export function PlayersCarousel() {
                 type="button"
                 onClick={() => selectCountry(s.code)}
                 className={`flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold transition-all ${
-                  active
-                    ? "border-transparent bg-[color:var(--fifa-green-deep)] text-white shadow-md"
-                    : "border-[color:var(--fifa-green-deep)]/15 bg-white/70 text-[color:var(--fifa-green-deep)] hover:bg-white"
+                  active ? "border-white bg-white text-[color:var(--fifa-green-deep)] shadow-md" : "border-white/25 bg-white/10 text-white hover:bg-white/20"
                 }`}
               >
                 <img src={`https://flagcdn.com/w40/${s.code}.png`} alt="" className="h-4 w-6 rounded-sm object-cover ring-1 ring-black/10" />
@@ -83,9 +92,7 @@ export function PlayersCarousel() {
                 exit={{ opacity: 0, x: dir * 80 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
               >
-                <h3 className="font-display text-6xl text-white drop-shadow-[3px_3px_0_color-mix(in_oklab,var(--fifa-green-deep)_50%,transparent)] sm:text-7xl">
-                  {p.name}
-                </h3>
+                <h3 className="font-display text-6xl text-white drop-shadow-[3px_3px_0_rgba(0,0,0,0.35)] sm:text-7xl">{p.name}</h3>
 
                 <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-widest">
                   <span className="rounded-full bg-[color:var(--fifa-green)] px-3 py-1 text-white">{p.position}</span>
@@ -96,7 +103,7 @@ export function PlayersCarousel() {
                   </span>
                 </div>
 
-                <p className="mt-5 max-w-xl text-sm leading-relaxed text-[color:var(--fifa-green-deep)] sm:text-base">{bio}</p>
+                <p className="mt-5 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">{bio}</p>
               </motion.div>
             </AnimatePresence>
           </div>
@@ -113,7 +120,7 @@ export function PlayersCarousel() {
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, x: dir * -120, scale: 0.9 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.25)]"
+                className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_10px_25px_rgba(0,0,0,0.4)]"
                 loading="lazy"
               />
             </AnimatePresence>
@@ -125,19 +132,19 @@ export function PlayersCarousel() {
           <button
             onClick={() => paginate(-1)}
             aria-label="Anterior"
-            className="grid h-12 w-12 place-items-center rounded-full bg-white text-[color:var(--fifa-green-deep)] shadow-lg transition-all hover:scale-110 hover:bg-[color:var(--fifa-green)] hover:text-white"
+            className="grid h-12 w-12 place-items-center rounded-full bg-white text-[color:var(--fifa-green-deep)] shadow-lg transition-all hover:scale-110 hover:bg-[color:var(--fifa-yellow)]"
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
 
-          <div className="min-w-[5rem] rounded-full bg-[color:var(--fifa-green-deep)] px-4 py-2 text-center font-display text-lg tracking-wider text-white">
+          <div className="min-w-[5rem] rounded-full bg-white/15 px-4 py-2 text-center font-display text-lg tracking-wider text-white ring-1 ring-white/25">
             {index + 1} / {squad.players.length}
           </div>
 
           <button
             onClick={() => paginate(1)}
             aria-label="Próximo"
-            className="grid h-12 w-12 place-items-center rounded-full bg-white text-[color:var(--fifa-green-deep)] shadow-lg transition-all hover:scale-110 hover:bg-[color:var(--fifa-green)] hover:text-white"
+            className="grid h-12 w-12 place-items-center rounded-full bg-white text-[color:var(--fifa-green-deep)] shadow-lg transition-all hover:scale-110 hover:bg-[color:var(--fifa-yellow)]"
           >
             <ChevronRight className="h-6 w-6" />
           </button>
