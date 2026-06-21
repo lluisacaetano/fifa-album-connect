@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { PlayersCarousel } from "@/components/PlayersCarousel";
+import { SelecoesSection } from "@/components/SelecoesSection";
 import { MatchesSection } from "@/components/MatchesSection";
 import { ConnectSection } from "@/components/ConnectSection";
 import { AlbumSection } from "@/components/AlbumSection";
@@ -26,6 +27,7 @@ function Index() {
       <main>
         <Hero />
         <PlayersCarousel />
+        <SelecoesSection />
         <MatchesSection />
         <ConnectSection />
         <AlbumSection />
