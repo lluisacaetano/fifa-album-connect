@@ -9,7 +9,7 @@ const ACCENTS = new RegExp("[\\u0300-\\u036f]", "g");
 const norm = (s: string) => s.normalize("NFD").replace(ACCENTS, "").toLowerCase();
 
 // Cada figurinha exibida carrega o país a que pertence (necessário na visão "Todos").
-type Card = { id: number; name: string; position: string; number?: string | null; photo: string | null; code: string; country: string };
+type Card = { id: number; name: string; position: string; number?: string | null; photo: string | null; photoCutout?: boolean; code: string; country: string };
 
 const BRAZIL_COLORS: [string, string] = ["#009739", "#FFDF00"];
 
@@ -106,7 +106,7 @@ export function AlbumSection() {
         </div>
 
         {/* Seletor: Todos + seleções */}
-        <div className="mb-6 flex gap-2.5 overflow-x-auto pb-4 [scrollbar-width:thin]">
+        <div className="mb-6 flex gap-2.5 overflow-x-auto pb-3 [scrollbar-color:rgba(255,255,255,0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/40 [&::-webkit-scrollbar-thumb]:hover:bg-white/60 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:h-1.5">
           <button
             type="button"
             onClick={() => setCode("all")}
@@ -213,7 +213,7 @@ export function AlbumSection() {
                   )}
 
                   <div className={`relative flex h-full w-full flex-col items-center justify-end overflow-hidden rounded-lg ${has ? "" : "opacity-80 grayscale"}`}>
-                    {c.photo ? (
+                    {c.photo && c.photoCutout ? (
                       <img
                         src={c.photo}
                         alt={c.name}
@@ -221,8 +221,11 @@ export function AlbumSection() {
                         className="absolute inset-x-0 bottom-0 mx-auto h-[88%] w-auto object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.45)]"
                       />
                     ) : (
-                      <div className="absolute inset-0 grid place-items-center">
-                        <span className="font-display text-4xl opacity-80">{initials(c.name)}</span>
+                      <div
+                        className="absolute inset-0 grid place-items-center"
+                        style={{ background: `radial-gradient(circle at 50% 35%, ${squadByCode(c.code)?.colors[0] ?? "#0b6b3a"}, transparent 70%)` }}
+                      >
+                        <span className="font-display text-4xl opacity-90">{initials(c.name)}</span>
                       </div>
                     )}
 
