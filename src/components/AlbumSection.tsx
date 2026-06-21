@@ -1,9 +1,30 @@
 import { motion } from "framer-motion";
 
+const players = [
+  "Alisson",
+  "Bento",
+  "Marquinhos",
+  "Éder Militão",
+  "Gabriel Magalhães",
+  "Danilo",
+  "Guilherme Arana",
+  "Bruno Guimarães",
+  "André",
+  "Lucas Paquetá",
+  "Gerson",
+  "Vinícius Júnior",
+  "Rodrygo",
+  "Raphinha",
+  "Savinho",
+  "Estêvão",
+  "Endrick",
+  "Igor Jesus",
+];
+
 const stickers = Array.from({ length: 18 }, (_, i) => ({
   id: i + 1,
   owned: [0, 1, 3, 4, 6, 8, 9, 11, 13, 15, 17].includes(i),
-  code: `${["BRA", "ARG", "FRA", "GER", "ESP", "ENG"][i % 6]}-${String(i + 1).padStart(2, "0")}`,
+  name: players[i],
 }));
 
 const owned = stickers.filter((s) => s.owned).length;
@@ -74,7 +95,7 @@ export function AlbumSection() {
               <div className={`flex h-full w-full flex-col items-center justify-between rounded-lg p-2 ${s.owned ? "" : "opacity-40 grayscale"}`}>
                 <div className="text-[8px] font-bold tracking-widest opacity-80">FIFA 2026</div>
                 <div className="grid h-10 w-10 place-items-center rounded-full bg-white/20 font-display text-lg">★</div>
-                <div className="font-display text-[11px]">{s.code}</div>
+                <div className="font-display text-[11px] text-center leading-tight">{s.name}</div>
               </div>
             </motion.div>
           ))}
