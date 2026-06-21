@@ -135,25 +135,28 @@ export function PlayersCarousel() {
           </div>
 
           {/* Foto no "palco": holofote + círculo + número gigante grounding o jogador */}
-          <div className="relative order-1 h-[420px] sm:h-[560px] lg:order-2">
-            {/* Palco fixo (não troca com o jogador) */}
+          <div className="relative order-1 h-[420px] overflow-hidden sm:h-[560px] lg:order-2">
+            {/* Palco atrás do jogador */}
             <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+              {/* holofote difuso (ambiente, troca com a seleção) */}
+              <div
+                className="absolute left-1/2 top-[42%] h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+                style={{ background: `radial-gradient(circle, ${squad.colors[1]}66, transparent 70%)` }}
+              />
+              {/* disco/pódio: dá um "pop" e gira de leve a cada troca de jogador */}
               <motion.div
-                key={`${code}-stage`}
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="absolute inset-0"
+                key={`${code}-${p.id}-disco`}
+                initial={{ scale: 0.82, rotate: dir * -18, opacity: 0.5 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 130, damping: 13 }}
+                className="absolute left-1/2 top-[46%] h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full ring-1 ring-white/15 sm:h-[24rem] sm:w-[24rem]"
+                style={{ background: `radial-gradient(circle at 50% 32%, color-mix(in srgb, ${squad.colors[0]} 92%, #fff 8%), color-mix(in srgb, ${squad.colors[0]} 25%, transparent))` }}
               >
-                {/* holofote difuso na cor secundária da seleção */}
-                <div
-                  className="absolute left-1/2 top-[42%] h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
-                  style={{ background: `radial-gradient(circle, ${squad.colors[1]}66, transparent 70%)` }}
-                />
-                {/* disco/pódio na cor principal */}
-                <div
-                  className="absolute left-1/2 top-[46%] h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full ring-1 ring-white/15 sm:h-[24rem] sm:w-[24rem]"
-                  style={{ background: `radial-gradient(circle at 50% 32%, color-mix(in srgb, ${squad.colors[0]} 92%, #fff 8%), color-mix(in srgb, ${squad.colors[0]} 25%, transparent))` }}
+                {/* anel tracejado que gira devagar — dá vida ao disco */}
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-3 rounded-full border-2 border-dashed border-white/15"
                 />
               </motion.div>
             </div>
