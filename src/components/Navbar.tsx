@@ -3,23 +3,41 @@ import { motion } from "framer-motion";
 import { Moon, Sun, Menu, X } from "lucide-react";
 
 const links = [
-  { href: "#home", label: "Home" },
-  { href: "#jogadores", label: "Jogadores" },
-  { href: "#partidas", label: "Partidas" },
-  { href: "#conectar", label: "Trocas" },
-  { href: "#album", label: "Meu Álbum" },
+  { href: "#home", id: "home", label: "Home" },
+  { href: "#jogadores", id: "jogadores", label: "Jogadores" },
+  { href: "#selecoes", id: "selecoes", label: "Seleções" },
+  { href: "#partidas", id: "partidas", label: "Partidas" },
+  { href: "#conectar", id: "conectar", label: "Trocas" },
+  { href: "#album", id: "album", label: "Meu Álbum" },
 ];
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [dark, setDark] = useState(false);
+  const [active, setActive] = useState("home");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Marca o link da seção visível (scroll spy).
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]) setActive(visible[0].target.id);
+      },
+      { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5] },
+    );
+    links.forEach((l) => {
+      const el = document.getElementById(l.id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -31,45 +49,59 @@ export function Navbar() {
       initial={{ y: -40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        scrolled ? "glass-nav py-2" : "bg-transparent py-4"
-      }`}
+      className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4 sm:pt-4"
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6">
-        <a href="#home" className="flex items-center gap-2 font-display text-2xl tracking-wide">
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-fifa-gradient text-white font-bold">26</span>
-          <span className="hidden sm:inline">ÁLBUM FIFA 2026</span>
+      {/* Barra flutuante com fundo próprio: contraste garantido sobre qualquer cor */}
+      <div
+        className={`mx-auto flex max-w-7xl items-center justify-between gap-3 rounded-full border border-white/10 bg-[color:var(--fifa-night)] px-3 py-2 text-white shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)] ring-1 ring-[color:var(--fifa-yellow)]/15 transition-all duration-300 sm:px-4 ${
+          scrolled ? "sm:py-1.5" : "sm:py-2.5"
+        }`}
+      >
+        <a href="#home" className="flex items-center gap-2.5 pl-1">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-fifa-gradient font-display text-lg text-white shadow-md">26</span>
+          <span className="hidden font-display text-xl tracking-wide sm:inline">ÁLBUM FIFA 2026</span>
         </a>
 
-        <nav className="hidden items-center gap-1 md:flex">
-          {links.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              className="relative rounded-full px-4 py-2 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
-            >
-              <span className="relative z-10">{l.label}</span>
-              <span className="absolute inset-0 -z-0 scale-90 rounded-full bg-foreground/5 opacity-0 transition-all hover:opacity-100 hover:scale-100" />
-            </a>
-          ))}
+        <nav className="hidden items-center gap-0.5 lg:flex">
+          {links.map((l) => {
+            const isActive = active === l.id;
+            return (
+              <a
+                key={l.href}
+                href={l.href}
+                className={`relative px-3.5 py-2 text-sm font-semibold transition-colors ${
+                  isActive ? "text-[color:var(--fifa-yellow)]" : "text-white/70 hover:text-white"
+                }`}
+              >
+                {l.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="nav-underline"
+                    className="absolute inset-x-3 -bottom-0.5 h-[3px] rounded-full bg-[color:var(--fifa-yellow)]"
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                  />
+                )}
+              </a>
+            );
+          })}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pr-0.5">
           <button
             onClick={() => setDark((d) => !d)}
             aria-label="Alternar tema"
-            className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card/60 transition-all hover:scale-105"
+            className="grid h-9 w-9 place-items-center rounded-full border border-white/20 text-white/90 transition-all hover:scale-105 hover:bg-white/10"
           >
             {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
           <a
             href="#conectar"
-            className="hidden rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-all hover:scale-105 md:inline-flex"
+            className="hidden rounded-full bg-[color:var(--fifa-yellow)] px-5 py-2 text-sm font-bold text-[color:var(--fifa-green-deep)] shadow-md transition-all hover:scale-105 sm:inline-flex"
           >
-            Conectar
+            Entrar
           </a>
           <button
-            className="grid h-10 w-10 place-items-center rounded-full border border-border md:hidden"
+            className="grid h-9 w-9 place-items-center rounded-full border border-white/20 text-white lg:hidden"
             onClick={() => setOpen((o) => !o)}
             aria-label="Menu"
           >
@@ -82,18 +114,27 @@ export function Navbar() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mx-4 mt-2 rounded-2xl border border-border bg-card p-3 shadow-xl md:hidden"
+          className="mx-auto mt-2 max-w-7xl rounded-2xl border border-white/10 bg-[color:var(--fifa-night)] p-3 text-white shadow-xl lg:hidden"
         >
           {links.map((l) => (
             <a
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="block rounded-xl px-4 py-3 text-sm font-medium hover:bg-muted"
+              className={`block rounded-xl px-4 py-3 text-sm font-semibold transition-colors hover:bg-white/10 ${
+                active === l.id ? "text-[color:var(--fifa-yellow)]" : "text-white/80"
+              }`}
             >
               {l.label}
             </a>
           ))}
+          <a
+            href="#conectar"
+            onClick={() => setOpen(false)}
+            className="mt-1 block rounded-xl bg-[color:var(--fifa-yellow)] px-4 py-3 text-center text-sm font-bold text-[color:var(--fifa-green-deep)]"
+          >
+            Entrar
+          </a>
         </motion.div>
       )}
     </motion.header>
