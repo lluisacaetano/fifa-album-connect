@@ -3,6 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { PlayersCarousel } from "@/components/PlayersCarousel";
 import { SelecoesSection } from "@/components/SelecoesSection";
+import { GruposSection } from "@/components/GruposSection";
 import { MatchesSection } from "@/components/MatchesSection";
 import { ConnectSection } from "@/components/ConnectSection";
 import { AlbumSection } from "@/components/AlbumSection";
@@ -28,6 +29,7 @@ function Index() {
         <Hero />
         <PlayersCarousel />
         <SelecoesSection />
+        <GruposSection />
         <MatchesSection />
         <ConnectSection />
         <AlbumSection />

@@ -6,6 +6,7 @@ const links = [
   { href: "#home", id: "home", label: "Home" },
   { href: "#jogadores", id: "jogadores", label: "Jogadores" },
   { href: "#selecoes", id: "selecoes", label: "Seleções" },
+  { href: "#grupos", id: "grupos", label: "Grupos" },
   { href: "#partidas", id: "partidas", label: "Partidas" },
   { href: "#conectar", id: "conectar", label: "Trocas" },
   { href: "#album", id: "album", label: "Meu Álbum" },
