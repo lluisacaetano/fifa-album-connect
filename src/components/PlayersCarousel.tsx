@@ -134,38 +134,68 @@ export function PlayersCarousel() {
             </AnimatePresence>
           </div>
 
-          {/* Foto (cutout hi-res) ou fallback com inicial */}
-          <div className="relative order-1 h-[380px] sm:h-[500px] lg:order-2">
+          {/* Foto no "palco": holofote + círculo + número gigante grounding o jogador */}
+          <div className="relative order-1 h-[420px] sm:h-[560px] lg:order-2">
+            {/* Palco fixo (não troca com o jogador) */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+              <motion.div
+                key={`${code}-stage`}
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0"
+              >
+                {/* holofote difuso na cor secundária da seleção */}
+                <div
+                  className="absolute left-1/2 top-[42%] h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+                  style={{ background: `radial-gradient(circle, ${squad.colors[1]}66, transparent 70%)` }}
+                />
+                {/* disco/pódio na cor principal */}
+                <div
+                  className="absolute left-1/2 top-[46%] h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full ring-1 ring-white/15 sm:h-[24rem] sm:w-[24rem]"
+                  style={{ background: `radial-gradient(circle at 50% 32%, color-mix(in srgb, ${squad.colors[0]} 92%, #fff 8%), color-mix(in srgb, ${squad.colors[0]} 25%, transparent))` }}
+                />
+              </motion.div>
+            </div>
+
             <AnimatePresence mode="wait" custom={dir}>
               {goodPhoto ? (
-                <motion.img
+                <motion.div
                   key={`${code}-${p.id}-img`}
-                  src={p.photo ?? ""}
-                  alt={p.name}
                   custom={dir}
-                  initial={{ opacity: 0, x: dir * 120, scale: 0.9 }}
+                  initial={{ opacity: 0, x: dir * 90, scale: 0.92 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: dir * -120, scale: 0.9 }}
+                  exit={{ opacity: 0, x: dir * -90, scale: 0.92 }}
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_10px_25px_rgba(0,0,0,0.4)]"
-                  loading="lazy"
-                />
+                  className="absolute inset-0"
+                >
+                  {/* número gigante (dado real) atrás do jogador */}
+                  {p.number && (
+                    <span className="absolute left-1/2 top-1/2 -z-0 -translate-x-1/2 -translate-y-1/2 font-display text-[16rem] leading-none text-white/10 sm:text-[21rem]">
+                      {p.number}
+                    </span>
+                  )}
+                  {/* foto: alinhada à base, com fade embaixo pra dissolver o recorte */}
+                  <img
+                    src={p.photo ?? ""}
+                    alt={p.name}
+                    loading="lazy"
+                    className="relative mx-auto h-full w-auto max-w-full object-contain object-bottom drop-shadow-[0_18px_30px_rgba(0,0,0,0.45)] [mask-image:linear-gradient(to_bottom,#000_84%,transparent)]"
+                  />
+                </motion.div>
               ) : (
                 <motion.div
                   key={`${code}-${p.id}-fallback`}
                   custom={dir}
-                  initial={{ opacity: 0, x: dir * 120, scale: 0.9 }}
+                  initial={{ opacity: 0, x: dir * 90, scale: 0.92 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: dir * -120, scale: 0.9 }}
+                  exit={{ opacity: 0, x: dir * -90, scale: 0.92 }}
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="absolute inset-0 grid place-items-center"
                 >
-                  <div
-                    className="grid h-64 w-64 place-items-center rounded-full ring-4 ring-white/30 sm:h-80 sm:w-80"
-                    style={{ background: `linear-gradient(160deg, ${squad.colors[0]}, ${squad.colors[1]})` }}
-                  >
-                    <span className="font-display text-[10rem] leading-none text-white drop-shadow-[0_6px_12px_rgba(0,0,0,0.35)]">{initial}</span>
-                  </div>
+                  <span className="-translate-y-[6%] font-display text-[11rem] leading-none text-white drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)] sm:text-[14rem]">
+                    {initial}
+                  </span>
                 </motion.div>
               )}
             </AnimatePresence>
