@@ -36,6 +36,8 @@ export function ConnectSection() {
 
   const [query, setQuery] = useState("");
   const [onlyMatches, setOnlyMatches] = useState(false);
+  const [radiusKm, setRadiusKm] = useState(0); // 0 = qualquer distância
+  const [countryFilter, setCountryFilter] = useState("all");
   const [selected, setSelected] = useState<Trader | null>(null);
   const [requested, setRequested] = useState<Set<number>>(new Set());
   const [mounted, setMounted] = useState(false);
@@ -83,6 +85,13 @@ export function ConnectSection() {
     setMissing(miss);
     setMyDupes(dupes);
   }, [user]);
+
+  // Nome do jogador -> seleção (para filtrar quem tem figurinha de um país).
+  const nameToSquad = useMemo(() => {
+    const m: Record<string, string> = {};
+    for (const s of squads) for (const p of s.players) if (!(norm(p.name) in m)) m[norm(p.name)] = s.code;
+    return m;
+  }, []);
 
   const iNeed = (player: string) => missing.has(norm(player));
   const iHaveForTrade = (player: string) => myDupes.has(norm(player));
@@ -194,6 +203,8 @@ export function ConnectSection() {
       );
     }
     if (onlyMatches) list = list.filter((t) => matchCount(t) > 0);
+    if (countryFilter !== "all") list = list.filter((t) => t.has.some((n) => nameToSquad[norm(n)] === countryFilter));
+    if (radiusKm > 0 && myLoc) list = list.filter((t) => t.isMe || (distOf(t) ?? Infinity) <= radiusKm);
     return [...list].sort((a, b) => {
       const m = matchCount(b) - matchCount(a);
       if (m !== 0) return m;
@@ -202,7 +213,7 @@ export function ConnectSection() {
       if (da != null && dbb != null) return da - dbb;
       return 0;
     });
-  }, [query, onlyMatches, missing, everyone, myLoc]);
+  }, [query, onlyMatches, missing, everyone, myLoc, countryFilter, radiusKm, nameToSquad]);
 
   const totalMatches = everyone.reduce((acc, t) => acc + matchCount(t), 0);
 
@@ -303,6 +314,30 @@ export function ConnectSection() {
                   className="h-12 w-full rounded-full border border-border bg-card pl-11 pr-4 text-sm outline-none ring-[color:var(--fifa-green)] transition-all focus:ring-2"
                 />
               </div>
+              <select
+                value={countryFilter}
+                onChange={(e) => setCountryFilter(e.target.value)}
+                className="h-12 rounded-full border border-border bg-card px-4 text-sm font-semibold outline-none ring-[color:var(--fifa-green)] focus:ring-2"
+              >
+                <option value="all">Todas as seleções</option>
+                {[...squads].sort((a, b) => a.name.localeCompare(b.name, "pt")).map((s) => (
+                  <option key={s.code} value={s.code}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={radiusKm}
+                onChange={(e) => setRadiusKm(Number(e.target.value))}
+                title={myLoc ? "Filtrar por distância" : "Defina sua cidade para filtrar por distância"}
+                className="h-12 rounded-full border border-border bg-card px-4 text-sm font-semibold outline-none ring-[color:var(--fifa-green)] focus:ring-2 disabled:opacity-50"
+                disabled={!myLoc}
+              >
+                <option value={0}>Qualquer distância</option>
+                <option value={50}>Até 50 km</option>
+                <option value={200}>Até 200 km</option>
+                <option value={500}>Até 500 km</option>
+              </select>
               <button
                 onClick={() => setOnlyMatches((v) => !v)}
                 className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all ${onlyMatches ? "border-[color:var(--fifa-green)] bg-[color:var(--fifa-green)] text-white" : "border-border bg-card hover:border-[color:var(--fifa-green)]"}`}
