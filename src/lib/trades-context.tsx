@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
-import { confirmDelivery, listenTradeRequests, rateUser, setRequestStatus, type DeliveryInfo, type TradeRequest } from "@/lib/trades";
+import { agreeToDeal, confirmDelivery, listenTradeRequests, rateUser, setRequestStatus, updateTradeDeal, type DeliveryInfo, type TradeItem, type TradeRequest } from "@/lib/trades";
 import { chatId, listenMyChats, type ChatSummary } from "@/lib/chat";
 import { playPing } from "@/lib/sound";
 
@@ -15,6 +15,8 @@ type TradesContextValue = {
   confirm: (req: TradeRequest, info: DeliveryInfo) => Promise<void>;
   decline: (id: string) => void;
   rate: (req: TradeRequest, stars: number) => void;
+  agree: (req: TradeRequest) => Promise<void>;
+  editDeal: (req: TradeRequest, wanted: TradeItem[], offered: TradeItem[]) => Promise<void>;
   panelOpen: boolean;
   openPanel: () => void;
   closePanel: () => void;
@@ -146,6 +148,14 @@ export function TradesProvider({ children }: { children: ReactNode }) {
           if (!user) return;
           const other = req.participants.find((p) => p !== user.uid);
           if (other) rateUser(other, user.uid, stars, req.id);
+        },
+        agree: async (req) => {
+          if (!user) return;
+          await agreeToDeal(req.id, user.uid);
+        },
+        editDeal: async (req, wanted, offered) => {
+          if (!user) return;
+          await updateTradeDeal(req.id, { wanted, offered, lastEditBy: user.uid });
         },
         panelOpen,
         openPanel: () => setPanelOpen(true),

@@ -2,7 +2,8 @@ import { addDoc, arrayUnion, collection, doc, increment, onSnapshot, query, serv
 import { db } from "@/lib/firebase";
 
 // Figurinha de uma troca: número (ex.: "BRA10") + nome do jogador.
-export type TradeItem = { code: string; name: string };
+// `sale` = marcador "venda" (dada sem contrapartida; o dinheiro é combinado no chat).
+export type TradeItem = { code: string; name: string; sale?: boolean };
 export type TradeStatus = "pending" | "accepted" | "declined";
 export type DeliveryMethod = "presencial" | "correios" | "transportadora";
 export type DeliveryInfo = { method: DeliveryMethod; tracking?: string; carrier?: string };
@@ -23,26 +24,55 @@ export type TradeRequest = {
   delivery?: Record<string, DeliveryInfo>; // entrega informada por cada um
   appliedBy?: string[]; // uids que já deram baixa no álbum
   ratedBy?: string[]; // uids que já avaliaram o outro nesta troca
+  // Negociação: a troca é editável pelos dois até os DOIS toparem a versão atual.
+  agreedBy?: string[]; // uids que toparam o "deal" da versão atual
+  dealVersion?: number; // sobe a cada edição (qualquer edição zera agreedBy)
+  lastEditBy?: string; // quem editou por último (para a dica "fulano alterou")
   createdAt?: { seconds: number } | null;
   updatedAt?: { seconds: number } | null;
 };
 
 type SendInput = Omit<TradeRequest, "id" | "status" | "participants" | "createdAt">;
 
+// Garante itens "limpos" p/ o Firestore (nunca grava sale: undefined).
+const cleanItems = (items?: TradeItem[]): TradeItem[] =>
+  (items ?? []).map((i) => ({ code: i.code, name: i.name, ...(i.sale ? { sale: true } : {}) }));
+
 // Cria um pedido de troca. Oferecer é OPCIONAL (offered pode ser []), e
 // campos vazios (message/fromCity) são omitidos — o Firestore rejeita undefined.
+// Nasce em NEGOCIAÇÃO: agreedBy vazio, dealVersion 0.
 export async function sendTradeRequest(data: SendInput): Promise<void> {
   const { message, fromCity, wanted, offered, ...rest } = data;
   await addDoc(collection(db, "tradeRequests"), {
     ...rest,
-    wanted: wanted ?? [],
-    offered: offered ?? [],
+    wanted: cleanItems(wanted),
+    offered: cleanItems(offered),
     ...(fromCity ? { fromCity } : {}),
     ...(message ? { message } : {}),
     participants: [data.fromUid, data.toUid],
     status: "pending" as TradeStatus,
+    agreedBy: [],
+    dealVersion: 0,
     createdAt: serverTimestamp(),
   });
+}
+
+// Edita o "deal" (figurinhas em jogo). Qualquer edição ZERA o acordo (agreedBy)
+// e sobe a versão — os dois precisam topar de novo.
+export async function updateTradeDeal(id: string, data: { wanted: TradeItem[]; offered: TradeItem[]; lastEditBy: string }): Promise<void> {
+  await updateDoc(doc(db, "tradeRequests", id), {
+    wanted: cleanItems(data.wanted),
+    offered: cleanItems(data.offered),
+    agreedBy: [],
+    dealVersion: increment(1),
+    lastEditBy: data.lastEditBy,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+// Topa o "deal" atual. Quando os DOIS topam, abre a confirmação de entrega.
+export async function agreeToDeal(id: string, uid: string): Promise<void> {
+  await updateDoc(doc(db, "tradeRequests", id), { agreedBy: arrayUnion(uid), updatedAt: serverTimestamp() });
 }
 
 // Escuta, em tempo real, todos os pedidos em que o usuário participa (enviados + recebidos).

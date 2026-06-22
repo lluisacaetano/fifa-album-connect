@@ -24,6 +24,7 @@ function Chips({ items, tone }: { items: TradeItem[]; tone: "green" | "blue" }) 
         <span key={`${s.code}-${s.name}`} className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${cls}`}>
           {s.name}
           {s.code ? <span className="opacity-70"> · {s.code}</span> : null}
+          {s.sale ? <span className="opacity-70"> · venda</span> : null}
         </span>
       ))}
     </div>
@@ -61,12 +62,15 @@ function RequestCard({ r, myUid, onConfirm, onDecline, onChat, onRate }: { r: Tr
     setCarrier("");
   }
 
+  const negotiating = r.status === "pending" && (r.agreedBy?.length ?? 0) < 2;
   const badge =
     r.status === "accepted"
       ? { label: "Concluída", cls: "bg-[color:var(--fifa-green)]/15 text-[color:var(--fifa-green)]" }
       : r.status === "declined"
         ? { label: "Cancelada", cls: "bg-destructive/10 text-destructive" }
-        : { label: "Pendente", cls: "bg-[color:var(--fifa-yellow)]/25 text-[color:var(--fifa-green-deep)]" };
+        : negotiating
+          ? { label: "Em negociação", cls: "bg-[color:var(--fifa-blue)]/15 text-[color:var(--fifa-blue)]" }
+          : { label: "Pendente", cls: "bg-[color:var(--fifa-yellow)]/25 text-[color:var(--fifa-green-deep)]" };
 
   return (
     <article className="rounded-2xl border border-border bg-background p-4">
@@ -118,7 +122,11 @@ function RequestCard({ r, myUid, onConfirm, onDecline, onChat, onRate }: { r: Tr
         </div>
       ) : r.status === "pending" ? (
         <div className="mt-3">
-          {iConfirmed ? (
+          {negotiating ? (
+            <div className="flex items-center gap-1.5 rounded-xl bg-[color:var(--fifa-blue)]/10 px-3 py-2 text-xs font-medium text-[color:var(--fifa-blue)]">
+              <MessageCircle className="h-3.5 w-3.5" /> Em negociação — abram o chat para combinar as figurinhas e topar a troca.
+            </div>
+          ) : iConfirmed ? (
             <div className="flex items-center gap-1.5 rounded-xl bg-muted px-3 py-2 text-xs font-medium text-muted-foreground">
               <Clock className="h-3.5 w-3.5" /> Você confirmou. Aguardando {otherName.split(" ")[0]} confirmar a entrega.
             </div>

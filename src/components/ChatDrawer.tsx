@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Send, Check, Ban, Truck, MapPin, ShieldAlert } from "lucide-react";
+import { X, Send, Check, Ban, Truck, MapPin, ShieldAlert, Handshake, Plus } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTrades } from "@/lib/trades-context";
 import { chatId, listenMessages, sendMessage, type ChatMessage } from "@/lib/chat";
+import type { TradeItem } from "@/lib/trades";
 import { Avatar } from "@/components/Avatar";
+
+const keyOf = (s: TradeItem) => `${s.code}-${s.name}`;
 
 // Transforma URLs do texto (ex.: link de rastreio) em links clicáveis.
 function renderText(text: string) {
@@ -21,18 +24,21 @@ function renderText(text: string) {
 
 export function ChatDrawer() {
   const { user } = useAuth();
-  const { chatTarget, closeChat, requests, confirm, decline } = useTrades();
+  const { chatTarget, closeChat, requests, confirm, decline, agree, editDeal } = useTrades();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const [showDelivery, setShowDelivery] = useState(false);
   const [method, setMethod] = useState<"presencial" | "correios" | "transportadora">("presencial");
   const [carrier, setCarrier] = useState("");
   const [tracking, setTracking] = useState("");
+  // Figurinhas que EU tirei do deal nesta sessão (para poder re-adicionar).
+  const [stash, setStash] = useState<{ item: TradeItem; side: "give" | "get" }[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
 
   const cid = user && chatTarget ? chatId(user.uid, chatTarget.uid) : null;
 
-  // Troca entre nós dois: prioriza a pendente, depois a concluída.
+  // Troca entre nós dois: prioriza a pendente mais recente (lista já vem do mais novo
+  // pro mais velho), depois a concluída.
   const between = chatTarget ? requests.filter((r) => r.participants?.includes(chatTarget.uid)) : [];
   const linked = between.find((r) => r.status === "pending") ?? between.find((r) => r.status === "accepted");
 
@@ -40,6 +46,43 @@ export function ChatDrawer() {
   // Já enviado pelos Correios/transportadora? Então não dá mais para cancelar.
   const shipped = Object.values(linked?.delivery ?? {}).some((d) => d.method === "correios" || d.method === "transportadora");
   const canCancel = linked?.status === "pending" && !shipped;
+
+  // ---- Negociação do "deal" (relativo a quem está vendo) ----
+  const iAmFrom = !!(linked && user && linked.fromUid === user.uid);
+  const iGive: TradeItem[] = linked ? (iAmFrom ? linked.offered : linked.wanted) : []; // o que EU dou
+  const iGet: TradeItem[] = linked ? (iAmFrom ? linked.wanted : linked.offered) : []; // o que EU recebo
+  const agreedBy = linked?.agreedBy ?? [];
+  const iAgreed = !!(user && agreedBy.includes(user.uid));
+  const bothAgreed = agreedBy.length >= 2;
+  const dealEmpty = (linked?.wanted?.length ?? 0) === 0 && (linked?.offered?.length ?? 0) === 0;
+  const addable = stash.filter((e) => !(e.side === "give" ? iGive : iGet).some((s) => keyOf(s) === keyOf(e.item)));
+
+  // Limpa o stash ao trocar de conversa/troca.
+  useEffect(() => {
+    setStash([]);
+  }, [linked?.id]);
+
+  // Mapeia (dou, recebo) de volta p/ os campos canônicos e salva.
+  function commit(give: TradeItem[], get: TradeItem[]) {
+    if (!linked) return;
+    const wanted = iAmFrom ? get : give;
+    const offered = iAmFrom ? give : get;
+    editDeal(linked, wanted, offered);
+  }
+  function removeItem(side: "give" | "get", key: string) {
+    const src = side === "give" ? iGive : iGet;
+    const item = src.find((s) => keyOf(s) === key);
+    if (item) setStash((p) => [...p.filter((e) => keyOf(e.item) !== key), { item, side }]);
+    if (side === "give") commit(iGive.filter((s) => keyOf(s) !== key), iGet);
+    else commit(iGive, iGet.filter((s) => keyOf(s) !== key));
+  }
+  function toggleSale(key: string) {
+    commit(iGive.map((s) => (keyOf(s) === key ? { ...s, sale: !s.sale } : s)), iGet);
+  }
+  function readd(e: { item: TradeItem; side: "give" | "get" }) {
+    if (e.side === "give") commit([...iGive, { code: e.item.code, name: e.item.name }], iGet);
+    else commit(iGive, [...iGet, { code: e.item.code, name: e.item.name }]);
+  }
 
   async function cancelTrade() {
     if (!cid || !user || !chatTarget) return;
@@ -158,6 +201,112 @@ export function ChatDrawer() {
                 {linked.status === "accepted" ? (
                   <div className="flex items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-2 text-sm font-bold text-[color:var(--fifa-green)]">
                     <Check className="h-4 w-4" /> Troca concluída pelos dois!
+                  </div>
+                ) : !bothAgreed ? (
+                  <div className="space-y-2.5 rounded-2xl border border-border bg-muted/40 p-3">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">A combinar — os dois editam até topar</div>
+
+                    {/* Você recebe */}
+                    <div>
+                      <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[color:var(--fifa-green)]">Você recebe</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {iGet.length ? (
+                          iGet.map((s) => (
+                            <span key={keyOf(s)} className="inline-flex items-center gap-1 rounded-full bg-[color:var(--fifa-green)]/12 px-2.5 py-1 text-[11px] font-semibold text-[color:var(--fifa-green)]">
+                              {s.name}
+                              {s.code ? <span className="opacity-70"> · {s.code}</span> : null}
+                              {s.sale ? <span className="rounded bg-[color:var(--fifa-yellow)] px-1 text-[9px] font-bold uppercase text-[color:var(--fifa-green-deep)]">venda</span> : null}
+                              <button type="button" onClick={() => removeItem("get", keyOf(s))} aria-label="Remover" className="opacity-60 transition-opacity hover:opacity-100">
+                                <X className="h-3 w-3" />
+                              </button>
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground">—</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Você dá */}
+                    <div>
+                      <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[color:var(--fifa-blue)]">Você dá</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {iGive.length ? (
+                          iGive.map((s) => (
+                            <span key={keyOf(s)} className="inline-flex items-center gap-1 rounded-full bg-[color:var(--fifa-blue)]/12 px-2.5 py-1 text-[11px] font-semibold text-[color:var(--fifa-blue)]">
+                              {s.name}
+                              {s.code ? <span className="opacity-70"> · {s.code}</span> : null}
+                              <button
+                                type="button"
+                                onClick={() => toggleSale(keyOf(s))}
+                                title="Marcar como venda (sem figurinha em troca; combina o valor no chat)"
+                                className={`rounded px-1 text-[9px] font-bold uppercase transition-colors ${s.sale ? "bg-[color:var(--fifa-yellow)] text-[color:var(--fifa-green-deep)]" : "border border-[color:var(--fifa-blue)]/40 text-[color:var(--fifa-blue)]"}`}
+                              >
+                                venda
+                              </button>
+                              <button type="button" onClick={() => removeItem("give", keyOf(s))} aria-label="Remover" className="opacity-60 transition-opacity hover:opacity-100">
+                                <X className="h-3 w-3" />
+                              </button>
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground">—</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Re-adicionar o que você tirou */}
+                    {addable.length > 0 && (
+                      <div>
+                        <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Adicionar de volta</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {addable.map((e) => (
+                            <button
+                              key={keyOf(e.item)}
+                              type="button"
+                              onClick={() => readd(e)}
+                              className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-[color:var(--fifa-green)] hover:text-foreground"
+                            >
+                              <Plus className="h-3 w-3" /> {e.item.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {linked.lastEditBy && user && linked.lastEditBy !== user.uid && !iAgreed && (
+                      <p className="text-[11px] text-muted-foreground">A outra pessoa alterou a troca — confira e tope de novo.</p>
+                    )}
+
+                    {iAgreed ? (
+                      <div className="flex items-center gap-2">
+                        <span className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-2 text-xs font-semibold text-[color:var(--fifa-green)]">
+                          <Check className="h-3.5 w-3.5" /> Você topou — aguardando o outro
+                        </span>
+                        {canCancel && (
+                          <button type="button" onClick={cancelTrade} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10">
+                            <Ban className="h-4 w-4" /> Cancelar
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => linked && agree(linked)}
+                          disabled={dealEmpty}
+                          className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50"
+                        >
+                          <Handshake className="h-4 w-4" /> Topar troca
+                        </button>
+                        {dealEmpty && <p className="text-center text-[11px] text-muted-foreground">Adicione pelo menos uma figurinha para topar.</p>}
+                        {canCancel && (
+                          <button type="button" onClick={cancelTrade} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10">
+                            <Ban className="h-4 w-4" /> Cancelar troca
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                 ) : iConfirmed ? (
                   <div className="flex items-center gap-2">
