@@ -126,7 +126,6 @@ src/
 ├── routes/         # rotas do TanStack Router (__root, index)
 └── styles.css      # tema e tokens (cores FIFA)
 firestore.rules     # regras de segurança do Firestore
-docs/               # specs (ex.: fluxo de negociação de troca)
 scripts/            # coleta de dados das APIs
 ```
 
