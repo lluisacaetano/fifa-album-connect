@@ -32,7 +32,7 @@ const OVERRIDE = {
 
 // É uma PESSOA futebolista? (clube diz "clube de futebol"; artigo de seleção, etc.)
 const PERSON_RE = /futebolist|jogador de futebol|footballer|soccer player/i;
-const NOTPERSON_RE = /\bclube\b|\bequipe\b|sele[çc][aã]o (brasileira|nacional|de futebol)|estádio|temporada|\bciclo\b|campeonato|copa do mundo de/i;
+const NOTPERSON_RE = /\bclube\b|\bequipe\b|sele[çc][aã]o (brasileira|nacional|de futebol)|estádio|temporada|\bciclo\b|campeonato|copa do mundo de|football club|national (football )?team|stadium|\bseason\b/i;
 
 // O clube do jogador aparece no texto? (casa por palavra: "Newcastle United" -> "newcastle")
 function clubHit(blob, club) {
@@ -63,22 +63,42 @@ async function getJSON(url, cacheKey) {
   return null;
 }
 
-async function search(query, key) {
+async function search(query, key, lang) {
   const sr = await getJSON(
-    `https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=6&format=json`,
-    `search_${key}`,
+    `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=6&format=json`,
+    `search_${lang}_${key}`,
   );
   return (sr?.query?.search ?? []).map((r) => r.title);
 }
 
-// Resumo de um título; só passa se for PESSOA futebolista.
-async function pageOf(title) {
-  const j = await getJSON(`https://pt.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`, `sum_${slug(title)}`);
+// Resumo de um título (na língua dada); só passa se for PESSOA futebolista.
+async function pageOf(title, lang) {
+  const j = await getJSON(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`, `sum_${lang}_${slug(title)}`);
   if (!j || j.type === "disambiguation" || !j.extract) return null;
   const desc = j.description ?? "";
   if (NOTPERSON_RE.test(desc)) return null; // descrição de clube/seleção/artigo
   if (!PERSON_RE.test(`${desc} ${j.extract}`)) return null; // não é futebolista
   return { title: j.title ?? title, extract: j.extract, desc: tidy(j.extract) };
+}
+
+// Traduz EN->PT pelo endpoint público do Google (sem chave). Cacheia.
+async function translate(text) {
+  if (!text) return text;
+  const file = `${CACHE}/tr_${slug(text).slice(0, 60)}_${text.length}.json`;
+  if (existsSync(file)) return JSON.parse(readFileSync(file)).t;
+  for (let a = 0; a < 5; a++) {
+    await sleep(THROTTLE + a * 1000);
+    try {
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt&dt=t&q=${encodeURIComponent(text)}`);
+      if (!res.ok) continue;
+      const arr = JSON.parse(await res.text());
+      const t = (arr?.[0] ?? []).map((seg) => seg[0]).join("");
+      if (!t) continue;
+      writeFileSync(file, JSON.stringify({ t }));
+      return t;
+    } catch { /* retry */ }
+  }
+  return text; // se a tradução falhar, mantém o inglês (melhor que nada)
 }
 
 // O nome do jogador aparece no título ou no começo do resumo? (a página é DELE?)
@@ -89,28 +109,39 @@ function nameMatches(name, page) {
   return hay.includes(first);
 }
 
-// Acha a página certa do jogador: pessoa futebolista + nome bate + (de preferência) clube confere.
-async function resolve(name, club, forced) {
+// Acha a página numa língua: pessoa futebolista + nome bate + (de preferência) clube confere.
+async function resolveLang(name, club, forced, lang) {
   if (forced) {
-    const page = await pageOf(forced); // título verificado à mão -> confia
+    const page = await pageOf(forced, lang); // título verificado à mão -> confia
     if (page) return page;
   }
+  const word = lang === "pt" ? "futebolista" : "footballer";
   const titles = [
     name,
-    ...(await search(`${name} futebolista ${club ?? ""}`.trim(), `${slug(name)}-${slug(club ?? "x")}`)),
-    ...(await search(`${name} futebolista`, `${slug(name)}-f`)),
+    ...(await search(`${name} ${word} ${club ?? ""}`.trim(), `${slug(name)}-${slug(club ?? "x")}`, lang)),
+    ...(await search(`${name} ${word}`, `${slug(name)}-f`, lang)),
   ];
   const seen = new Set();
   let fallback = null;
   for (const title of titles) {
     if (!title || seen.has(title)) continue;
     seen.add(title);
-    const page = await pageOf(title);
+    const page = await pageOf(title, lang);
     if (!page || !nameMatches(name, page)) continue;
     if (clubHit(page.extract, club)) return page; // pessoa certa (clube confere)
     fallback ??= page; // 1º futebolista plausível, caso nenhum bata o clube
   }
   return fallback;
+}
+
+// PT primeiro; se não houver página em português, cai pra Wikipédia em INGLÊS.
+// Devolve { page, lang } — o chamador traduz quando lang === "en".
+async function resolve(name, club, forced) {
+  const pt = await resolveLang(name, club, forced, "pt");
+  if (pt) return { page: pt, lang: "pt" };
+  const en = await resolveLang(name, club, null, "en"); // override é título PT; ignora no EN
+  if (en) return { page: en, lang: "en" };
+  return null;
 }
 
 // ---- INFOBOX: carreira inteira -------------------------------------------------
@@ -211,35 +242,31 @@ let done = 0, miss = 0, n = 0;
 for (const [code, squad] of Object.entries(data)) {
   if (ONLY && !ONLY.includes(code)) continue;
   for (const p of squad.players) {
-    if (p.descSource === "wikipedia" && !FORCE) continue; // já resolvido
+    if (p.descSource?.startsWith("wikipedia") && !FORCE) continue; // já resolvido (PT ou EN)
     n++;
-    const page = await resolve(p.name, p.club, OVERRIDE[`${code}-${p.number}`]);
-    if (!page) {
+    const r = await resolve(p.name, p.club, OVERRIDE[`${code}-${p.number}`]);
+    if (!r) {
       miss++;
       console.log(`– ${code} ${p.name}: sem Wikipédia de futebolista`);
       p.wikiDone = true;
       continue;
     }
-    p.desc = page.desc;
-    p.descSource = "wikipedia";
+    const { page, lang } = r;
+    p.desc = lang === "en" ? await translate(page.desc) : page.desc;
+    p.descSource = lang === "en" ? "wikipedia-en" : "wikipedia";
     p.wikiTitle = page.title;
-    const box = await fetchInfobox(page.title);
-    if (box) {
-      const ib = parseInfobox(box);
-      if (ib.age != null) p.age = ib.age;
-      p.wiki = {
-        height: ib.height,
-        foot: ib.foot,
-        clubs: ib.clubs,
-        careerApps: ib.careerApps,
-        careerGoals: ib.careerGoals,
-        nat: ib.nat,
-      };
+    if (lang === "pt") {
+      const box = await fetchInfobox(page.title); // carreira só da infobox PT
+      if (box) {
+        const ib = parseInfobox(box);
+        if (ib.age != null) p.age = ib.age;
+        p.wiki = { height: ib.height, foot: ib.foot, clubs: ib.clubs, careerApps: ib.careerApps, careerGoals: ib.careerGoals, nat: ib.nat };
+      }
     }
     p.wikiDone = true;
     done++;
     const nat = p.wiki?.nat ? ` | seleção ${p.wiki.nat.apps ?? "?"}j/${p.wiki.nat.goals ?? "?"}g` : "";
-    console.log(`✓ ${code} ${p.name} (${page.title})${nat}`);
+    console.log(`✓ ${code} ${p.name} (${page.title})${lang === "en" ? " [EN→PT]" : ""}${nat}`);
     if (n % 10 === 0) writeFileSync("src/data/squads.generated.json", JSON.stringify(data, null, 1));
   }
 }
