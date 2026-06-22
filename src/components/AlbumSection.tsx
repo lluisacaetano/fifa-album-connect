@@ -167,13 +167,10 @@ export function AlbumSection() {
     });
   }
 
-  // Clique cicla: falta (0) → tenho (1) → troca (2) → falta (0).
-  const cycle = (c: string, id: number) => {
-    const n = getCount(c, id);
-    setCount(c, id, n >= 2 ? 0 : n + 1);
-  };
+  // Clique soma sempre: falta (0) → tenho (1) → repetida (2) → ×3 → ×4 ...
+  const cycle = (c: string, id: number) => setCount(c, id, getCount(c, id) + 1);
   const inc = (c: string, id: number) => setCount(c, id, getCount(c, id) + 1);
-  const dec = (c: string, id: number) => setCount(c, id, Math.max(1, getCount(c, id) - 1)); // mín. 1: para zerar, clique na figurinha
+  const dec = (c: string, id: number) => setCount(c, id, getCount(c, id) - 1); // pode chegar a 0 (remove)
 
   // Monta o álbum por NÚMERO ("BRA1") + figurinhas para troca (2+) + as que faltam (wants).
   const syncPayload = useMemo(() => {
@@ -244,7 +241,7 @@ export function AlbumSection() {
               MEU ÁLBUM
             </motion.h2>
             <p className="mt-2 max-w-lg text-sm text-white/80">
-              1 clique = você <strong>tem</strong>. Clique <strong>de novo</strong> e ela vira <strong>troca</strong> (repetida). Use o + para contar mais de uma.
+              Cada clique conta <strong>+1</strong> (você tem mais uma). A partir de <strong>2</strong>, a figurinha vira <strong>troca</strong> (repetida). Use o <strong>−</strong> para tirar.
             </p>
           </div>
 
@@ -423,11 +420,9 @@ export function AlbumSection() {
                     onClick={() => cycle(c.code, c.id)}
                     aria-pressed={has}
                     title={
-                      forTrade
-                        ? `${c.name} (${c.country}) está para troca — clique para limpar`
-                        : has
-                          ? `Você tem ${c.name} (${c.country}) — clique de novo para marcar como troca`
-                          : `Falta ${c.name} (${c.country}) — clique se conseguiu`
+                      has
+                        ? `Você tem ${count} de ${c.name} (${c.country}) — clique para somar mais uma`
+                        : `Falta ${c.name} (${c.country}) — clique se conseguiu`
                     }
                     className="absolute inset-0 z-[1] rounded-xl outline-none ring-[color:var(--fifa-yellow)] focus-visible:ring-2"
                   />
@@ -501,9 +496,8 @@ export function AlbumSection() {
                       <button
                         type="button"
                         onClick={() => dec(c.code, c.id)}
-                        disabled={count <= 1}
-                        aria-label="Tirar uma repetida"
-                        className="grid h-5 w-5 place-items-center rounded-full text-white transition-colors hover:bg-white/20 disabled:opacity-30"
+                        aria-label={count <= 1 ? "Remover (não tenho)" : "Tirar uma"}
+                        className="grid h-5 w-5 place-items-center rounded-full text-white transition-colors hover:bg-white/20"
                       >
                         <Minus className="h-3 w-3" />
                       </button>
