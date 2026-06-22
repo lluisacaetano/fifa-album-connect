@@ -347,7 +347,7 @@ export function ConnectSection() {
               {/* Mapa — acompanha a altura do card ao lado */}
               <div className="relative h-full min-h-[360px] overflow-hidden rounded-3xl border-2 border-border bg-muted shadow-xl sm:min-h-[480px]">
                 {mounted && Map ? (
-                  <Map.MapContainer center={[-15.78, -47.92]} zoom={4} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
+                  <Map.MapContainer center={[-15.78, -47.92]} zoom={4} style={{ height: "100%", width: "100%" }} scrollWheelZoom={true}>
                     <Map.TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     {filtered.map((t) => {
                       const d = distOf(t);
