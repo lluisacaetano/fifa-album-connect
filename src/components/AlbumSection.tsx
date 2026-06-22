@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Globe, Minus, Plus, Repeat } from "lucide-react";
+import { Search, Globe, Minus, Plus, Repeat, Lock } from "lucide-react";
 import { squads, squadByCode } from "@/data/squads";
 import { initials } from "@/data/players";
 import { doc, getDoc } from "firebase/firestore";
@@ -61,7 +61,7 @@ export function AlbumSection() {
   // Quantidade de cada figurinha. 0 = falta, 1 = tenho, 2+ = repetida (para troca).
   const [countMap, setCountMap] = useState<Record<string, Counts>>({});
   const [synced, setSynced] = useState(false); // já carregou o álbum do Firestore?
-  const { user } = useAuth();
+  const { user, hydrated, openAuth } = useAuth();
 
   // Índice reverso: número da figurinha ("BRA1") -> { code, id } local.
   const stickerIndex = useMemo(() => {
@@ -248,20 +248,50 @@ export function AlbumSection() {
             </p>
           </div>
 
-          <div className="grid w-full grid-cols-4 gap-2 sm:flex sm:w-auto sm:gap-3">
-            {[
-              { l: "Total", v: allCards.length },
-              { l: "Tenho", v: ownedCount },
-              { l: "Faltam", v: allCards.length - ownedCount },
-              { l: "Troco", v: tradeCount },
-            ].map((s) => (
-              <div key={s.l} className="rounded-2xl border border-white/15 bg-white/10 px-2 py-3 text-center backdrop-blur-sm sm:px-5">
-                <div className="font-display text-2xl text-[color:var(--fifa-yellow)] sm:text-3xl">{s.v}</div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-white/70">{s.l}</div>
-              </div>
-            ))}
-          </div>
+          {user && (
+            <div className="grid w-full grid-cols-4 gap-2 sm:flex sm:w-auto sm:gap-3">
+              {[
+                { l: "Total", v: allCards.length },
+                { l: "Tenho", v: ownedCount },
+                { l: "Faltam", v: allCards.length - ownedCount },
+                { l: "Troco", v: tradeCount },
+              ].map((s) => (
+                <div key={s.l} className="rounded-2xl border border-white/15 bg-white/10 px-2 py-3 text-center backdrop-blur-sm sm:px-5">
+                  <div className="font-display text-2xl text-[color:var(--fifa-yellow)] sm:text-3xl">{s.v}</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-white/70">{s.l}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+
+        {!hydrated ? (
+          <div className="grid h-[280px] place-items-center text-sm text-white/70">Carregando…</div>
+        ) : !user ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-3xl border-2 border-dashed border-white/30 bg-white/10 px-6 py-16 text-center backdrop-blur-sm"
+          >
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white/15">
+              <Lock className="h-7 w-7 text-white" />
+            </div>
+            <h3 className="mt-5 font-display text-3xl">Entre para montar seu álbum</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-white/80">
+              Faça login para marcar suas figurinhas, contar repetidas e salvar tudo no seu perfil — sincronizado entre dispositivos.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <button onClick={() => openAuth("signup")} className="rounded-full bg-white px-7 py-3 text-sm font-bold text-[color:var(--fifa-green-deep)] shadow-md transition-all hover:scale-[1.03]">
+                Criar conta grátis
+              </button>
+              <button onClick={() => openAuth("login")} className="rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-white/10">
+                Já tenho conta
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <>
 
         {/* Seletor: Todos + seleções */}
         <div className="mb-6 flex gap-2.5 overflow-x-auto pb-3 [scrollbar-color:rgba(255,255,255,0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/40 [&::-webkit-scrollbar-thumb]:hover:bg-white/60 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:h-1.5">
@@ -508,6 +538,8 @@ export function AlbumSection() {
             />
           </div>
         </div>
+          </>
+        )}
       </div>
     </section>
   );
