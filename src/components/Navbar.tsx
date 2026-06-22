@@ -12,6 +12,7 @@ const links = [
   { href: "#selecoes", id: "selecoes", label: "Seleções" },
   { href: "#grupos", id: "grupos", label: "Grupos" },
   { href: "#partidas", id: "partidas", label: "Partidas" },
+  { href: "#palpites", id: "palpites", label: "Palpites" },
   { href: "#conectar", id: "conectar", label: "Trocas" },
   { href: "#album", id: "album", label: "Meu Álbum" },
 ];

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Send, Check, Ban, Truck, MapPin } from "lucide-react";
+import { X, Send, Check, Ban, Truck, MapPin, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTrades } from "@/lib/trades-context";
 import { chatId, listenMessages, sendMessage, type ChatMessage } from "@/lib/chat";
@@ -117,6 +117,14 @@ export function ChatDrawer() {
                 <div className="font-display text-xl leading-none">{chatTarget.name}</div>
                 <div className="text-[11px] text-white/80">Combine sua troca</div>
               </div>
+            </div>
+
+            {/* Aviso de segurança */}
+            <div className="flex items-start gap-2 border-b border-border bg-[color:var(--fifa-yellow)]/15 px-4 py-2 text-[11px] leading-snug text-foreground/80">
+              <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--fifa-green-deep)]" />
+              <span>
+                Troque em <strong>locais movimentados</strong> (ex.: em frente a um supermercado ou pontos de troca oficiais). Nunca combine em lugares vazios nem compartilhe sua localização exata com desconhecidos.
+              </span>
             </div>
 
             {/* Mensagens */}
