@@ -276,14 +276,6 @@ export function AlbumSection() {
   const ownedAll = squads.reduce((n, s) => n + s.players.filter((p) => getCount(s.code, p.id) >= 1).length, 0);
   const progressAll = totalAll ? Math.round((ownedAll / totalAll) * 100) : 0;
 
-  // Gamificação: seleções 100% completas e trocas concluídas.
-  const completedCodes = useMemo(() => {
-    const set = new Set<string>();
-    for (const s of squads) if (albumCards(s).every((c) => (countMap[s.code]?.[c.id] ?? 0) >= 1)) set.add(s.code);
-    return set;
-  }, [countMap]);
-  const tradesDone = user ? requests.filter((r) => r.status === "accepted" && r.participants.includes(user.uid)).length : 0;
-
   const searched = useMemo(() => {
     const q = norm(query.trim());
     if (!q) return allCards;
@@ -603,24 +595,6 @@ export function AlbumSection() {
           </div>
         </div>
 
-        {/* Conquistas */}
-        <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm">
-          <div className="mb-3 text-sm font-bold uppercase tracking-widest text-white/85">Conquistas</div>
-          <div className="flex flex-wrap gap-2">
-            <span className={`rounded-full px-3 py-1 text-xs font-bold ${completedCodes.size > 0 ? "bg-[color:var(--fifa-yellow)] text-[color:var(--fifa-green-deep)]" : "bg-white/10 text-white/50"}`}>
-              🏆 {completedCodes.size} seleç{completedCodes.size === 1 ? "ão" : "ões"} completa{completedCodes.size === 1 ? "" : "s"}
-            </span>
-            <span className={`rounded-full px-3 py-1 text-xs font-bold ${tradesDone > 0 ? "bg-[color:var(--fifa-yellow)] text-[color:var(--fifa-green-deep)]" : "bg-white/10 text-white/50"}`}>
-              🔄 {tradesDone} troca{tradesDone === 1 ? "" : "s"} feita{tradesDone === 1 ? "" : "s"}
-            </span>
-            {[10, 25, 50, 75, 100].map((th) => (
-              <span key={th} className={`rounded-full px-3 py-1 text-xs font-bold ${progressAll >= th ? "bg-[color:var(--fifa-green)] text-white" : "bg-white/10 text-white/40"}`}>
-                {progressAll >= th ? "✓ " : ""}
-                {th}% do álbum
-              </span>
-            ))}
-          </div>
-        </div>
           </>
         )}
       </div>
