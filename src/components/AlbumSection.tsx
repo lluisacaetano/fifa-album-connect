@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Search, Globe, Minus, Plus, Repeat } from "lucide-react";
 import { squads, squadByCode } from "@/data/squads";
 import { initials } from "@/data/players";
+import { useAuth } from "@/lib/auth";
+import { saveUserAlbum, type TradeSticker } from "@/lib/profile";
 
 const countKey = (code: string) => `album-count-${code}`;
 const ownedKey = (code: string) => `album-owned-${code}`;
@@ -56,6 +58,7 @@ export function AlbumSection() {
   const [view, setView] = useState<"all" | "trade">("all"); // "trade" = só as repetidas
   // Quantidade de cada figurinha. 0 = falta, 1 = tenho, 2+ = repetida (para troca).
   const [countMap, setCountMap] = useState<Record<string, Counts>>({});
+  const { user } = useAuth();
 
   // Carrega do navegador o que já está marcado em TODAS as seleções (1x ao montar).
   // Migra do formato antigo (só "tenho/não tenho") para quantidades, se preciso.
@@ -123,6 +126,31 @@ export function AlbumSection() {
   };
   const inc = (c: string, id: number) => setCount(c, id, getCount(c, id) + 1);
   const dec = (c: string, id: number) => setCount(c, id, Math.max(1, getCount(c, id) - 1)); // mín. 1: para zerar, clique na figurinha
+
+  // Monta o álbum por NÚMERO da figurinha (ex.: "BRA1") + a lista para troca (2+).
+  const syncPayload = useMemo(() => {
+    const album: Record<string, number> = {};
+    const trades: TradeSticker[] = [];
+    for (const s of squads) {
+      const counts = countMap[s.code];
+      if (!counts) continue;
+      for (const card of albumCards(s)) {
+        const n = counts[card.id] ?? 0;
+        if (n < 1) continue;
+        const key = card.sticker ?? `${card.code}#${card.id}`;
+        album[key] = n;
+        if (n >= 2 && card.kind === "player") trades.push({ code: key, name: card.name });
+      }
+    }
+    return { album, trades };
+  }, [countMap]);
+
+  // Salva no Firestore (com debounce) quando logado.
+  useEffect(() => {
+    if (!user) return;
+    const t = setTimeout(() => saveUserAlbum(user.uid, syncPayload.album, syncPayload.trades), 700);
+    return () => clearTimeout(t);
+  }, [syncPayload, user]);
 
   const allCards: Card[] = useMemo(() => {
     const source = isAll ? squads : [squad!];

@@ -1,12 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Search, MapPin, Star, ArrowLeftRight, Check, Sparkles, Lock, Repeat } from "lucide-react";
+import { collection, getDocs } from "firebase/firestore";
 import { squads } from "@/data/squads";
 import { traders, type Trader } from "@/data/traders";
+import { initials } from "@/data/players";
 import { useAuth } from "@/lib/auth";
+import { db } from "@/lib/firebase";
 
 const ACCENTS = new RegExp("[\\u0300-\\u036f]", "g");
 const norm = (s: string) => s.normalize("NFD").replace(ACCENTS, "").toLowerCase();
+
+// Hash estável do uid p/ gerar id numérico e dispersar levemente o pino no mapa.
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+const jitter = (h: number, k: number) => (((h * k) % 1000) / 1000 - 0.5) * 0.12;
 
 export function ConnectSection() {
   const { user, hydrated, openAuth } = useAuth();
@@ -17,6 +28,7 @@ export function ConnectSection() {
   const [requested, setRequested] = useState<Set<number>>(new Set());
   const [mounted, setMounted] = useState(false);
   const [Map, setMap] = useState<any>(null);
+  const [realTraders, setRealTraders] = useState<Trader[]>([]);
 
   // Figurinhas que FALTAM e as que tenho REPETIDAS (para troca), lidas do álbum.
   const [missing, setMissing] = useState<Set<string>>(new Set());
@@ -62,9 +74,51 @@ export function ConnectSection() {
     });
   }, []);
 
+  // Busca colecionadores REAIS (Firestore) que têm figurinhas para troca e localização.
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    getDocs(collection(db, "users"))
+      .then((snap) => {
+        if (!alive) return;
+        const list: Trader[] = [];
+        snap.forEach((docSnap) => {
+          const u = docSnap.data() as any;
+          const rawTrades: any[] = Array.isArray(u.trades) ? u.trades : [];
+          const has = rawTrades.map((t) => (typeof t === "string" ? t : t?.name)).filter(Boolean) as string[];
+          if (!has.length) return;
+          if (typeof u.lat !== "number" || typeof u.lng !== "number") return;
+          const h = hashStr(docSnap.id);
+          list.push({
+            id: 1_000_000 + (h % 1_000_000),
+            name: u.name || "Colecionador",
+            city: u.city ? String(u.city).split(" - ")[0] : "—",
+            distance: "—",
+            rating: 5,
+            has,
+            wants: [],
+            lat: u.lat + jitter(h, 7),
+            lng: u.lng + jitter(h, 13),
+            avatar: initials(u.name || "?"),
+            isMe: docSnap.id === user.uid,
+          });
+        });
+        setRealTraders(list);
+      })
+      .catch(() => {
+        /* sem Firestore / sem permissão — fica só com os fictícios */
+      });
+    return () => {
+      alive = false;
+    };
+  }, [user, myDupes]);
+
+  // Colecionadores reais primeiro, depois os de exemplo.
+  const everyone = useMemo(() => [...realTraders, ...traders], [realTraders]);
+
   const filtered = useMemo(() => {
     const q = norm(query.trim());
-    let list = traders;
+    let list = everyone;
     if (q) {
       list = list.filter(
         (t) => t.has.some((s) => norm(s).includes(q)) || t.wants.some((s) => norm(s).includes(q)) || norm(t.name).includes(q) || norm(t.city).includes(q),
@@ -73,9 +127,9 @@ export function ConnectSection() {
     if (onlyMatches) list = list.filter((t) => matchCount(t) > 0);
     // mais compatíveis com o seu álbum primeiro
     return [...list].sort((a, b) => matchCount(b) - matchCount(a));
-  }, [query, onlyMatches, missing]);
+  }, [query, onlyMatches, missing, everyone]);
 
-  const totalMatches = traders.reduce((acc, t) => acc + matchCount(t), 0);
+  const totalMatches = everyone.reduce((acc, t) => acc + matchCount(t), 0);
 
   return (
     <section id="conectar" className="relative bg-background py-24">
@@ -153,10 +207,10 @@ export function ConnectSection() {
             {/* Resumo */}
             <div className="mx-auto mb-6 flex max-w-3xl flex-wrap justify-center gap-3">
               {[
-                { l: "Colecionadores", v: traders.length },
+                { l: "Colecionadores", v: everyone.length },
                 { l: "Trocas compatíveis", v: totalMatches },
                 { l: "Minhas repetidas", v: myDupes.size },
-                { l: "Cidades", v: new Set(traders.map((t) => t.city)).size },
+                { l: "Cidades", v: new Set(everyone.map((t) => t.city)).size },
               ].map((s) => (
                 <div key={s.l} className="rounded-2xl border border-border bg-card px-5 py-3 text-center">
                   <div className="font-display text-3xl text-[color:var(--fifa-green)]">{s.v}</div>
@@ -219,7 +273,12 @@ export function ConnectSection() {
                   <div className="flex items-center gap-4">
                     <div className="grid h-16 w-16 place-items-center rounded-full bg-fifa-gradient font-display text-2xl text-white">{selected.avatar}</div>
                     <div>
-                      <h3 className="font-display text-2xl">{selected.name}</h3>
+                      <h3 className="flex items-center gap-2 font-display text-2xl">
+                        {selected.name}
+                        {selected.isMe && (
+                          <span className="rounded-full bg-[color:var(--fifa-green)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">Você</span>
+                        )}
+                      </h3>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span className="inline-flex items-center gap-1">
                           <MapPin className="h-3 w-3" /> {selected.city}
@@ -277,21 +336,27 @@ export function ConnectSection() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => setRequested((prev) => new Set(prev).add(selected.id))}
-                    disabled={requested.has(selected.id)}
-                    className="group mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green)] px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-[1.02] hover:bg-[color:var(--fifa-green-deep)] disabled:cursor-default disabled:bg-[color:var(--fifa-green-deep)] disabled:hover:scale-100"
-                  >
-                    {requested.has(selected.id) ? (
-                      <>
-                        <Check className="h-4 w-4" /> Troca solicitada!
-                      </>
-                    ) : (
-                      <>
-                        <ArrowLeftRight className="h-4 w-4 transition-transform group-hover:rotate-180" /> Solicitar troca
-                      </>
-                    )}
-                  </button>
+                  {selected.isMe ? (
+                    <div className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[color:var(--fifa-green)]/40 bg-[color:var(--fifa-green)]/10 px-6 py-3 text-sm font-semibold text-[color:var(--fifa-green)]">
+                      <MapPin className="h-4 w-4" /> Esta é a sua localização no mapa
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setRequested((prev) => new Set(prev).add(selected.id))}
+                      disabled={requested.has(selected.id)}
+                      className="group mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green)] px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-[1.02] hover:bg-[color:var(--fifa-green-deep)] disabled:cursor-default disabled:bg-[color:var(--fifa-green-deep)] disabled:hover:scale-100"
+                    >
+                      {requested.has(selected.id) ? (
+                        <>
+                          <Check className="h-4 w-4" /> Troca solicitada!
+                        </>
+                      ) : (
+                        <>
+                          <ArrowLeftRight className="h-4 w-4 transition-transform group-hover:rotate-180" /> Solicitar troca
+                        </>
+                      )}
+                    </button>
+                  )}
                 </motion.div>
               )}
             </div>

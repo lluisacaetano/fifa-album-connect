@@ -11,6 +11,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { ensureUserLocation, geocodeCity } from "@/lib/profile";
 
 export type User = { uid: string; name: string; email: string; city?: string };
 export type AuthMode = "login" | "signup";
@@ -42,7 +43,9 @@ async function loadProfile(fbUser: FirebaseUser): Promise<User> {
   try {
     const snap = await getDoc(doc(db, "users", fbUser.uid));
     if (snap.exists()) {
-      const data = snap.data() as Partial<User>;
+      const data = snap.data() as Partial<User> & { lat?: number; lng?: number };
+      // Preenche as coordenadas de quem se cadastrou antes do mapa real (best-effort).
+      if (data.city && typeof data.lat !== "number") void ensureUserLocation(fbUser.uid, data.city);
       return { ...base, city: data.city, name: data.name || base.name };
     }
   } catch {
@@ -69,12 +72,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async ({ name, email, city, password }: RegisterData) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName: name });
-    // Guarda o perfil (cidade etc.) no Firestore — best-effort.
+    // Geocodifica a cidade e guarda o perfil + coordenadas no Firestore — best-effort.
     try {
+      const loc = city ? await geocodeCity(city) : null;
       await setDoc(doc(db, "users", cred.user.uid), {
         name,
         email,
         city: city ?? null,
+        lat: loc?.lat ?? null,
+        lng: loc?.lng ?? null,
         createdAt: Date.now(),
       });
     } catch {

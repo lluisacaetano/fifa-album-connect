@@ -15,6 +15,7 @@ export type Trader = {
   lat: number;
   lng: number;
   avatar: string;
+  isMe?: boolean; // marca o próprio usuário no mapa
 };
 
 const CITIES: { city: string; lat: number; lng: number }[] = [
