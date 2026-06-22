@@ -1,83 +1,124 @@
 # ⚽ Álbum FIFA 2026
 
-Rede social e álbum digital de figurinhas da **Copa do Mundo FIFA 2026** (Canadá · México · EUA). Colecione, troque e complete seu álbum, conheça os jogadores das 48 seleções, acompanhe a fase de grupos e as partidas.
+Rede social e álbum digital de figurinhas da **Copa do Mundo FIFA 2026** (Canadá · México · EUA). Colecione as figurinhas das 48 seleções, **troque com colecionadores perto de você** num mapa em tempo real, **dê palpites** nos jogos e dispute o ranking. Funciona em **web (desktop/tablet) e mobile**.
 
-## ✨ Funcionalidades
+> 🔗 **App no ar (Vercel):** `https://fifa-album.vercel.app` · **Preview (Lovable):** `https://fifa-album-connect.lovable.app`
+> _(confirme as URLs finais no seu deploy)_
 
-- **Jogadores** — elencos reais das 48 seleções: foto, posição, número, clube, idade e estatísticas, com seletor de seleção e carrossel um a um.
-- **Meu Álbum** — marque as figurinhas que você tem, busque por jogador ou seleção e acompanhe o progresso.
-- **Grupos** — as 12 tabelas da fase de grupos.
-- **Partidas** — calendário de jogos e estádios.
-- **Conectar** — seção social para trocas entre colecionadores.
+Projeto acadêmico da disciplina de **Inteligência Artificial** — desenvolvido com ferramentas de IA (**Lovable** + **Claude Code**, este usado em duas instâncias em paralelo). Não afiliado à FIFA.
+
+---
+
+## ✨ Funcionalidades principais
+
+1. **Meu Álbum** — marque as figurinhas que você tem (clique soma: tenho → repetida); 2+ vira automaticamente "para troca". Busca por jogador/seleção/nº (ex.: `BRA10`), progresso por seleção e geral, conquistas, e **sincronização entre dispositivos** (Firebase). Exige login.
+2. **Trocas (mapa social)** — colecionadores reais aparecem no **mapa** (Leaflet) como mini-figurinhas; filtre por seleção e distância; **solicite troca**, **converse no chat em tempo real**, combine a **entrega** (presencial / Correios / transportadora com **código de rastreio**), e **avalie** quem você trocou (reputação).
+3. **Palpites** — dentro de **Partidas**, clique num jogo, **crave o placar** (até 1h antes), veja o **gráfico** com a distribuição dos palpites da galera e o **ranking** de quem mais acerta. Notifica quando você acerta o placar.
+
+Outras: login por **e-mail/senha** e **Google**, recuperação de senha, **perfil com foto**, **notificações** (sino) e **caixa de mensagens**, jogadores das 48 seleções (carrossel com swipe no mobile), grupos e calendário de partidas com **placares ao vivo** (ESPN).
+
+---
 
 ## 🧱 Stack
 
-- [TanStack Start](https://tanstack.com/start) (React + SSR) e [TanStack Router](https://tanstack.com/router)
-- [Vite](https://vitejs.dev/) + TypeScript
-- [Tailwind CSS](https://tailwindcss.com/) + componentes [shadcn/ui](https://ui.shadcn.com/) (Radix)
-- [Framer Motion](https://www.framer.com/motion/) / GSAP para animações
-- [Leaflet](https://leafletjs.com/) para o mapa dos estádios
-- Fontes: Bebas Neue (display) + Inter
+| Camada | Tecnologia |
+|---|---|
+| Framework | [TanStack Start](https://tanstack.com/start) (React 19 + **SSR**) + [TanStack Router](https://tanstack.com/router) |
+| Build | [Vite](https://vitejs.dev/) + TypeScript · [Nitro](https://nitro.build/) (SSR; preset Vercel/Cloudflare) |
+| Estilo | [Tailwind CSS v4](https://tailwindcss.com/) + componentes [shadcn/ui](https://ui.shadcn.com/) (Radix) |
+| Animação | [Framer Motion](https://www.framer.com/motion/) |
+| Mapa | [Leaflet](https://leafletjs.com/) + react-leaflet (tiles OpenStreetMap) |
+| Backend (BaaS) | **Firebase** — Authentication + Cloud Firestore (tempo real) |
+| Toasts | [sonner](https://sonner.emilkowal.ski/) |
+| Dados / placares | JSON estático das seleções + API **ESPN** (placares ao vivo) + **IBGE** (cidades) |
+| Fontes | Bebas Neue (display) + Inter |
+
+---
 
 ## 🚀 Rodando localmente
 
-```bash
-bun install      # ou: npm install
-bun run dev      # sobe em http://localhost:8080
-```
+Pré-requisito: **Node 18+** (ou Bun).
 
-Scripts:
+```bash
+npm install
+npm run dev        # sobe em http://localhost:8080
+```
 
 | Comando | O que faz |
 |---|---|
-| `bun run dev` | Servidor de desenvolvimento |
-| `bun run build` | Build de produção |
-| `bun run preview` | Pré-visualiza o build |
-| `bun run lint` | ESLint |
-| `bun run format` | Prettier |
+| `npm run dev` | Servidor de desenvolvimento (HMR) |
+| `npm run build` | Build de produção |
+| `npm run preview` | Pré-visualiza o build |
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier |
+
+> A configuração do Firebase (app **web**, que é pública por design) já vem **embutida** em `src/lib/firebase.ts` com fallback — então o app **roda sem `.env`**. Para apontar para outro projeto, crie um `.env.local` com as `VITE_FIREBASE_*`.
+
+---
+
+## 🔥 Configuração do Firebase (para o backend funcionar)
+
+O app usa um projeto Firebase (`fifa-album-connect`). Para subir o seu:
+
+1. **Authentication → Sign-in method:** ative **E-mail/senha** e **Google**. Em *Settings → Authorized domains*, adicione o domínio do deploy (ex.: `seu-app.vercel.app`).
+2. **Firestore Database:** crie em `southamerica-east1`.
+3. **Regras:** publique o conteúdo de [`firestore.rules`](./firestore.rules) (perfis com leitura pública para o mapa, e escrita só do dono; trocas/chat só entre os participantes; palpites públicos para leitura).
+
+Coleções usadas: `users`, `tradeRequests`, `chats/{cid}/messages`, `predictions`.
+
+---
+
+## 🌐 Deploy
+
+- **Vercel:** o build do Nitro está configurado para o preset Vercel (`vite.config.ts` → `nitro: { preset: "vercel" }`), gerando `.vercel/output`. A Vercel detecta e serve automaticamente. _Build Command:_ `npm run build`.
+- **Lovable:** publica pelo botão **Publish** (não atualiza sozinho no push).
+
+---
+
+## ✅ Como testar
+
+1. Crie uma conta (e-mail/senha forte ou Google) e informe a cidade.
+2. Em **Meu Álbum**, marque figurinhas; deixe 2+ em algumas (vira "para troca").
+3. Em **Trocas**, você aparece no mapa. Em uma **2ª conta** (aba anônima), crie outro colecionador e teste: **solicitar troca → chat → confirmar entrega → avaliar**.
+4. Em **Partidas**, clique num jogo e **dê um palpite**; veja o gráfico e o ranking.
+
+---
 
 ## 🗂️ Dados dos jogadores
 
-Os dados das seleções são **buscados uma vez** e gravados em `src/data/` (como os elencos não mudam, o JSON funciona como "banco" estático — sem servidor/DB em runtime).
+Os elencos são **buscados uma vez** e gravados em `src/data/` (como não mudam, o JSON funciona como "banco" estático).
 
 | Arquivo | Conteúdo |
 |---|---|
 | `src/data/worldcup.json` | 48 seleções, grupos, estádios e partidas |
-| `src/data/nations.ts` | Metadados das seleções (código de bandeira, cores) |
-| `src/data/squads.generated.json` | Elencos completos gerados pelos scripts |
-| `src/data/players.ts` | Elenco curado do Brasil (fotos locais) |
-| `src/data/squads.ts` | Junta tudo num formato único (ordena por número da camisa) |
+| `src/data/squads.generated.json` | Elencos completos (gerados pelos scripts) |
+| `src/data/squads.ts` / `players.ts` / `nations.ts` | Formato unificado, curadoria e metadados |
 
-### Scripts de coleta (`scripts/`)
+Scripts em `scripts/` baixam elencos (API-Football) e fotos hi-res (TheSportsDB), com _throttle_ e cache. Veja os comentários de cada script.
 
-Resumíveis e com _throttle_ (respeitam os limites das APIs gratuitas):
-
-- `fetch-squads.mjs` — baixa os 48 elencos da [API-Football](https://www.api-football.com/) (`/players/squads`): nome, posição, número, idade, foto.
-- `fetch-photos.mjs` — substitui as fotos por **cutouts hi-res** (PNG transparente) da [TheSportsDB](https://www.thesportsdb.com/), casando por nome + nacionalidade; também traz o clube. Sem match confiável, mantém a foto da API.
-- `enrich-stats.mjs` — adiciona estatísticas da temporada (gols, assistências, jogos) via API-Football.
-
-```bash
-# requer uma key gratuita da API-Football
-APIFOOTBALL_KEY=xxxx node scripts/fetch-squads.mjs
-node scripts/fetch-photos.mjs
-APIFOOTBALL_KEY=xxxx node scripts/enrich-stats.mjs
-```
-
-> ⚠️ O plano gratuito da API-Football tem limite de **100 requisições/dia** e **10/minuto** — por isso os scripts rodam em levas e são resumíveis (cache em `/tmp/apif`).
+---
 
 ## 📁 Estrutura
 
 ```
 src/
-├── components/      # Hero, Navbar, PlayersCarousel, AlbumSection, GruposSection, ...
-│   └── ui/          # componentes shadcn/ui
-├── data/            # dados das seleções, jogadores e partidas
-├── routes/          # rotas do TanStack Router
-└── styles.css       # tema e tokens (cores FIFA)
-scripts/             # coleta de dados das APIs
-public/              # favicon, fotos locais
+├── components/     # Hero, Navbar, AlbumSection, ConnectSection (mapa/trocas),
+│                   # MatchesSection (+palpites), ChatDrawer, modais, ui/ (shadcn)
+├── lib/            # firebase, auth, trades, trades-context, chat, predictions, profile, sound
+├── data/           # seleções, jogadores, partidas
+├── routes/         # rotas do TanStack Router (__root, index)
+└── styles.css      # tema e tokens (cores FIFA)
+firestore.rules     # regras de segurança do Firestore
+docs/               # specs (ex.: fluxo de negociação de troca)
+scripts/            # coleta de dados das APIs
 ```
 
 ---
 
-Projeto acadêmico — não afiliado à FIFA.
+## 🤖 Ferramentas de IA usadas
+
+- **Lovable** — scaffold inicial do app web (low-code) e deploy de preview.
+- **Claude Code (instância 1)** — features complexas (Firebase Auth/Firestore, mapa de trocas, chat em tempo real, palpites, reputação, responsividade, deploy), debug e refactor.
+- **Claude Code (instância 2, em paralelo)** — curadoria de dados e fotos das seleções (pipelines de coleta).
+
+Detalhes do uso da IA e a documentação descritiva completa estão em [`DOCUMENTACAO.md`](./DOCUMENTACAO.md).
