@@ -1,7 +1,12 @@
 # Fluxo de troca com negociação (spec p/ implementação)
 
-> Spec da Luísa, organizada pelo Claude. Quem implementar (a outra IA) deve seguir isto.
-> NÃO é só visual — é máquina de estados + dados + UI. Mantém o design FIFA já usado.
+> ⚠️ **Spec inicial — já implementada, com ajustes.** A versão final está documentada em
+> [`../DOCUMENTACAO.md`](../DOCUMENTACAO.md) §2.2.1 (fonte da verdade). Principais diferenças
+> em relação a este rascunho: o **modal de valor virou campo de valor inline** no editor da
+> contraproposta; o fechamento passou a ser por **confirmação de recebimento dos dois lados**
+> (com passo de **informar o envio** antes), não por "entrega".
+>
+> Spec da Luísa, organizada pelo Claude. NÃO é só visual — é máquina de estados + dados + UI.
 
 ## Resumo em uma frase
 A pessoa A escolhe o que quer de B → B faz uma contraproposta do que quer em troca →

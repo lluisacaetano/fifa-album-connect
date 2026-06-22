@@ -11,7 +11,7 @@ Projeto acadêmico da disciplina de **Inteligência Artificial** — desenvolvid
 ## ✨ Funcionalidades principais
 
 1. **Meu Álbum** — marque as figurinhas que você tem (clique soma: tenho → repetida); 2+ vira automaticamente "para troca". Busca por jogador/seleção/nº (ex.: `BRA10`), progresso por seleção e geral, conquistas, e **sincronização entre dispositivos** (Firebase). Exige login.
-2. **Trocas (mapa social)** — colecionadores reais aparecem no **mapa** (Leaflet) como mini-figurinhas; filtre por seleção e distância; **solicite troca** e **negocie por rodadas** (proposta → contraproposta → consenso, com **valor em R$** quando as quantidades não batem — cada rodada vira um cartão no chat); **converse no chat em tempo real**, combine a **entrega** (presencial / Correios / transportadora com **código de rastreio**), e **avalie** quem você trocou (reputação).
+2. **Trocas (mapa social)** — colecionadores reais aparecem no **mapa** (Leaflet) como mini-figurinhas; filtre por seleção e distância; **solicite troca** e **negocie por rodadas** no chat (proposta → contraproposta → consenso; cada rodada vira um cartão; **valor em R$ inline** quando as quantidades não batem — suporta troca, venda ou mistos); informe o **envio** (presencial / Correios / transportadora com **rastreio**), **confirme o recebimento dos dois lados** (fecha a troca e dá baixa no álbum) e **avalie** quem você trocou (reputação).
 3. **Palpites** — dentro de **Partidas**, clique num jogo, **crave o placar** (até 1h antes), veja o **gráfico** com a distribuição dos palpites da galera e o **ranking** de quem mais acerta. Notifica quando você acerta o placar.
 
 Outras: login por **e-mail/senha** e **Google**, recuperação de senha, **perfil com foto**, **notificações** (sino) e **caixa de mensagens**, jogadores das 48 seleções (carrossel com swipe no mobile), grupos e calendário de partidas com **placares ao vivo** (ESPN).
@@ -78,7 +78,7 @@ Coleções usadas: `users`, `tradeRequests`, `chats/{cid}/messages`, `prediction
 
 1. Crie uma conta (e-mail/senha forte ou Google) e informe a cidade.
 2. Em **Meu Álbum**, marque figurinhas; deixe 2+ em algumas (vira "para troca").
-3. Em **Trocas**, você aparece no mapa. Em uma **2ª conta** (aba anônima), crie outro colecionador e teste: **solicitar troca → chat → confirmar entrega → avaliar**.
+3. Em **Trocas**, você aparece no mapa. Em uma **2ª conta** (aba anônima), crie outro colecionador e teste: **solicitar proposta → negociar no chat (contrapor / valor R$) → informar envio → confirmar recebimento dos dois lados → avaliar**.
 4. Em **Partidas**, clique num jogo e **dê um palpite**; veja o gráfico e o ranking.
 
 ---

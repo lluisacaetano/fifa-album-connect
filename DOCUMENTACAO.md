@@ -30,33 +30,35 @@ A aplicação tem **mais de 3 funcionalidades principais**. As três centrais:
 - **Mapa interativo** (Leaflet/OpenStreetMap) onde cada colecionador real aparece como uma **mini-figurinha**; pino com badge de quantidade.
 - **Filtros** por seleção e por **raio de distância**; busca por código/nome.
 - A cidade do usuário é **geocodificada** (IBGE/Nominatim) para posicioná-lo no mapa.
-- **Solicitar troca**, **chat em tempo real** entre os dois, **aviso de segurança** (trocar em locais movimentados).
-- **Negociação por rodadas** (ver 2.2.1): proposta → contraproposta → consenso, com **valor em R$** quando as quantidades não batem.
-- **Entrega:** presencial, **Correios** ou **transportadora**, com **código de rastreio** (link clicável para os Correios). A troca só fecha quando **os dois confirmam**.
+- **Solicitar troca** e **negociar por rodadas** no chat (ver 2.2.1) — suporta **troca por figurinha**, **venda (R$)** ou **mistos**.
+- **Chat em tempo real** entre os dois, com **aviso de segurança** (trocar em locais movimentados), **tags de data** (Hoje / Ontem / dia da semana / "19 de Junho") e **apagar conversa** (oculta pra você e limpa o histórico ao reabrir; volta se chegar mensagem nova).
+- **Envio:** Pessoal, **Correios** ou **transportadora**, com **código de rastreio** (obrigatório no transporte; link clicável para os Correios). A troca **fecha por confirmação de recebimento dos dois lados**.
 - **Reputação:** após a troca concluída, cada um avalia o outro (1–5 ⭐); a média aparece no card.
 - Notificações (sino) e **caixa de mensagens** com todas as conversas.
 
 #### 2.2.1 Negociação de troca por rodadas (turn-based)
-A troca não é um "pega o que está na mesa": é uma **negociação por turnos**, registrada no próprio chat, que só destrava a entrega quando **os dois concordam com a mesma rodada**.
+A troca não é um "pega o que está na mesa": é uma **negociação por turnos**, registrada no próprio chat, que fecha com **confirmação de recebimento dos dois lados** e dá **baixa no álbum** ao finalizar.
 
-**Fluxo:**
-1. **Quem inicia (A)** abre o modal "Solicitar troca" e escolhe **só o que quer** das figurinhas de B (nada vem pré-marcado; exige ≥1). Não escolhe o que dá nesse momento. → **"Enviar proposta"**.
-2. **B responde** com **Aceitar / Recusar / Contrapor**. Ao **contrapor**, B escolhe o que quer das figurinhas de A (e, se as quantidades não baterem, define um valor em R$).
-3. **Vai e volta** (aceitar / recusar / contrapor) até **consenso** ou cancelamento. Cada rodada fechada vira um **cartão read-only** no histórico do chat; a rodada atual aparece num **painel ao vivo** no rodapé do chat, com as ações de quem está na vez.
-4. **Valor em R$** (`ValueModal`): quando as quantidades diferem (ou é venda pura — quero algo e não dou nada, ou dou e não quero nada), abre o modal mostrando **"você recebe N × dá M"**; um propõe o valor e o outro **aceita ou contrapõe**, seguindo o mesmo vai-e-volta até consenso.
-5. Com **consenso**, some o editor de proposta e aparece o **fluxo de entrega** (presencial/Correios/transportadora) já existente; quando os dois confirmam a entrega, a troca vira `accepted` e dá **baixa no álbum**.
+**Fluxo ponta a ponta:**
+1. **Pedido** (`TradeRequestModal`): quem inicia escolhe **só o que quer** das figurinhas do outro (≥1, nada pré-marcado) → **"Enviar proposta"**.
+2. O **chat abre** com uma **saudação** (padrão "Oi! Topa combinar uma troca?" se nada for escrito) + um cartão **"Nova proposta"**.
+3. **Negociação no chat** (turn-based): quem está **na vez** vê **Aceitar / Contrapor / Recusar**. **Contrapor** abre um editor com dois pools — *o que você quer dele* (as repetidas dele que você precisa) e *o que você oferece* (suas repetidas que ele precisa). Se as quantidades **não batem**, aparece o **campo de valor (R$) inline** (venda/diferença, com máscara ao vivo).
+4. Cada rodada vira um **cartão read-only** no histórico do chat; o **painel ao vivo** no rodapé mostra a rodada atual + ações.
+5. **Consenso:** quando os dois aceitam a mesma rodada → **acordo fechado** (some o "Cancelar").
+6. **Envio:** quem **dá figurinha** precisa **informar o envio** (Pessoal / Correios / transportadora; rastreio obrigatório no transporte).
+7. **Recebimento:** os dois **confirmam o recebimento** (só liberado depois de o envio relevante ser informado; quem recebe **dinheiro** também confirma).
+8. **Finalização:** ambos confirmaram → `status: accepted` → **baixa no álbum** (−1 no que cada um deu; as recebidas são marcadas manualmente).
 
 **Máquina de estados** (campos em `tradeRequests/{id}` — ver 3.3):
 
-| Conceito | Representação |
-|---|---|
-| O que o requisitante recebe / dá | `wanted: TradeItem[]` / `offered: TradeItem[]` |
-| Rodada atual e de quem é a vez | `round` (sobe a cada proposta/contraproposta) · `turn` (uid que deve responder) |
-| Quem já aceitou a rodada atual | `agreedBy: string[]` — **consenso = `agreedBy.length === 2`** (derivado) |
-| Valor em dinheiro da rodada | `value?: number` + `valueBy` (quem propôs) — ausente = sem dinheiro |
-| Ações | `submitProposal` (propor/contrapor: `agreedBy=[eu]`, passa o `turn`, `round++`) · `acceptDeal` (`agreedBy += eu`) · `refuseDeal` (`status: "declined"`) |
+| Estado | Condição | Comportamento |
+|---|---|---|
+| **Negociando** | `pending`, `agreedBy.length < 2` | Editável; **"Aceitar" só quando justo** (quantidades iguais > 0 **ou** com R$) — senão vira "Responder proposta". **Editar/contrapor zera o acordo** e passa a vez (`turn`). |
+| **Acordo fechado** | `pending`, `agreedBy.length === 2` | Some o Cancelar; entra a fase de **envio → recebimento**. |
+| **Finalizada** | `accepted` | Os dois confirmaram recebimento → **baixa no álbum**. |
+| **Cancelada** | `declined` | Só durante a negociação (Recusar/Cancelar). |
 
-Regras: **contrapor/editar sempre zera o acordo do outro** (recomeça a `agreedBy` na nova rodada); a negociação inteira fica em `status: "pending"` — só vira `accepted` na **confirmação de entrega** dos dois. Cada ação posta uma mensagem `kind:"trade"` no chat (`chats/{cid}/messages`) com o resumo da rodada (`meta`), renderizada como cartão. Os dados das figurinhas disponíveis vêm de `users/{uid}.trades` (figurinhas repetidas, `count ≥ 2`) — pool "eu recebo" = `trades` do outro; pool "eu dou" = meus `trades`.
+Funções (`src/lib/trades.ts`): `submitProposal` (propor/contrapor: `agreedBy=[eu]`, passa `turn`, `round++`, valor opcional) · `acceptDeal` (`agreedBy += eu`) · `refuseDeal` (`status: "declined"`) · `recordShipment` (registra o envio) · `confirmReceipt` (recebimento; finaliza quando os dois confirmam). Cada ação posta uma mensagem `kind:"trade"` no chat com o resumo da rodada (`meta`), renderizada como cartão. Os pools vêm de `users/{uid}.trades` (repetidas, `count ≥ 2`) e `users/{uid}.wants` (faltas), sincronizados pelo álbum (`saveUserAlbum`, debounce 700ms, leitura pública).
 
 ### 2.3 Palpites e ranking
 - Dentro de **Partidas**, cada jogo abre um painel para **cravar o placar** (válido até **1 hora antes** do jogo).
@@ -98,7 +100,7 @@ Aplicação **single-page com renderização no servidor (SSR)** em React, servi
 
 ### 3.3 Modelo de dados (Firestore)
 - `users/{uid}` — nome, cidade, lat/lng, foto, **álbum** (por número), figurinhas **para troca** e **procuradas**, reputação (`ratingSum`/`ratingCount`). E-mail **não** é gravado aqui (fica só no Auth, por privacidade).
-- `tradeRequests/{id}` — participantes; **itens** `wanted`/`offered` (`{code,name}`); **negociação por rodadas** (`round`, `turn`, `agreedBy`, `value`/`valueBy`); `status` (`pending`/`accepted`/`declined`); confirmações de entrega e avaliações. Ver a máquina de estados em **2.2.1**.
+- `tradeRequests/{id}` — participantes; **itens** `wanted`/`offered` (`{code,name}`); **negociação por rodadas** (`round`, `turn`, `agreedBy`, `lastAction`/`lastActionBy`, `value`/`valueBy`); `status` (`pending` / `accepted` = finalizada / `declined` = cancelada); **envio/recebimento** (`delivery{uid:{method,tracking?,carrier?}}`, `received[]`); baixa no álbum (`appliedBy[]`) e avaliação (`ratedBy[]`). Ver a máquina de estados em **2.2.1**.
 - `chats/{cid}/messages/{id}` — mensagens (sala = par de uids); mensagens normais ou `kind:"trade"` com `meta` (cartão de rodada da negociação).
 - `predictions/{matchId_uid}` — palpite de placar por jogo/usuário.
 
@@ -141,7 +143,7 @@ O projeto foi desenvolvido **majoritariamente com ferramentas de IA**, do scaffo
   - **Geocodificação** das cidades (IBGE/Nominatim) e cálculo de distância.
   - **Responsividade** web/mobile, correções de UX, e **deploy** (configuração do Nitro para a Vercel).
   - **Debug e refactor** (ex.: correção de bug de hidratação, vazamento de e-mail público, etc.).
-  - Geração da **documentação** (este arquivo, README e a spec de negociação em `docs/`).
+  - Geração da **documentação** (este arquivo, README e a spec inicial da negociação em `docs/`, já implementada — ver 2.2.1).
   - **Curadoria de dados e fotos** das seleções (pipelines de coleta) também foi feita com o **Claude Code**.
 
 **Prompt engineering:** o desenvolvimento foi guiado por instruções em linguagem natural (descrição de funcionalidades, ajustes de UI por captura de tela, correções pontuais), com a IA propondo a implementação, explicando trade-offs e iterando a partir do feedback — incluindo o uso de uma "skill" de design de frontend para decisões visuais.
@@ -152,7 +154,7 @@ O projeto foi desenvolvido **majoritariamente com ferramentas de IA**, do scaffo
 
 1. **Entrar:** clique em **Entrar** e crie uma conta (e-mail + senha forte, ou Google). Informe sua **cidade** (autocompletar do IBGE).
 2. **Montar o álbum:** vá em **Meu Álbum**, escolha a seleção e **clique** nas figurinhas que você tem. Clique de novo para marcar **repetidas** (2+ vira "para troca").
-3. **Trocar:** em **Trocas**, você aparece no mapa. Clique no pino de outro colecionador → **Solicitar troca** ou **Conversar**. Combine a entrega (presencial/Correios/transportadora) e, ao concluir, **avalie** a pessoa.
+3. **Trocar:** em **Trocas**, você aparece no mapa. Clique no pino de outro colecionador → **Solicitar troca** ou **Conversar**. Negocie no chat (proposta → contraproposta → consenso; valor R$ se as quantidades não baterem), **informe o envio** (Pessoal/Correios/transportadora) e, quando os **dois confirmarem o recebimento**, a troca fecha e dá baixa no álbum — então **avalie** a pessoa.
 4. **Palpitar:** em **Partidas**, clique num jogo e **crave o placar** (até 1h antes). Veja o **gráfico** e, na aba **Ranking**, quem mais acerta.
 5. **Notificações:** o **sino** mostra pedidos e status; o ícone de **mensagens** abre suas conversas.
 
