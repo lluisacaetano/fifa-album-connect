@@ -256,10 +256,10 @@ export function AlbumSection() {
                   <div className={`relative flex h-full w-full flex-col items-center justify-end overflow-hidden rounded-lg ${has ? "" : "opacity-80 grayscale"}`}>
                     {c.kind === "crest" ? (
                       <div className="absolute inset-0 grid place-items-center bg-white/10 p-3">
-                        <img src={c.photo!} alt={c.name} loading="lazy" className="max-h-full max-w-full object-contain drop-shadow-[0_3px_5px_rgba(0,0,0,0.4)]" />
+                        <img src={`${c.photo}?v=2`} alt={c.name} loading="lazy" className="max-h-full max-w-full object-contain drop-shadow-[0_3px_5px_rgba(0,0,0,0.4)]" />
                       </div>
                     ) : c.kind === "photo" ? (
-                      <img src={c.photo!} alt={c.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                      <img src={`${c.photo}?v=2`} alt={c.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
                     ) : c.photo && c.photoCutout ? (
                       <img
                         src={c.photo}

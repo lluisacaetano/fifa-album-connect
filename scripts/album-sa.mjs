@@ -8,7 +8,7 @@ const ALBUM = [
   { no: 3, official: "Abdulrahman Al-Sanbi", add: true, position: "Meio" },
   { no: 4, official: "Saud Abdulhamid", our: "Saud Abdulhamid", position: "Defesa" },
   { no: 5, official: "Nawaf Bouwashl", our: "Nawaf Boushal", position: "Defesa" },
-  { no: 6, official: "Jihad Thakri", our: "J. Thakri", position: "Defesa" },
+  { no: 6, official: "Jehad Thakri", our: "J. Thakri", position: "Defesa" },
   { no: 7, official: "Moteb Al-Harbi", our: "Moteb Al Harbi", position: "Defesa" },
   { no: 8, official: "Hassan Altambakti", our: "Hassan Tambakti", position: "Defesa" },
   { no: 9, official: "Musab Aljuwayr", our: "Musab Al Juwayr", position: "Meio" },
