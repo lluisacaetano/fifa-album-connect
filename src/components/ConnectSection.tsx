@@ -135,18 +135,23 @@ export function ConnectSection() {
           const isMe = !!user && docSnap.id === user.uid;
           if (isMe && typeof u.lat === "number" && typeof u.lng === "number") setMyLoc({ lat: u.lat, lng: u.lng });
           const rawTrades: any[] = Array.isArray(u.trades) ? u.trades : [];
-          const has = rawTrades.map((t) => (typeof t === "string" ? t : t?.name)).filter(Boolean) as string[];
-          if (!has.length) return;
+          const hasStickers = rawTrades
+            .map((t) => (typeof t === "string" ? { code: "", name: t } : { code: String(t?.code ?? ""), name: String(t?.name ?? "") }))
+            .filter((s) => s.name);
+          if (!hasStickers.length) return;
           if (typeof u.lat !== "number" || typeof u.lng !== "number") return;
           const h = hashStr(docSnap.id);
+          const ratingCount = typeof u.ratingCount === "number" ? u.ratingCount : 0;
+          const ratingAvg = ratingCount > 0 ? (u.ratingSum ?? 0) / ratingCount : null;
           list.push({
             id: 1_000_000 + (h % 1_000_000),
             uid: docSnap.id,
             name: u.name || "Colecionador",
             city: u.city ? String(u.city).split(" - ")[0] : "—",
             distance: "—",
-            rating: 5,
-            has,
+            rating: ratingAvg,
+            has: hasStickers.map((s) => s.name),
+            hasStickers,
             wants: Array.isArray(u.wants) ? (u.wants as string[]) : [],
             lat: u.lat + jitter(h, 7),
             lng: u.lng + jitter(h, 13),
@@ -201,18 +206,19 @@ export function ConnectSection() {
 
   const totalMatches = everyone.reduce((acc, t) => acc + matchCount(t), 0);
 
+  const wantedOf = (t: Trader) => (t.hasStickers ?? []).filter((s) => iNeed(s.name));
+  const offeredOf = (t: Trader) => t.wants.filter((w) => iHaveForTrade(w)).map((name) => ({ code: playerIndex[norm(name)]?.code ?? "", name }));
+
   async function sendTo(target: Trader, message: string) {
     if (!user || !target.uid) return;
-    const wanted = target.has.filter(iNeed);
-    const offered = target.wants.filter((w) => iHaveForTrade(w));
     await sendTradeRequest({
       fromUid: user.uid,
       fromName: user.name,
       fromCity: user.city,
       toUid: target.uid,
       toName: target.name,
-      wanted,
-      offered,
+      wanted: wantedOf(target),
+      offered: offeredOf(target),
       message: message || undefined,
     });
   }
@@ -420,9 +426,13 @@ export function ConnectSection() {
                             <Navigation className="h-3 w-3" /> {fmtDist(selDist)}
                           </span>
                         )}
-                        <span className="inline-flex items-center gap-1 text-[color:var(--fifa-yellow)]">
-                          <Star className="h-3 w-3 fill-current" /> {selected.rating}
-                        </span>
+                        {selected.rating != null ? (
+                          <span className="inline-flex items-center gap-1 text-[color:var(--fifa-yellow)]">
+                            <Star className="h-3 w-3 fill-current" /> {selected.rating.toFixed(1)}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Novo</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -543,8 +553,8 @@ export function ConnectSection() {
       {/* Modal de envio de pedido */}
       <TradeRequestModal
         target={tradeTarget}
-        wanted={tradeTarget ? tradeTarget.has.filter(iNeed) : []}
-        offered={tradeTarget ? tradeTarget.wants.filter((w) => iHaveForTrade(w)) : []}
+        wanted={tradeTarget ? wantedOf(tradeTarget) : []}
+        offered={tradeTarget ? offeredOf(tradeTarget) : []}
         onClose={() => setTradeTarget(null)}
         onSend={(message) => sendTo(tradeTarget!, message)}
       />

@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, ArrowLeftRight, Check, Repeat, Sparkles } from "lucide-react";
 import type { Trader } from "@/data/traders";
+import type { TradeItem } from "@/lib/trades";
 
 type Props = {
   target: Trader | null;
-  wanted: string[]; // figurinhas dele que eu preciso
-  offered: string[]; // minhas repetidas que ele procura
+  wanted: TradeItem[]; // figurinhas dele que eu preciso (número + nome)
+  offered: TradeItem[]; // minhas repetidas que ele procura (número + nome)
   onClose: () => void;
   onSend: (message: string) => Promise<void>;
 };
@@ -93,8 +94,9 @@ export function TradeRequestModal({ target, wanted, offered, onClose, onSend }: 
                   <div className="mt-2 flex flex-wrap gap-2">
                     {wanted.length ? (
                       wanted.map((s) => (
-                        <span key={s} className="rounded-full bg-[color:var(--fifa-green)] px-3 py-1 text-xs font-semibold text-white">
-                          {s}
+                        <span key={`${s.code}-${s.name}`} className="rounded-full bg-[color:var(--fifa-green)] px-3 py-1 text-xs font-semibold text-white">
+                          {s.name}
+                          {s.code ? <span className="opacity-80"> · {s.code}</span> : null}
                         </span>
                       ))
                     ) : (
@@ -110,8 +112,9 @@ export function TradeRequestModal({ target, wanted, offered, onClose, onSend }: 
                   <div className="mt-2 flex flex-wrap gap-2">
                     {offered.length ? (
                       offered.map((s) => (
-                        <span key={s} className="rounded-full bg-[color:var(--fifa-blue)]/10 px-3 py-1 text-xs font-semibold text-[color:var(--fifa-blue)]">
-                          {s}
+                        <span key={`${s.code}-${s.name}`} className="rounded-full bg-[color:var(--fifa-blue)]/10 px-3 py-1 text-xs font-semibold text-[color:var(--fifa-blue)]">
+                          {s.name}
+                          {s.code ? <span className="opacity-70"> · {s.code}</span> : null}
                         </span>
                       ))
                     ) : (

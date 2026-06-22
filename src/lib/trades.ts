@@ -1,6 +1,8 @@
 import { addDoc, arrayUnion, collection, doc, onSnapshot, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
+// Figurinha de uma troca: número (ex.: "BRA10") + nome do jogador.
+export type TradeItem = { code: string; name: string };
 export type TradeStatus = "pending" | "accepted" | "declined";
 export type DeliveryMethod = "presencial" | "correios" | "transportadora";
 export type DeliveryInfo = { method: DeliveryMethod; tracking?: string; carrier?: string };
@@ -12,8 +14,8 @@ export type TradeRequest = {
   fromCity?: string;
   toUid: string;
   toName: string;
-  wanted: string[]; // figurinhas dele que eu quero
-  offered: string[]; // figurinhas minhas que ele pode querer
+  wanted: TradeItem[]; // figurinhas dele que eu quero (número + nome)
+  offered: TradeItem[]; // figurinhas minhas que ele pode querer (número + nome)
   message?: string;
   status: TradeStatus;
   participants: string[];

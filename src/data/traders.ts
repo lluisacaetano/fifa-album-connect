@@ -9,7 +9,7 @@ export type Trader = {
   name: string;
   city: string;
   distance: string;
-  rating: number;
+  rating: number | null; // média de avaliações (null = sem avaliações)
   has: string[]; // figurinhas que tem repetidas (para trocar)
   wants: string[]; // figurinhas que procura
   lat: number;
@@ -18,6 +18,7 @@ export type Trader = {
   isMe?: boolean; // marca o próprio usuário no mapa
   uid?: string; // presente só nos colecionadores reais (Firestore)
   photo?: string; // foto de perfil (colecionadores reais)
+  hasStickers?: { code: string; name: string }[]; // tem para trocar (número + nome)
 };
 
 const CITIES: { city: string; lat: number; lng: number }[] = [

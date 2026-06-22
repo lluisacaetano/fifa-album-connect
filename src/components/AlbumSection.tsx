@@ -246,9 +246,11 @@ export function AlbumSection() {
     const deltas: { code: string; id: number; delta: number }[] = [];
     for (const r of pending) {
       applyingRef.current.add(r.id);
-      const iGave = r.fromUid === user.uid ? r.offered : r.wanted;
-      for (const name of iGave) {
-        const ref = nameToCard[norm(name)];
+      const iGave: any[] = r.fromUid === user.uid ? r.offered : r.wanted;
+      for (const item of iGave) {
+        const code = typeof item === "string" ? "" : (item?.code ?? "");
+        const name = typeof item === "string" ? item : (item?.name ?? "");
+        const ref = (code && stickerIndex[code]) || nameToCard[norm(name)]; // por número primeiro, depois nome
         if (ref) deltas.push({ code: ref.code, id: ref.id, delta: -1 });
       }
     }

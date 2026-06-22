@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Check, Ban, Clock, MessageCircle, Truck, MapPin, Package } from "lucide-react";
-import type { DeliveryInfo, DeliveryMethod, TradeRequest } from "@/lib/trades";
+import type { DeliveryInfo, DeliveryMethod, TradeItem, TradeRequest } from "@/lib/trades";
 import type { ChatTarget } from "@/lib/trades-context";
 
 type Props = {
@@ -14,14 +14,15 @@ type Props = {
   onChat: (t: ChatTarget) => void;
 };
 
-function Chips({ items, tone }: { items: string[]; tone: "green" | "blue" }) {
+function Chips({ items, tone }: { items: TradeItem[]; tone: "green" | "blue" }) {
   if (!items?.length) return <span className="text-xs text-muted-foreground">—</span>;
   const cls = tone === "green" ? "bg-[color:var(--fifa-green)]/10 text-[color:var(--fifa-green)]" : "bg-[color:var(--fifa-blue)]/10 text-[color:var(--fifa-blue)]";
   return (
     <div className="flex flex-wrap gap-1.5">
       {items.map((s) => (
-        <span key={s} className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${cls}`}>
-          {s}
+        <span key={`${s.code}-${s.name}`} className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${cls}`}>
+          {s.name}
+          {s.code ? <span className="opacity-70"> · {s.code}</span> : null}
         </span>
       ))}
     </div>
