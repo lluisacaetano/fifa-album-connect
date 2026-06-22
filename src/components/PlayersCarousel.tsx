@@ -40,8 +40,6 @@ export function PlayersCarousel() {
       return `${s} Convocado pela seleção ${squad.name} para a Copa do Mundo de 2026${camisa}.`;
     })();
 
-  const hasStats = p.goals != null || p.assists != null || p.apps != null;
-
   // Só usa a foto quando é um cutout hi-res; senão mostra um card com a inicial
   // (evita as fotos pequenas/borradas da API-Football).
   const goodPhoto = p.photo && p.photoCutout;
@@ -111,20 +109,19 @@ export function PlayersCarousel() {
 
                 <p className="mt-5 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">{bio}</p>
 
-                {hasStats && (
-                  <div className="mt-6 flex max-w-md gap-3">
-                    {[
-                      { label: "Gols", value: p.goals },
-                      { label: "Assist.", value: p.assists },
-                      { label: "Jogos", value: p.apps },
-                    ].map((s) => (
-                      <div key={s.label} className="flex-1 rounded-2xl bg-white/10 px-3 py-3 text-center ring-1 ring-white/20">
-                        <div className="font-display text-3xl text-white">{s.value ?? 0}</div>
-                        <div className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-white/70">{s.label}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* Cards SEMPRE visíveis (0 quando não há dado) — tela padronizada p/ todos. */}
+                <div className="mt-6 flex max-w-md gap-3">
+                  {[
+                    { label: "Gols", value: p.goals },
+                    { label: "Assist.", value: p.assists },
+                    { label: "Jogos", value: p.apps },
+                  ].map((s) => (
+                    <div key={s.label} className="flex-1 rounded-2xl bg-white/10 px-3 py-3 text-center ring-1 ring-white/20">
+                      <div className="font-display text-3xl text-white">{s.value ?? 0}</div>
+                      <div className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-white/70">{s.label}</div>
+                    </div>
+                  ))}
+                </div>
               </motion.div>
             </AnimatePresence>
           </div>
