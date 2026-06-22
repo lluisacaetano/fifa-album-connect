@@ -354,16 +354,43 @@ export function ConnectSection() {
                       return (
                         <Map.Marker key={t.id} position={[t.lat, t.lng]} icon={iconOf(t)} eventHandlers={{ click: () => setSelected(t) }}>
                           <Map.Popup>
-                            <strong>{t.isMe ? `${t.name} (você)` : t.name}</strong>
-                            <br />
-                            {t.city}
-                            {d != null && <> · {fmtDist(d)}</>}
-                            {matchCount(t) > 0 && (
-                              <>
-                                <br />
-                                <span style={{ color: "#009739" }}>{matchCount(t)} que você precisa</span>
-                              </>
-                            )}
+                            <div className="min-w-[180px]">
+                              <div className="text-sm font-bold text-foreground">{t.isMe ? `${t.name} (você)` : t.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {t.city}
+                                {d != null ? ` · ${fmtDist(d)}` : ""}
+                              </div>
+                              {matchCount(t) > 0 && (
+                                <div className="mt-1 text-xs font-semibold text-[color:var(--fifa-green)]">{matchCount(t)} figurinha(s) que você precisa</div>
+                              )}
+                              {!t.isMe && t.uid && (
+                                <div className="mt-2.5 flex gap-1.5">
+                                  {pendingToUids.has(t.uid) ? (
+                                    <span className="inline-flex flex-1 items-center justify-center gap-1 rounded-full bg-[color:var(--fifa-green-deep)] px-2.5 py-1.5 text-xs font-bold text-white">
+                                      <Check className="h-3 w-3" /> Enviado
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={() => setTradeTarget(t)}
+                                      className="inline-flex flex-1 items-center justify-center gap-1 rounded-full bg-[color:var(--fifa-green)] px-2.5 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[color:var(--fifa-green-deep)]"
+                                    >
+                                      <ArrowLeftRight className="h-3 w-3" /> Trocar
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => openChat({ uid: t.uid!, name: t.name, photo: t.photo })}
+                                    className="inline-flex flex-1 items-center justify-center gap-1 rounded-full border border-[color:var(--fifa-green)] px-2.5 py-1.5 text-xs font-semibold text-[color:var(--fifa-green)] transition-colors hover:bg-[color:var(--fifa-green)]/10"
+                                  >
+                                    <MessageCircle className="h-3 w-3" /> Conversar
+                                  </button>
+                                </div>
+                              )}
+                              {!t.isMe && (
+                                <button onClick={() => setSelected(t)} className="mt-2 block w-full text-center text-[11px] font-semibold text-muted-foreground hover:text-foreground">
+                                  Ver detalhes →
+                                </button>
+                              )}
+                            </div>
                           </Map.Popup>
                         </Map.Marker>
                       );
