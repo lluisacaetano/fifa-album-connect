@@ -65,6 +65,11 @@ export function AlbumSection() {
   const ownedCount = allCards.filter((c) => ownedHas(c.code, c.id)).length;
   const progress = allCards.length ? Math.round((ownedCount / allCards.length) * 100) : 0;
 
+  // Progresso GERAL do álbum (todas as seleções somadas).
+  const totalAll = useMemo(() => squads.reduce((n, s) => n + s.players.length, 0), []);
+  const ownedAll = squads.reduce((n, s) => n + s.players.filter((p) => ownedHas(s.code, p.id)).length, 0);
+  const progressAll = totalAll ? Math.round((ownedAll / totalAll) * 100) : 0;
+
   const visible = useMemo(() => {
     const q = norm(query.trim());
     if (!q) return allCards;
@@ -239,6 +244,21 @@ export function AlbumSection() {
             })}
           </div>
         )}
+
+        {/* Progresso GERAL do álbum (todas as 48 seleções somadas) */}
+        <div className="mt-10 rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm font-bold uppercase tracking-widest">
+            <span className="text-white/85">Álbum completo · {ownedAll}/{totalAll} figurinhas</span>
+            <span className="text-[color:var(--fifa-yellow)]">{progressAll}%</span>
+          </div>
+          <div className="h-4 overflow-hidden rounded-full bg-white/15">
+            <motion.div
+              animate={{ width: `${progressAll}%` }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="h-full rounded-full bg-[color:var(--fifa-yellow)]"
+            />
+          </div>
+        </div>
       </div>
     </section>
   );
