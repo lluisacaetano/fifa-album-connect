@@ -32,3 +32,8 @@ dist-ssr
 *.sw?
 
 package-lock.json
+
+# Variáveis de ambiente (Firebase etc.)
+.env
+.env.local
+.env.*.local

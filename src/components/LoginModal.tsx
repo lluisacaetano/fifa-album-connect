@@ -1,24 +1,20 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, ArrowLeftRight, Mail, User as UserIcon, Lock, MapPin } from "lucide-react";
-import { useAuth, type AuthMode } from "@/lib/auth";
+import { X, ArrowLeftRight, Mail, User as UserIcon, Lock } from "lucide-react";
+import { useAuth, authErrorMessage, type AuthMode } from "@/lib/auth";
+import { CityAutocomplete } from "@/components/CityAutocomplete";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// "Fulano de Tal" a partir de fulano.de.tal@email.com (só para exibição no login).
-function nameFromEmail(email: string) {
-  const raw = email.split("@")[0].replace(/[._-]+/g, " ").trim();
-  return raw.replace(/\b\w/g, (m) => m.toUpperCase()) || "Colecionador";
-}
-
 export function LoginModal() {
-  const { authOpen, authMode, closeAuth, signIn, register, findAccount } = useAuth();
+  const { authOpen, authMode, closeAuth, register, login, loginWithGoogle } = useAuth();
   const [mode, setMode] = useState<AuthMode>(authMode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [city, setCity] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const firstField = useRef<HTMLInputElement>(null);
 
   const isSignup = mode === "signup";
@@ -39,33 +35,60 @@ export function LoginModal() {
     };
   }, [authOpen, authMode, closeAuth]);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     const cleanEmail = email.trim();
     if (!EMAIL_RE.test(cleanEmail)) {
       setError("Use um e-mail válido, ex.: voce@email.com");
       return;
     }
-    if (password.trim().length < 4) {
-      setError("A senha precisa ter pelo menos 4 caracteres.");
+    if (password.length < 6) {
+      setError("A senha precisa ter pelo menos 6 caracteres.");
+      return;
+    }
+    if (isSignup && name.trim().length < 2) {
+      setError("Digite seu nome para os outros colecionadores te reconhecerem.");
+      return;
+    }
+    if (isSignup && !city.trim()) {
+      setError("Escolha sua cidade na lista.");
       return;
     }
 
-    if (isSignup) {
-      const cleanName = name.trim();
-      if (cleanName.length < 2) {
-        setError("Digite seu nome para os outros colecionadores te reconhecerem.");
-        return;
+    setError("");
+    setLoading(true);
+    try {
+      if (isSignup) {
+        await register({ name: name.trim(), email: cleanEmail, city: city.trim(), password });
+      } else {
+        await login(cleanEmail, password);
       }
-      register({ name: cleanName, email: cleanEmail, city: city.trim() || undefined, password: password.trim() });
-    } else {
-      const acc = findAccount(cleanEmail);
-      signIn({ name: acc?.name ?? nameFromEmail(cleanEmail), email: cleanEmail, city: acc?.city });
+      setName("");
+      setEmail("");
+      setCity("");
+      setPassword("");
+    } catch (err: any) {
+      setError(authErrorMessage(err?.code ?? ""));
+    } finally {
+      setLoading(false);
     }
-    setName("");
-    setEmail("");
-    setCity("");
-    setPassword("");
+  }
+
+  async function google() {
+    if (loading) return;
+    setError("");
+    setLoading(true);
+    try {
+      await loginWithGoogle();
+    } catch (err: any) {
+      const code = err?.code ?? "";
+      if (code !== "auth/popup-closed-by-user" && code !== "auth/cancelled-popup-request") {
+        setError(authErrorMessage(code));
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   function switchMode() {
@@ -119,6 +142,22 @@ export function LoginModal() {
 
             {/* Formulário */}
             <form onSubmit={submit} className="space-y-4 px-7 py-6">
+              <button
+                type="button"
+                onClick={google}
+                disabled={loading}
+                className="inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition-all hover:bg-muted disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                <GoogleIcon className="h-4 w-4" />
+                Continuar com Google
+              </button>
+
+              <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                ou
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
               {isSignup && (
                 <Field label="Nome" icon={<UserIcon className="h-4 w-4" />}>
                   <input
@@ -143,14 +182,10 @@ export function LoginModal() {
               </Field>
 
               {isSignup && (
-                <Field label="Cidade (opcional)" icon={<MapPin className="h-4 w-4" />}>
-                  <input
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Onde você troca? Ex.: Belo Horizonte"
-                    className="h-12 w-full rounded-xl border border-border bg-background pl-11 pr-4 text-sm outline-none ring-[color:var(--fifa-green)] transition-all focus:ring-2"
-                  />
-                </Field>
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Cidade</span>
+                  <CityAutocomplete value={city} onChange={setCity} id="signup-city" />
+                </div>
               )}
 
               <Field label="Senha" icon={<Lock className="h-4 w-4" />}>
@@ -167,10 +202,11 @@ export function LoginModal() {
 
               <button
                 type="submit"
-                className="group mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green)] px-6 py-3.5 text-sm font-bold text-white transition-all hover:scale-[1.02] hover:bg-[color:var(--fifa-green-deep)]"
+                disabled={loading}
+                className="group mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green)] px-6 py-3.5 text-sm font-bold text-white transition-all hover:scale-[1.02] hover:bg-[color:var(--fifa-green-deep)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
               >
-                <ArrowLeftRight className="h-4 w-4 transition-transform group-hover:rotate-180" />
-                {isSignup ? "Criar conta e começar a trocar" : "Entrar e começar a trocar"}
+                <ArrowLeftRight className={`h-4 w-4 transition-transform group-hover:rotate-180 ${loading ? "animate-spin" : ""}`} />
+                {loading ? (isSignup ? "Criando conta…" : "Entrando…") : isSignup ? "Criar conta e começar a trocar" : "Entrar e começar a trocar"}
               </button>
 
               <p className="text-center text-sm text-muted-foreground">
@@ -179,13 +215,22 @@ export function LoginModal() {
                   {isSignup ? "Entrar" : "Criar conta grátis"}
                 </button>
               </p>
-
-              <p className="text-center text-[11px] text-muted-foreground">Demonstração — seus dados ficam só no seu navegador.</p>
             </form>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+function GoogleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 48 48" aria-hidden focusable="false">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8a12 12 0 0 1 0-24c3.1 0 5.9 1.2 8 3.1l5.7-5.7A20 20 0 1 0 24 44c11 0 20-9 20-20 0-1.3-.1-2.3-.4-3.5z" />
+      <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8A12 12 0 0 1 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7A20 20 0 0 0 6.3 14.7z" />
+      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2A12 12 0 0 1 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5A20 20 0 0 0 24 44z" />
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3a12 12 0 0 1-4.1 5.6l6.2 5.2C39.9 35.6 44 30.4 44 24c0-1.3-.1-2.3-.4-3.5z" />
+    </svg>
   );
 }
 

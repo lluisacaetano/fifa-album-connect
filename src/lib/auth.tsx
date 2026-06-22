@@ -1,20 +1,29 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  updateProfile,
+  type User as FirebaseUser,
+} from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 
-export type User = { name: string; email: string; city?: string };
+export type User = { uid: string; name: string; email: string; city?: string };
 export type AuthMode = "login" | "signup";
 
-type Account = { name: string; email: string; city?: string; password?: string };
+type RegisterData = { name: string; email: string; city?: string; password: string };
 
 type AuthContextValue = {
   user: User | null;
   hydrated: boolean;
-  /** Define a sessão (login simulado). */
-  signIn: (user: User) => void;
-  /** Cria a conta (guarda localmente) e já entra. */
-  register: (data: Account) => void;
-  /** Procura uma conta já cadastrada pelo e-mail. */
-  findAccount: (email: string) => Account | null;
-  logout: () => void;
+  register: (data: RegisterData) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  logout: () => Promise<void>;
   authOpen: boolean;
   authMode: AuthMode;
   openAuth: (mode?: AuthMode) => void;
@@ -22,15 +31,24 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-const SESSION_KEY = "album-user";
-const ACCOUNTS_KEY = "album-accounts";
 
-function loadAccounts(): Record<string, Account> {
+// Lê o perfil extra (cidade) salvo no Firestore — não falha se ainda não houver banco.
+async function loadProfile(fbUser: FirebaseUser): Promise<User> {
+  const base: User = {
+    uid: fbUser.uid,
+    name: fbUser.displayName || (fbUser.email ? fbUser.email.split("@")[0] : "Colecionador"),
+    email: fbUser.email ?? "",
+  };
   try {
-    return JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || "{}") as Record<string, Account>;
+    const snap = await getDoc(doc(db, "users", fbUser.uid));
+    if (snap.exists()) {
+      const data = snap.data() as Partial<User>;
+      return { ...base, city: data.city, name: data.name || base.name };
+    }
   } catch {
-    return {};
+    /* Firestore pode não estar habilitado ainda — ignora */
   }
+  return base;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -39,47 +57,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
 
-  // Recupera a sessão salva no navegador (login simulado, sem backend).
+  // Observa a sessão do Firebase (mantém logado entre recarregamentos).
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(SESSION_KEY);
-      if (saved) setUser(JSON.parse(saved) as User);
-    } catch {
-      /* ignora */
-    }
-    setHydrated(true);
+    const unsub = onAuthStateChanged(auth, async (fbUser) => {
+      setUser(fbUser ? await loadProfile(fbUser) : null);
+      setHydrated(true);
+    });
+    return unsub;
   }, []);
 
-  const signIn = (next: User) => {
-    setUser(next);
+  const register = async ({ name, email, city, password }: RegisterData) => {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(cred.user, { displayName: name });
+    // Guarda o perfil (cidade etc.) no Firestore — best-effort.
     try {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(next));
+      await setDoc(doc(db, "users", cred.user.uid), {
+        name,
+        email,
+        city: city ?? null,
+        createdAt: Date.now(),
+      });
     } catch {
-      /* ignora */
+      /* sem Firestore ainda — segue logado mesmo assim */
     }
+    setUser({ uid: cred.user.uid, name, email, city });
     setAuthOpen(false);
   };
 
-  const register = (data: Account) => {
-    try {
-      const all = loadAccounts();
-      all[data.email.toLowerCase()] = data;
-      localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(all));
-    } catch {
-      /* ignora */
-    }
-    signIn({ name: data.name, email: data.email, city: data.city });
+  const login = async (email: string, password: string) => {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    setUser(await loadProfile(cred.user));
+    setAuthOpen(false);
   };
 
-  const findAccount = (email: string): Account | null => loadAccounts()[email.toLowerCase()] ?? null;
-
-  const logout = () => {
-    setUser(null);
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    const cred = await signInWithPopup(auth, provider);
+    // Cria/atualiza o perfil no Firestore — best-effort.
     try {
-      localStorage.removeItem(SESSION_KEY);
+      await setDoc(
+        doc(db, "users", cred.user.uid),
+        { name: cred.user.displayName ?? "", email: cred.user.email ?? "" },
+        { merge: true },
+      );
     } catch {
-      /* ignora */
+      /* sem Firestore ainda — segue logado mesmo assim */
     }
+    setUser(await loadProfile(cred.user));
+    setAuthOpen(false);
+  };
+
+  const logout = async () => {
+    await signOut(auth);
+    setUser(null);
   };
 
   return (
@@ -87,9 +117,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         hydrated,
-        signIn,
         register,
-        findAccount,
+        login,
+        loginWithGoogle,
         logout,
         authOpen,
         authMode,
@@ -109,4 +139,28 @@ export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth precisa estar dentro de <AuthProvider>");
   return ctx;
+}
+
+// Traduz os erros do Firebase Auth para mensagens amigáveis.
+export function authErrorMessage(code: string): string {
+  switch (code) {
+    case "auth/email-already-in-use":
+      return "Esse e-mail já tem conta. Tente entrar.";
+    case "auth/invalid-email":
+      return "E-mail inválido.";
+    case "auth/weak-password":
+      return "Senha fraca — use pelo menos 6 caracteres.";
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "E-mail ou senha incorretos.";
+    case "auth/too-many-requests":
+      return "Muitas tentativas. Aguarde um pouco e tente de novo.";
+    case "auth/operation-not-allowed":
+      return "Login por e-mail/senha não está ativado no Firebase (Authentication → Sign-in method).";
+    case "auth/network-request-failed":
+      return "Falha de conexão. Verifique sua internet.";
+    default:
+      return "Não foi possível concluir. Tente novamente.";
+  }
 }
