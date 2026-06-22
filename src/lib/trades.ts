@@ -136,12 +136,15 @@ export async function confirmReceipt(id: string, uid: string, finalize: boolean)
   await updateDoc(doc(db, "tradeRequests", id), patch);
 }
 
-// Participantes que RECEBEM figurinha nesta troca (precisam confirmar recebimento).
-export function receiversOf(r: Pick<TradeRequest, "fromUid" | "toUid" | "wanted" | "offered">): string[] {
-  const recv: string[] = [];
-  if ((r.wanted?.length ?? 0) > 0) recv.push(r.fromUid); // requisitante recebe `wanted`
-  if ((r.offered?.length ?? 0) > 0) recv.push(r.toUid); // o outro recebe `offered`
-  return recv;
+// Os DOIS confirmam o recebimento (figurinha de um lado, figurinha/dinheiro do outro).
+export function receiversOf(r: Pick<TradeRequest, "fromUid" | "toUid">): string[] {
+  return [r.fromUid, r.toUid];
+}
+
+// Registra como a pessoa vai enviar (presencial/correios/transportadora + rastreio).
+// Obrigatório p/ quem envia figurinha antes do outro confirmar o recebimento.
+export async function recordShipment(id: string, uid: string, info: DeliveryInfo): Promise<void> {
+  await updateDoc(doc(db, "tradeRequests", id), { [`delivery.${uid}`]: info, updatedAt: serverTimestamp() });
 }
 
 // Marca que o usuário já deu baixa no álbum por causa desta troca (idempotente entre aparelhos).

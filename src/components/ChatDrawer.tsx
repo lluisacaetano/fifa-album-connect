@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Send, Check, Ban, Truck, MapPin, ShieldAlert, Handshake, Repeat, ArrowLeftRight, Clock } from "lucide-react";
 import { doc, getDoc } from "firebase/firestore";
@@ -12,11 +12,26 @@ import { ConfirmModal } from "@/components/ConfirmModal";
 
 const keyOf = (s: TradeItem) => `${s.code}-${s.name}`;
 const fmtBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
-// Formata o input de R$ para "X,00" (duas casas).
-const fmtMoneyInput = (s: string) => {
-  const n = Number(s.replace(",", ".")) || 0;
-  return n > 0 ? n.toFixed(2).replace(".", ",") : "";
-};
+
+// Tag de data estilo WhatsApp: Hoje / Ontem / dia da semana (≤6 dias) / "19 de Junho".
+const WEEKDAYS = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+const MONTHS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const deliveryLabel = (d: { method: string; tracking?: string; carrier?: string }) =>
+  d.method === "presencial" ? "presencial" : d.method === "correios" ? `Correios${d.tracking ? ` · ${d.tracking}` : ""}` : `${d.carrier || "Transportadora"}${d.tracking ? ` · ${d.tracking}` : ""}`;
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+function dayKey(seconds?: number | null): number {
+  const d = seconds ? new Date(seconds * 1000) : new Date();
+  return startOfDay(d);
+}
+function dayLabel(seconds?: number | null): string {
+  const d = seconds ? new Date(seconds * 1000) : new Date();
+  const diff = Math.round((startOfDay(new Date()) - startOfDay(d)) / 86_400_000);
+  if (diff <= 0) return "Hoje";
+  if (diff === 1) return "Ontem";
+  if (diff < 7) return WEEKDAYS[d.getDay()];
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  return `${d.getDate()} de ${cap(MONTHS[d.getMonth()])}`;
+}
 const NORM_RE = new RegExp("[\\u0300-\\u036f]", "g");
 const norm = (s: string) => s.normalize("NFD").replace(NORM_RE, "").toLowerCase();
 const uniqItems = (arr: TradeItem[]) => {
@@ -82,7 +97,7 @@ function DealRows({ get, give, value }: { get: TradeItem[]; give: TradeItem[]; v
 
 export function ChatDrawer() {
   const { user } = useAuth();
-  const { chatTarget, closeChat, requests, confirmReceipt, counter, accept, refuse, chatHidden } = useTrades();
+  const { chatTarget, closeChat, requests, confirmReceipt, informShipment, counter, accept, refuse, chatHidden } = useTrades();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const [showDelivery, setShowDelivery] = useState(false);
@@ -117,13 +132,19 @@ export function ChatDrawer() {
   const myTurn = !!(linked && user && linked.turn === user.uid);
   const otherFirst = chatTarget?.name.split(" ")[0] ?? "";
 
-  // Recebimento (fecha a troca): quem recebe figurinha confirma.
+  // Recebimento: os DOIS confirmam (figurinha de um lado, figurinha/dinheiro do outro).
   const received = linked?.received ?? [];
-  const iAmReceiver = iGet.length > 0;
   const iReceived = !!(user && received.includes(user.uid));
   const otherUid = linked ? (iAmFrom ? linked.toUid : linked.fromUid) : "";
-  const otherIsReceiver = iGive.length > 0; // o que EU dou = o que o OUTRO recebe
   const otherReceived = received.includes(otherUid);
+  // Envio: quem dá figurinha precisa informar o envio antes do outro confirmar.
+  const myDelivery = user ? linked?.delivery?.[user.uid] : undefined;
+  const otherDelivery = otherUid ? linked?.delivery?.[otherUid] : undefined;
+  const iSendStickers = iGive.length > 0;
+  const iReceiveStickers = iGet.length > 0;
+  // Só confirma recebimento quando o envio relevante já foi informado:
+  // se EU mando figurinha, preciso ter informado o meu; se o OUTRO me manda, ele precisa ter informado o dele.
+  const canConfirmReceipt = (!iReceiveStickers || !!otherDelivery) && (!iSendStickers || !!myDelivery);
 
   // Pools: o que EU recebo = trades do outro; o que EU dou = meus trades.
   // "Quero dele" = repetidas DELE que EU preciso. "Ofereço" = minhas repetidas que ELE precisa.
@@ -196,7 +217,7 @@ export function ChatDrawer() {
     if (!linked) return;
     setEditGet(new Set(iGet.map(keyOf)));
     setEditGive(new Set(iGive.map(keyOf)));
-    setEditValue(value ? String(value).replace(".", ",") : "");
+    setEditValue(value ? value.toFixed(2).replace(".", ",") : "");
     setEditing(true);
   }
 
@@ -227,17 +248,17 @@ export function ChatDrawer() {
     await postCard("refuse", linked.wanted, linked.offered, linked.value);
   }
 
-  // Avisar envio (opcional, p/ quem ENVIA) — só posta no chat, não fecha a troca.
-  async function notifyShipment() {
-    if (!cid || !user || !chatTarget) return;
+  // Informar envio (obrigatório p/ quem dá figurinha) — registra no doc + posta no chat.
+  async function sendShipment() {
+    if (!cid || !user || !chatTarget || !linked) return;
     const code = tracking.trim();
     if (method !== "presencial" && !code) return;
     let body = "";
     if (method === "presencial") body = "📍 Vou entregar pessoalmente.";
     else if (method === "correios") body = `📦 Vou enviar pelos Correios. Rastreio: ${code}\nhttps://rastreamento.correios.com.br/app/index.php?codigo=${encodeURIComponent(code)}`;
     else body = `🚚 Vou enviar por transportadora${carrier.trim() ? ` (${carrier.trim()})` : ""}. Rastreio: ${code}`;
+    await informShipment(linked, { method, tracking: code || undefined, carrier: carrier.trim() || undefined });
     await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: body });
-    setShowDelivery(false);
     setTracking("");
     setCarrier("");
   }
@@ -367,19 +388,37 @@ export function ChatDrawer() {
                   Diga oi para {otherFirst} e combine as figurinhas. 👋
                 </div>
               ) : (
-                visibleMessages.map((m) => {
-                  if (m.kind === "trade" && m.meta) return <TradeCard key={m.id} m={m} />;
+                visibleMessages.map((m, i) => {
+                  const prev = visibleMessages[i - 1];
+                  const showSep = i === 0 || dayKey(m.createdAt?.seconds) !== dayKey(prev?.createdAt?.seconds);
+                  const sep = showSep ? (
+                    <div className="flex justify-center py-1.5">
+                      <span className="rounded-full bg-[color:var(--fifa-green-deep)]/10 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[color:var(--fifa-green-deep)]">
+                        {dayLabel(m.createdAt?.seconds)}
+                      </span>
+                    </div>
+                  ) : null;
+                  if (m.kind === "trade" && m.meta)
+                    return (
+                      <Fragment key={m.id}>
+                        {sep}
+                        <TradeCard m={m} />
+                      </Fragment>
+                    );
                   const mine = m.from === user.uid;
                   return (
-                    <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                      <div
-                        className={`max-w-[78%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm shadow-sm ${
-                          mine ? "rounded-br-md bg-[color:var(--fifa-green)] text-white" : "rounded-bl-md bg-card text-card-foreground"
-                        }`}
-                      >
-                        {renderText(m.text)}
+                    <Fragment key={m.id}>
+                      {sep}
+                      <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                        <div
+                          className={`max-w-[78%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm shadow-sm ${
+                            mine ? "rounded-br-md bg-[color:var(--fifa-green)] text-white" : "rounded-bl-md bg-card text-card-foreground"
+                          }`}
+                        >
+                          {renderText(m.text)}
+                        </div>
                       </div>
-                    </div>
+                    </Fragment>
                   );
                 })
               )}
@@ -444,7 +483,16 @@ export function ChatDrawer() {
                             </div>
                             <div className="mt-1.5 flex items-center gap-2 rounded-lg border border-border bg-card px-2.5 ring-[color:var(--fifa-green)] focus-within:ring-2">
                               <span className="text-xs font-bold text-muted-foreground">R$</span>
-                              <input value={editValue} onChange={(e) => setEditValue(e.target.value)} onBlur={() => setEditValue(fmtMoneyInput(editValue))} inputMode="decimal" placeholder="0,00" className="h-9 flex-1 bg-transparent text-sm outline-none" />
+                              <input
+                                value={editValue}
+                                onChange={(e) => {
+                                  const digits = e.target.value.replace(/\D/g, "");
+                                  setEditValue(digits ? (Number(digits) / 100).toFixed(2).replace(".", ",") : "");
+                                }}
+                                inputMode="numeric"
+                                placeholder="0,00"
+                                className="h-9 flex-1 bg-transparent text-sm outline-none"
+                              />
                             </div>
                           </div>
                         )}
@@ -515,58 +563,62 @@ export function ChatDrawer() {
                       <DealRows get={iGet} give={iGive} value={value} />
                     </div>
 
-                    {/* Avisar envio — opcional, para quem envia (correios/transportadora) */}
-                    {iGive.length > 0 && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => setShowDelivery((v) => !v)}
-                          className={`inline-flex w-full items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-xs font-semibold transition-all ${showDelivery ? "border-[color:var(--fifa-green)] text-[color:var(--fifa-green)]" : "border-border text-foreground hover:bg-muted"}`}
-                        >
-                          <Truck className="h-3.5 w-3.5" /> Avisar envio (opcional)
-                        </button>
-                        {showDelivery && (
-                          <div className="space-y-2 rounded-2xl border border-border bg-card p-3">
-                            <div className="grid grid-cols-3 gap-1.5">
-                              {([
-                                ["presencial", "Pessoal"],
-                                ["correios", "Correios"],
-                                ["transportadora", "Transp."],
-                              ] as const).map(([key, label]) => (
-                                <button key={key} type="button" onClick={() => setMethod(key)} className={`rounded-lg px-2 py-1.5 text-xs font-semibold transition-all ${method === key ? "bg-[color:var(--fifa-green)] text-white" : "border border-border bg-card hover:border-[color:var(--fifa-green)]"}`}>
-                                  {label}
-                                </button>
-                              ))}
-                            </div>
-                            {method === "transportadora" && (
-                              <input value={carrier} onChange={(e) => setCarrier(e.target.value)} placeholder="Transportadora (ex.: Jadlog)" className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none ring-[color:var(--fifa-green)] focus:ring-2" />
-                            )}
-                            {method !== "presencial" && (
-                              <input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="Código de rastreio" className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none ring-[color:var(--fifa-green)] focus:ring-2" />
-                            )}
-                            <button type="button" onClick={notifyShipment} disabled={method !== "presencial" && !tracking.trim()} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50">
-                              {method === "presencial" ? <MapPin className="h-4 w-4" /> : <Truck className="h-4 w-4" />} Avisar
-                            </button>
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {/* Confirmar recebimento — só para quem recebe */}
-                    {iAmReceiver ? (
-                      iReceived ? (
-                        <div className="flex items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-2 text-xs font-semibold text-[color:var(--fifa-green)]">
-                          <Check className="h-3.5 w-3.5" /> Você confirmou o recebimento{otherIsReceiver && !otherReceived ? ` — aguardando ${otherFirst}` : ""}
+                    {/* Envio — OBRIGATÓRIO para quem dá figurinha */}
+                    {iSendStickers && (
+                      myDelivery ? (
+                        <div className="flex items-center gap-1.5 rounded-xl bg-[color:var(--fifa-green)]/10 px-3 py-2 text-xs font-semibold text-[color:var(--fifa-green)]">
+                          <Truck className="h-3.5 w-3.5" /> Você informou o envio: {deliveryLabel(myDelivery)}
                         </div>
                       ) : (
-                        <button type="button" onClick={doConfirmReceipt} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]">
+                        <div className="space-y-2 rounded-2xl border border-[color:var(--fifa-yellow)]/50 bg-[color:var(--fifa-yellow)]/10 p-3">
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-[color:var(--fifa-green-deep)]">📦 Como você vai enviar? (obrigatório)</div>
+                          <div className="grid grid-cols-3 gap-1.5">
+                            {([
+                              ["presencial", "Pessoal"],
+                              ["correios", "Correios"],
+                              ["transportadora", "Transp."],
+                            ] as const).map(([key, label]) => (
+                              <button key={key} type="button" onClick={() => setMethod(key)} className={`rounded-lg px-2 py-1.5 text-xs font-semibold transition-all ${method === key ? "bg-[color:var(--fifa-green)] text-white" : "border border-border bg-card hover:border-[color:var(--fifa-green)]"}`}>
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                          {method === "transportadora" && (
+                            <input value={carrier} onChange={(e) => setCarrier(e.target.value)} placeholder="Transportadora (ex.: Jadlog)" className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none ring-[color:var(--fifa-green)] focus:ring-2" />
+                          )}
+                          {method !== "presencial" && (
+                            <input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="Código de rastreio (obrigatório p/ a outra pessoa)" className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none ring-[color:var(--fifa-green)] focus:ring-2" />
+                          )}
+                          <button type="button" onClick={sendShipment} disabled={method !== "presencial" && !tracking.trim()} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50">
+                            {method === "presencial" ? <MapPin className="h-4 w-4" /> : <Truck className="h-4 w-4" />} Confirmar envio
+                          </button>
+                        </div>
+                      )
+                    )}
+
+                    {/* Aviso do envio do outro (rastreio) */}
+                    {iReceiveStickers && otherDelivery && (
+                      <div className="flex items-center gap-1.5 rounded-xl bg-card px-3 py-2 text-[11px] text-muted-foreground">
+                        <Truck className="h-3.5 w-3.5 shrink-0" /> {otherFirst} vai enviar: <span className="font-semibold text-foreground">{deliveryLabel(otherDelivery)}</span>
+                      </div>
+                    )}
+
+                    {/* Confirmar recebimento — os DOIS confirmam */}
+                    {iReceived ? (
+                      <div className="flex items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-2 text-xs font-semibold text-[color:var(--fifa-green)]">
+                        <Check className="h-3.5 w-3.5" /> Você confirmou{!otherReceived ? ` — aguardando ${otherFirst}` : ""}
+                      </div>
+                    ) : (
+                      <>
+                        <button type="button" onClick={doConfirmReceipt} disabled={!canConfirmReceipt} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50">
                           <Check className="h-4 w-4" /> Confirmar recebimento
                         </button>
-                      )
-                    ) : (
-                      <div className="flex items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground">
-                        <Clock className="h-3.5 w-3.5" /> Aguardando {otherFirst} confirmar o recebimento
-                      </div>
+                        {!canConfirmReceipt && (
+                          <p className="text-center text-[11px] text-muted-foreground">
+                            {iSendStickers && !myDelivery ? "Informe o envio acima antes de confirmar." : `Aguardando ${otherFirst} informar o envio.`}
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
                 )}

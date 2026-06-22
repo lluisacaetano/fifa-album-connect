@@ -38,10 +38,10 @@ function RequestCard({ r, myUid, onConfirmReceipt, onDecline, onChat, onRate }: 
 
   const negotiating = r.status === "pending" && (r.agreedBy?.length ?? 0) < 2;
   const received = r.received ?? [];
-  const iAmReceiver = iGet.length > 0;
   const iReceived = received.includes(myUid);
-  const otherIsReceiver = iGive.length > 0;
   const otherReceived = received.includes(otherUid);
+  // Só confirma quando o envio relevante já foi informado (no chat).
+  const canConfirm = (iGet.length === 0 || !!r.delivery?.[otherUid]) && (iGive.length === 0 || !!r.delivery?.[myUid]);
 
   const badge =
     r.status === "accepted"
@@ -97,18 +97,17 @@ function RequestCard({ r, myUid, onConfirmReceipt, onDecline, onChat, onRate }: 
             <div className="flex items-center gap-1.5 rounded-xl bg-[color:var(--fifa-blue)]/10 px-3 py-2 text-xs font-medium text-[color:var(--fifa-blue)]">
               <MessageCircle className="h-3.5 w-3.5" /> Em negociação — abram o chat para combinar e topar a troca.
             </div>
-          ) : !iAmReceiver ? (
-            <div className="flex items-center gap-1.5 rounded-xl bg-muted px-3 py-2 text-xs font-medium text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" /> Aguardando {otherFirst} confirmar o recebimento.
-            </div>
           ) : iReceived ? (
             <div className="flex items-center gap-1.5 rounded-xl bg-[color:var(--fifa-green)]/10 px-3 py-2 text-xs font-semibold text-[color:var(--fifa-green)]">
-              <Check className="h-3.5 w-3.5" /> Você confirmou o recebimento{otherIsReceiver && !otherReceived ? ` — aguardando ${otherFirst}` : ""}.
+              <Check className="h-3.5 w-3.5" /> Você confirmou{!otherReceived ? ` — aguardando ${otherFirst}` : ""}.
             </div>
           ) : (
-            <button onClick={() => onConfirmReceipt(r)} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]">
-              <Check className="h-4 w-4" /> Confirmar recebimento
-            </button>
+            <>
+              <button onClick={() => onConfirmReceipt(r)} disabled={!canConfirm} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50">
+                <Check className="h-4 w-4" /> Confirmar recebimento
+              </button>
+              {!canConfirm && <p className="mt-1 text-center text-[11px] text-muted-foreground">Informe/aguarde o envio no chat antes de confirmar.</p>}
+            </>
           )}
         </div>
       ) : null}

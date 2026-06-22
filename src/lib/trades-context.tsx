@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
-import { acceptDeal, confirmReceipt as doConfirmReceipt, listenTradeRequests, rateUser, receiversOf, refuseDeal, setRequestStatus, submitProposal, type TradeItem, type TradeRequest } from "@/lib/trades";
+import { acceptDeal, confirmReceipt as doConfirmReceipt, listenTradeRequests, rateUser, receiversOf, recordShipment, refuseDeal, setRequestStatus, submitProposal, type DeliveryInfo, type TradeItem, type TradeRequest } from "@/lib/trades";
 import { chatId, listenMyChats, type ChatSummary } from "@/lib/chat";
 import { playPing } from "@/lib/sound";
 
@@ -13,6 +13,7 @@ type TradesContextValue = {
   unread: number;
   markSeen: () => void;
   confirmReceipt: (req: TradeRequest) => Promise<void>;
+  informShipment: (req: TradeRequest, info: DeliveryInfo) => Promise<void>;
   decline: (id: string) => void;
   rate: (req: TradeRequest, stars: number) => void;
   counter: (req: TradeRequest, deal: { wanted: TradeItem[]; offered: TradeItem[]; value?: number }) => Promise<void>;
@@ -166,6 +167,10 @@ export function TradesProvider({ children }: { children: ReactNode }) {
           already.add(user.uid);
           const finalize = receivers.every((u) => already.has(u));
           await doConfirmReceipt(req.id, user.uid, finalize);
+        },
+        informShipment: async (req, info) => {
+          if (!user) return;
+          await recordShipment(req.id, user.uid, info);
         },
         decline: (id) => setRequestStatus(id, "declined"),
         rate: (req, stars) => {
