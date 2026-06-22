@@ -5,7 +5,6 @@ import { PlayersCarousel } from "@/components/PlayersCarousel";
 import { SelecoesSection } from "@/components/SelecoesSection";
 import { GruposSection } from "@/components/GruposSection";
 import { MatchesSection } from "@/components/MatchesSection";
-import { PalpitesSection } from "@/components/PalpitesSection";
 import { ConnectSection } from "@/components/ConnectSection";
 import { AlbumSection } from "@/components/AlbumSection";
 import { Footer } from "@/components/Footer";
@@ -32,7 +31,6 @@ function Index() {
         <SelecoesSection />
         <GruposSection />
         <MatchesSection />
-        <PalpitesSection />
         <ConnectSection />
         <AlbumSection />
       </main>

@@ -237,12 +237,17 @@ export function ConnectSection() {
   // Ranking: quem tem mais figurinhas que faltam no seu álbum (melhores trocas).
   const topMatches = useMemo(() => filtered.filter((t) => !t.isMe && matchCount(t) > 0).slice(0, 12), [filtered, missing]);
 
-  // Derivados do colecionador selecionado.
-  const selMatched = selected ? selected.has.filter(iNeed) : [];
-  const selHasShown = selected ? [...selected.has].sort((a, b) => Number(iNeed(b)) - Number(iNeed(a))).slice(0, 18) : [];
-  const selWantsSorted = selected ? [...selected.wants].sort((a, b) => Number(iHaveForTrade(b)) - Number(iHaveForTrade(a))) : [];
+  // Sem ninguém selecionado, o painel mostra o SEU perfil (evita espaço vazio
+  // ao lado do mapa) até você escolher outro colecionador.
+  const me = useMemo(() => realTraders.find((t) => t.isMe) ?? null, [realTraders]);
+  const panel = selected ?? me;
+
+  // Derivados do colecionador exibido no painel.
+  const selMatched = panel ? panel.has.filter(iNeed) : [];
+  const selHasShown = panel ? [...panel.has].sort((a, b) => Number(iNeed(b)) - Number(iNeed(a))).slice(0, 18) : [];
+  const selWantsSorted = panel ? [...panel.wants].sort((a, b) => Number(iHaveForTrade(b)) - Number(iHaveForTrade(a))) : [];
   const selWantsShown = selWantsSorted.slice(0, 12);
-  const selDist = selected ? distOf(selected) : null;
+  const selDist = panel ? distOf(panel) : null;
 
   return (
     <section id="conectar" className="relative bg-background py-14 sm:py-24">
@@ -443,27 +448,27 @@ export function ConnectSection() {
               </div>
 
               {/* Card do colecionador */}
-              {selected && (
-                <motion.div key={selected.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-border bg-card p-6 shadow-xl">
+              {panel && (
+                <motion.div key={panel.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-border bg-card p-6 shadow-xl">
                   <div className="flex items-center gap-4">
-                    <Avatar name={selected.name} photo={selected.photo} size={64} />
+                    <Avatar name={panel.name} photo={panel.photo} size={64} />
                     <div>
                       <h3 className="flex items-center gap-2 font-display text-2xl">
-                        {selected.name}
-                        {selected.isMe && <span className="rounded-full bg-[color:var(--fifa-green)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">Você</span>}
+                        {panel.name}
+                        {panel.isMe && <span className="rounded-full bg-[color:var(--fifa-green)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">Você</span>}
                       </h3>
                       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                         <span className="inline-flex items-center gap-1">
-                          <MapPin className="h-3 w-3" /> {selected.city}
+                          <MapPin className="h-3 w-3" /> {panel.city}
                         </span>
                         {selDist != null && (
                           <span className="inline-flex items-center gap-1 text-[color:var(--fifa-green)]">
                             <Navigation className="h-3 w-3" /> {fmtDist(selDist)}
                           </span>
                         )}
-                        {selected.rating != null ? (
+                        {panel.rating != null ? (
                           <span className="inline-flex items-center gap-1 text-[color:var(--fifa-yellow)]">
-                            <Star className="h-3 w-3 fill-current" /> {selected.rating.toFixed(1)}
+                            <Star className="h-3 w-3 fill-current" /> {panel.rating.toFixed(1)}
                           </span>
                         ) : (
                           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Novo</span>
@@ -473,7 +478,7 @@ export function ConnectSection() {
                   </div>
 
                   {/* Destaque: o que ele tem para troca que VOCÊ precisa */}
-                  {!selected.isMe && (
+                  {!panel.isMe && (
                     <div className="mt-5 rounded-2xl border border-[color:var(--fifa-green)]/30 bg-[color:var(--fifa-green)]/5 p-4">
                       <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[color:var(--fifa-green)]">
                         <Sparkles className="h-4 w-4" /> Que você precisa ({selMatched.length})
@@ -515,7 +520,7 @@ export function ConnectSection() {
                           </span>
                         );
                       })}
-                      {selected.has.length > selHasShown.length && <span className="px-1 py-1 text-xs text-muted-foreground">+{selected.has.length - selHasShown.length}</span>}
+                      {panel.has.length > selHasShown.length && <span className="px-1 py-1 text-xs text-muted-foreground">+{panel.has.length - selHasShown.length}</span>}
                     </div>
                   </div>
 
@@ -538,23 +543,23 @@ export function ConnectSection() {
                   )}
 
                   {/* Ação */}
-                  {selected.isMe ? (
+                  {panel.isMe ? (
                     <div className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[color:var(--fifa-green)]/40 bg-[color:var(--fifa-green)]/10 px-6 py-3 text-sm font-semibold text-[color:var(--fifa-green)]">
                       <MapPin className="h-4 w-4" /> Esta é a sua localização no mapa
                     </div>
-                  ) : selected.uid ? (
+                  ) : panel.uid ? (
                     <div className="mt-6 flex gap-2">
-                      {pendingToUids.has(selected.uid) ? (
+                      {pendingToUids.has(panel.uid) ? (
                         <div className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green-deep)] px-4 py-3 text-sm font-semibold text-white">
                           <Check className="h-4 w-4" /> Pedido enviado
                         </div>
                       ) : (
-                        <button onClick={() => setTradeTarget(selected)} className="group flex flex-1 items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green)] px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]">
+                        <button onClick={() => setTradeTarget(panel)} className="group flex flex-1 items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green)] px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]">
                           <ArrowLeftRight className="h-4 w-4 transition-transform group-hover:rotate-180" /> Solicitar troca
                         </button>
                       )}
                       <button
-                        onClick={() => openChat({ uid: selected.uid!, name: selected.name, photo: selected.photo })}
+                        onClick={() => openChat({ uid: panel.uid!, name: panel.name, photo: panel.photo })}
                         className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[color:var(--fifa-green)]/40 px-4 py-3 text-sm font-semibold text-[color:var(--fifa-green)] transition-all hover:bg-[color:var(--fifa-green)]/10"
                       >
                         <MessageCircle className="h-4 w-4" /> Conversar
@@ -562,11 +567,11 @@ export function ConnectSection() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => setRequested((prev) => new Set(prev).add(selected.id))}
-                      disabled={requested.has(selected.id)}
+                      onClick={() => setRequested((prev) => new Set(prev).add(panel.id))}
+                      disabled={requested.has(panel.id)}
                       className="group mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green)] px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-[1.02] hover:bg-[color:var(--fifa-green-deep)] disabled:cursor-default disabled:bg-[color:var(--fifa-green-deep)] disabled:hover:scale-100"
                     >
-                      {requested.has(selected.id) ? (
+                      {requested.has(panel.id) ? (
                         <>
                           <Check className="h-4 w-4" /> Troca solicitada! <span className="opacity-70">(exemplo)</span>
                         </>
