@@ -1,11 +1,17 @@
 import { addDoc, collection, doc, onSnapshot, orderBy, query, serverTimestamp, setDoc, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import type { TradeAction, TradeItem } from "@/lib/trades";
+
+// Resumo de uma rodada de negociação, virado cartão no chat.
+export type TradeCardMeta = { action: TradeAction; wanted: TradeItem[]; offered: TradeItem[]; value?: number; by: string };
 
 export type ChatMessage = {
   id: string;
   from: string;
   fromName: string;
   text: string;
+  kind?: "trade"; // mensagem-cartão de negociação
+  meta?: TradeCardMeta;
   createdAt?: { seconds: number } | null;
 };
 
@@ -33,8 +39,18 @@ export function listenMessages(cid: string, cb: (msgs: ChatMessage[]) => void): 
   );
 }
 
-export async function sendMessage(cid: string, msg: { from: string; fromName: string; to: string; toName: string; text: string }): Promise<void> {
-  await addDoc(collection(db, "chats", cid, "messages"), { from: msg.from, fromName: msg.fromName, text: msg.text, createdAt: serverTimestamp() });
+export async function sendMessage(
+  cid: string,
+  msg: { from: string; fromName: string; to: string; toName: string; text: string; kind?: "trade"; meta?: TradeCardMeta },
+): Promise<void> {
+  await addDoc(collection(db, "chats", cid, "messages"), {
+    from: msg.from,
+    fromName: msg.fromName,
+    text: msg.text,
+    ...(msg.kind ? { kind: msg.kind } : {}),
+    ...(msg.meta ? { meta: msg.meta } : {}),
+    createdAt: serverTimestamp(),
+  });
   // Resumo da conversa (notifica o outro lado e alimenta a caixa de mensagens).
   try {
     await setDoc(

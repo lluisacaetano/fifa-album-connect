@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
-import { agreeToDeal, confirmDelivery, listenTradeRequests, rateUser, setRequestStatus, updateTradeDeal, type DeliveryInfo, type TradeItem, type TradeRequest } from "@/lib/trades";
+import { acceptDeal, confirmDelivery, listenTradeRequests, rateUser, refuseDeal, setRequestStatus, submitProposal, type DeliveryInfo, type TradeItem, type TradeRequest } from "@/lib/trades";
 import { chatId, listenMyChats, type ChatSummary } from "@/lib/chat";
 import { playPing } from "@/lib/sound";
 
@@ -15,8 +15,9 @@ type TradesContextValue = {
   confirm: (req: TradeRequest, info: DeliveryInfo) => Promise<void>;
   decline: (id: string) => void;
   rate: (req: TradeRequest, stars: number) => void;
-  agree: (req: TradeRequest) => Promise<void>;
-  editDeal: (req: TradeRequest, wanted: TradeItem[], offered: TradeItem[]) => Promise<void>;
+  counter: (req: TradeRequest, deal: { wanted: TradeItem[]; offered: TradeItem[]; value?: number }) => Promise<void>;
+  accept: (req: TradeRequest) => Promise<void>;
+  refuse: (req: TradeRequest) => Promise<void>;
   panelOpen: boolean;
   openPanel: () => void;
   closePanel: () => void;
@@ -149,13 +150,18 @@ export function TradesProvider({ children }: { children: ReactNode }) {
           const other = req.participants.find((p) => p !== user.uid);
           if (other) rateUser(other, user.uid, stars, req.id);
         },
-        agree: async (req) => {
+        counter: async (req, deal) => {
           if (!user) return;
-          await agreeToDeal(req.id, user.uid);
+          const other = req.participants.find((p) => p !== user.uid) ?? req.toUid;
+          await submitProposal(req.id, { wanted: deal.wanted, offered: deal.offered, value: deal.value, by: user.uid, to: other, action: "counter" });
         },
-        editDeal: async (req, wanted, offered) => {
+        accept: async (req) => {
           if (!user) return;
-          await updateTradeDeal(req.id, { wanted, offered, lastEditBy: user.uid });
+          await acceptDeal(req.id, user.uid);
+        },
+        refuse: async (req) => {
+          if (!user) return;
+          await refuseDeal(req.id, user.uid);
         },
         panelOpen,
         openPanel: () => setPanelOpen(true),

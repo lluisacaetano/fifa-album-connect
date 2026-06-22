@@ -24,7 +24,6 @@ function Chips({ items, tone }: { items: TradeItem[]; tone: "green" | "blue" }) 
         <span key={`${s.code}-${s.name}`} className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${cls}`}>
           {s.name}
           {s.code ? <span className="opacity-70"> · {s.code}</span> : null}
-          {s.sale ? <span className="opacity-70"> · venda</span> : null}
         </span>
       ))}
     </div>
@@ -93,6 +92,11 @@ function RequestCard({ r, myUid, onConfirm, onDecline, onChat, onRate }: { r: Tr
           <div className="mt-1"><Chips items={iGet} tone="green" /></div>
         </div>
       </div>
+      {!!r.value && (
+        <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-[color:var(--fifa-green)]/10 px-2.5 py-0.5 text-[11px] font-bold text-[color:var(--fifa-green-deep)]">
+          💰 R$ {r.value.toFixed(2).replace(".", ",")}
+        </div>
+      )}
 
       {/* Estado da confirmação */}
       {r.status === "accepted" ? (

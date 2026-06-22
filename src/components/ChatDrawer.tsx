@@ -1,13 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Send, Check, Ban, Truck, MapPin, ShieldAlert, Handshake, Plus } from "lucide-react";
+import { X, Send, Check, Ban, Truck, MapPin, ShieldAlert, Handshake, Repeat } from "lucide-react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth";
 import { useTrades } from "@/lib/trades-context";
-import { chatId, listenMessages, sendMessage, type ChatMessage } from "@/lib/chat";
-import type { TradeItem } from "@/lib/trades";
+import { chatId, listenMessages, sendMessage, type ChatMessage, type TradeCardMeta } from "@/lib/chat";
+import type { TradeAction, TradeItem } from "@/lib/trades";
 import { Avatar } from "@/components/Avatar";
+import { ValueModal } from "@/components/ValueModal";
 
 const keyOf = (s: TradeItem) => `${s.code}-${s.name}`;
+const fmtBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
+const uniqItems = (arr: TradeItem[]) => {
+  const m = new Map<string, TradeItem>();
+  for (const s of arr) m.set(keyOf(s), s);
+  return [...m.values()];
+};
+const ACTION_LABEL: Record<TradeAction, string> = {
+  propose: "fez uma proposta",
+  counter: "fez uma contraproposta",
+  accept: "aceitou a troca",
+  refuse: "recusou a troca",
+};
 
 // Transforma URLs do texto (ex.: link de rastreio) em links clicáveis.
 function renderText(text: string) {
@@ -22,66 +37,153 @@ function renderText(text: string) {
   );
 }
 
+function ItemChips({ items, tone }: { items: TradeItem[]; tone: "green" | "blue" }) {
+  if (!items.length) return <span className="text-[11px] text-muted-foreground">—</span>;
+  const cls = tone === "green" ? "bg-[color:var(--fifa-green)]/12 text-[color:var(--fifa-green)]" : "bg-[color:var(--fifa-blue)]/12 text-[color:var(--fifa-blue)]";
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {items.map((s) => (
+        <span key={keyOf(s)} className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${cls}`}>
+          {s.name}
+          {s.code ? <span className="opacity-70"> · {s.code}</span> : null}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function ChatDrawer() {
   const { user } = useAuth();
-  const { chatTarget, closeChat, requests, confirm, decline, agree, editDeal } = useTrades();
+  const { chatTarget, closeChat, requests, confirm, decline, counter, accept, refuse } = useTrades();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const [showDelivery, setShowDelivery] = useState(false);
   const [method, setMethod] = useState<"presencial" | "correios" | "transportadora">("presencial");
   const [carrier, setCarrier] = useState("");
   const [tracking, setTracking] = useState("");
-  // Figurinhas que EU tirei do deal nesta sessão (para poder re-adicionar).
-  const [stash, setStash] = useState<{ item: TradeItem; side: "give" | "get" }[]>([]);
+  // Negociação
+  const [editing, setEditing] = useState(false);
+  const [editGet, setEditGet] = useState<Set<string>>(new Set());
+  const [editGive, setEditGive] = useState<Set<string>>(new Set());
+  const [valueOpen, setValueOpen] = useState(false);
+  const [otherPool, setOtherPool] = useState<TradeItem[]>([]);
+  const [myPool, setMyPool] = useState<TradeItem[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
 
   const cid = user && chatTarget ? chatId(user.uid, chatTarget.uid) : null;
 
-  // Troca entre nós dois: prioriza a pendente mais recente (lista já vem do mais novo
-  // pro mais velho), depois a concluída.
+  // Troca entre nós dois: pendente mais recente, depois a concluída.
   const between = chatTarget ? requests.filter((r) => r.participants?.includes(chatTarget.uid)) : [];
   const linked = between.find((r) => r.status === "pending") ?? between.find((r) => r.status === "accepted");
 
   const iConfirmed = !!(linked && user && (linked.confirms ?? []).includes(user.uid));
-  // Já enviado pelos Correios/transportadora? Então não dá mais para cancelar.
   const shipped = Object.values(linked?.delivery ?? {}).some((d) => d.method === "correios" || d.method === "transportadora");
   const canCancel = linked?.status === "pending" && !shipped;
 
-  // ---- Negociação do "deal" (relativo a quem está vendo) ----
+  // Relativo a quem está vendo.
   const iAmFrom = !!(linked && user && linked.fromUid === user.uid);
-  const iGive: TradeItem[] = linked ? (iAmFrom ? linked.offered : linked.wanted) : []; // o que EU dou
   const iGet: TradeItem[] = linked ? (iAmFrom ? linked.wanted : linked.offered) : []; // o que EU recebo
+  const iGive: TradeItem[] = linked ? (iAmFrom ? linked.offered : linked.wanted) : []; // o que EU dou
+  const value = linked?.value ?? 0;
   const agreedBy = linked?.agreedBy ?? [];
-  const iAgreed = !!(user && agreedBy.includes(user.uid));
   const bothAgreed = agreedBy.length >= 2;
-  const dealEmpty = (linked?.wanted?.length ?? 0) === 0 && (linked?.offered?.length ?? 0) === 0;
-  const addable = stash.filter((e) => !(e.side === "give" ? iGive : iGet).some((s) => keyOf(s) === keyOf(e.item)));
+  const myTurn = !!(linked && user && linked.turn === user.uid);
+  const otherFirst = chatTarget?.name.split(" ")[0] ?? "";
 
-  // Limpa o stash ao trocar de conversa/troca.
+  // Pools: o que EU recebo = trades do outro; o que EU dou = meus trades.
+  const receivePool = uniqItems([...iGet, ...otherPool]);
+  const givePool = uniqItems([...iGive, ...myPool]);
+  const editGetItems = receivePool.filter((s) => editGet.has(keyOf(s)));
+  const editGiveItems = givePool.filter((s) => editGive.has(keyOf(s)));
+
   useEffect(() => {
-    setStash([]);
-  }, [linked?.id]);
+    if (!user || !chatTarget) {
+      setOtherPool([]);
+      setMyPool([]);
+      return;
+    }
+    let alive = true;
+    const toItems = (arr: unknown): TradeItem[] =>
+      (Array.isArray(arr) ? arr : [])
+        .map((t: any) => (typeof t === "string" ? { code: "", name: t } : { code: String(t?.code ?? ""), name: String(t?.name ?? "") }))
+        .filter((s: TradeItem) => s.name);
+    (async () => {
+      try {
+        const [oSnap, mSnap] = await Promise.all([getDoc(doc(db, "users", chatTarget.uid)), getDoc(doc(db, "users", user.uid))]);
+        if (!alive) return;
+        setOtherPool(toItems(oSnap.data()?.trades));
+        setMyPool(toItems(mSnap.data()?.trades));
+      } catch {
+        /* ignora */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [user?.uid, chatTarget?.uid]);
 
-  // Mapeia (dou, recebo) de volta p/ os campos canônicos e salva.
-  function commit(give: TradeItem[], get: TradeItem[]) {
+  // Sai do modo edição quando a troca muda de rodada/conversa.
+  useEffect(() => {
+    setEditing(false);
+    setValueOpen(false);
+  }, [linked?.id, linked?.round, linked?.status]);
+
+  const toggle = (set: React.Dispatch<React.SetStateAction<Set<string>>>, key: string) =>
+    set((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  function cardText(action: TradeAction, w: TradeItem[], o: TradeItem[], v?: number) {
+    const names = (arr: TradeItem[]) => arr.map((s) => s.name).join(", ");
+    if (action === "accept") return "✅ Aceitou a troca.";
+    if (action === "refuse") return "🚫 Recusou a troca.";
+    const parts = [`🎯 quer: ${names(w) || "—"}`];
+    if (o.length) parts.push(`🔁 dá: ${names(o)}`);
+    if (v) parts.push(`💰 ${fmtBRL(v)}`);
+    return `${action === "propose" ? "Proposta" : "Contraproposta"} · ${parts.join(" · ")}`;
+  }
+
+  async function postCard(action: TradeAction, w: TradeItem[], o: TradeItem[], v?: number) {
+    if (!cid || !user || !chatTarget) return;
+    const meta: TradeCardMeta = { action, wanted: w, offered: o, by: user.uid, ...(v ? { value: v } : {}) };
+    await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: cardText(action, w, o, v), kind: "trade", meta });
+  }
+
+  function enterEdit() {
     if (!linked) return;
-    const wanted = iAmFrom ? get : give;
-    const offered = iAmFrom ? give : get;
-    editDeal(linked, wanted, offered);
+    setEditGet(new Set(iGet.map(keyOf)));
+    setEditGive(new Set(iGive.map(keyOf)));
+    setEditing(true);
   }
-  function removeItem(side: "give" | "get", key: string) {
-    const src = side === "give" ? iGive : iGet;
-    const item = src.find((s) => keyOf(s) === key);
-    if (item) setStash((p) => [...p.filter((e) => keyOf(e.item) !== key), { item, side }]);
-    if (side === "give") commit(iGive.filter((s) => keyOf(s) !== key), iGet);
-    else commit(iGive, iGet.filter((s) => keyOf(s) !== key));
+
+  async function submitCounter(v?: number) {
+    if (!linked) return;
+    const wanted = iAmFrom ? editGetItems : editGiveItems; // requisitante recebe
+    const offered = iAmFrom ? editGiveItems : editGetItems; // requisitante dá
+    await counter(linked, { wanted, offered, value: v });
+    await postCard("counter", wanted, offered, v);
+    setEditing(false);
+    setValueOpen(false);
   }
-  function toggleSale(key: string) {
-    commit(iGive.map((s) => (keyOf(s) === key ? { ...s, sale: !s.sale } : s)), iGet);
+
+  function trySubmit() {
+    if (editGetItems.length === 0 && editGiveItems.length === 0) return;
+    if (editGetItems.length !== editGiveItems.length) setValueOpen(true);
+    else submitCounter(undefined);
   }
-  function readd(e: { item: TradeItem; side: "give" | "get" }) {
-    if (e.side === "give") commit([...iGive, { code: e.item.code, name: e.item.name }], iGet);
-    else commit(iGive, [...iGet, { code: e.item.code, name: e.item.name }]);
+
+  async function doAccept() {
+    if (!linked) return;
+    await accept(linked);
+    await postCard("accept", linked.wanted, linked.offered, linked.value);
+  }
+  async function doRefuse() {
+    if (!linked) return;
+    await refuse(linked);
+    await postCard("refuse", linked.wanted, linked.offered, linked.value);
   }
 
   async function cancelTrade() {
@@ -90,7 +192,7 @@ export function ChatDrawer() {
     if (linked && linked.status === "pending") decline(linked.id);
   }
 
-  // Confirmar entrega no chat = meu "OK" na troca (vira aceita quando os dois confirmam).
+  // Confirmar entrega no chat = meu "OK" na entrega (vira aceita quando os dois confirmam).
   async function sendDelivery() {
     if (!cid || !user || !chatTarget) return;
     const code = tracking.trim();
@@ -137,6 +239,37 @@ export function ChatDrawer() {
     await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: t });
   }
 
+  // Cartão de rodada (relativo a quem vê).
+  function TradeCard({ m }: { m: ChatMessage }) {
+    const meta = m.meta!;
+    const mine = m.from === user!.uid;
+    const gets = iAmFrom ? meta.wanted : meta.offered;
+    const gives = iAmFrom ? meta.offered : meta.wanted;
+    const decided = meta.action === "accept" || meta.action === "refuse";
+    return (
+      <div className="mx-auto w-full max-w-[88%] rounded-2xl border border-border bg-card px-3.5 py-2.5 text-card-foreground shadow-sm">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-[color:var(--fifa-green)]">
+          {mine ? "Você" : m.fromName.split(" ")[0]} {ACTION_LABEL[meta.action]}
+        </div>
+        {!decided && (
+          <div className="mt-1.5 space-y-1.5">
+            <div className="flex items-start gap-1.5">
+              <span className="mt-0.5 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-green)]">recebe</span>
+              <ItemChips items={gets} tone="green" />
+            </div>
+            <div className="flex items-start gap-1.5">
+              <span className="mt-0.5 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-blue)]">dá</span>
+              <ItemChips items={gives} tone="blue" />
+            </div>
+            {!!meta.value && <div className="text-[11px] font-bold text-[color:var(--fifa-green-deep)]">💰 {fmtBRL(meta.value)}</div>}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const dealEmpty = iGet.length === 0 && iGive.length === 0;
+
   return (
     <AnimatePresence>
       {chatTarget && user && (
@@ -174,10 +307,11 @@ export function ChatDrawer() {
             <div className="flex-1 space-y-2 overflow-auto bg-muted/40 px-4 py-4">
               {messages.length === 0 ? (
                 <div className="mt-10 text-center text-sm text-muted-foreground">
-                  Diga oi para {chatTarget.name.split(" ")[0]} e combine as figurinhas. 👋
+                  Diga oi para {otherFirst} e combine as figurinhas. 👋
                 </div>
               ) : (
                 messages.map((m) => {
+                  if (m.kind === "trade" && m.meta) return <TradeCard key={m.id} m={m} />;
                   const mine = m.from === user.uid;
                   return (
                     <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
@@ -195,7 +329,7 @@ export function ChatDrawer() {
               <div ref={endRef} />
             </div>
 
-            {/* Ações de troca — só aparecem quando há uma troca pendente/concluída entre vocês */}
+            {/* Ações de troca */}
             {linked && (
               <div className="space-y-2 border-t border-border bg-background px-3 pt-3">
                 {linked.status === "accepted" ? (
@@ -203,109 +337,96 @@ export function ChatDrawer() {
                     <Check className="h-4 w-4" /> Troca concluída pelos dois!
                   </div>
                 ) : !bothAgreed ? (
+                  /* ---------- NEGOCIAÇÃO ---------- */
                   <div className="space-y-2.5 rounded-2xl border border-border bg-muted/40 p-3">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">A combinar — os dois editam até topar</div>
-
-                    {/* Você recebe */}
-                    <div>
-                      <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[color:var(--fifa-green)]">Você recebe</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {iGet.length ? (
-                          iGet.map((s) => (
-                            <span key={keyOf(s)} className="inline-flex items-center gap-1 rounded-full bg-[color:var(--fifa-green)]/12 px-2.5 py-1 text-[11px] font-semibold text-[color:var(--fifa-green)]">
-                              {s.name}
-                              {s.code ? <span className="opacity-70"> · {s.code}</span> : null}
-                              {s.sale ? <span className="rounded bg-[color:var(--fifa-yellow)] px-1 text-[9px] font-bold uppercase text-[color:var(--fifa-green-deep)]">venda</span> : null}
-                              <button type="button" onClick={() => removeItem("get", keyOf(s))} aria-label="Remover" className="opacity-60 transition-opacity hover:opacity-100">
-                                <X className="h-3 w-3" />
-                              </button>
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-[11px] text-muted-foreground">—</span>
-                        )}
-                      </div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      {myTurn ? "Sua vez — responda à proposta" : `Aguardando ${otherFirst} responder`}
                     </div>
 
-                    {/* Você dá */}
-                    <div>
-                      <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[color:var(--fifa-blue)]">Você dá</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {iGive.length ? (
-                          iGive.map((s) => (
-                            <span key={keyOf(s)} className="inline-flex items-center gap-1 rounded-full bg-[color:var(--fifa-blue)]/12 px-2.5 py-1 text-[11px] font-semibold text-[color:var(--fifa-blue)]">
-                              {s.name}
-                              {s.code ? <span className="opacity-70"> · {s.code}</span> : null}
-                              <button
-                                type="button"
-                                onClick={() => toggleSale(keyOf(s))}
-                                title="Marcar como venda (sem figurinha em troca; combina o valor no chat)"
-                                className={`rounded px-1 text-[9px] font-bold uppercase transition-colors ${s.sale ? "bg-[color:var(--fifa-yellow)] text-[color:var(--fifa-green-deep)]" : "border border-[color:var(--fifa-blue)]/40 text-[color:var(--fifa-blue)]"}`}
-                              >
-                                venda
-                              </button>
-                              <button type="button" onClick={() => removeItem("give", keyOf(s))} aria-label="Remover" className="opacity-60 transition-opacity hover:opacity-100">
-                                <X className="h-3 w-3" />
-                              </button>
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-[11px] text-muted-foreground">—</span>
-                        )}
+                    {/* Deal atual */}
+                    <div className="space-y-1.5 rounded-xl bg-card/70 p-2.5">
+                      <div className="flex items-start gap-1.5">
+                        <span className="mt-0.5 w-10 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-green)]">recebe</span>
+                        <ItemChips items={iGet} tone="green" />
                       </div>
+                      <div className="flex items-start gap-1.5">
+                        <span className="mt-0.5 w-10 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-blue)]">dá</span>
+                        <ItemChips items={iGive} tone="blue" />
+                      </div>
+                      {!!value && <div className="text-[11px] font-bold text-[color:var(--fifa-green-deep)]">💰 {fmtBRL(value)}</div>}
                     </div>
 
-                    {/* Re-adicionar o que você tirou */}
-                    {addable.length > 0 && (
-                      <div>
-                        <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Adicionar de volta</div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {addable.map((e) => (
-                            <button
-                              key={keyOf(e.item)}
-                              type="button"
-                              onClick={() => readd(e)}
-                              className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-[color:var(--fifa-green)] hover:text-foreground"
-                            >
-                              <Plus className="h-3 w-3" /> {e.item.name}
-                            </button>
-                          ))}
+                    {editing ? (
+                      /* Editor de contraproposta */
+                      <div className="space-y-2.5">
+                        <div>
+                          <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[color:var(--fifa-green)]">Você quer de {otherFirst}</div>
+                          <div className="flex max-h-24 flex-wrap gap-1.5 overflow-y-auto pr-1 [scrollbar-width:thin]">
+                            {receivePool.length ? (
+                              receivePool.map((s) => {
+                                const on = editGet.has(keyOf(s));
+                                return (
+                                  <button key={keyOf(s)} type="button" onClick={() => toggle(setEditGet, keyOf(s))} className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all ${on ? "bg-[color:var(--fifa-green)] text-white" : "border border-[color:var(--fifa-green)]/40 text-[color:var(--fifa-green)] hover:bg-[color:var(--fifa-green)]/10"}`}>
+                                    {s.name}
+                                    {s.code ? <span className="opacity-80"> · {s.code}</span> : null}
+                                  </button>
+                                );
+                              })
+                            ) : (
+                              <span className="text-[11px] text-muted-foreground">{otherFirst} não tem figurinhas disponíveis.</span>
+                            )}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[color:var(--fifa-blue)]">Você oferece</div>
+                          <div className="flex max-h-24 flex-wrap gap-1.5 overflow-y-auto pr-1 [scrollbar-width:thin]">
+                            {givePool.length ? (
+                              givePool.map((s) => {
+                                const on = editGive.has(keyOf(s));
+                                return (
+                                  <button key={keyOf(s)} type="button" onClick={() => toggle(setEditGive, keyOf(s))} className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all ${on ? "bg-[color:var(--fifa-blue)] text-white" : "border border-[color:var(--fifa-blue)]/40 text-[color:var(--fifa-blue)] hover:bg-[color:var(--fifa-blue)]/10"}`}>
+                                    {s.name}
+                                    {s.code ? <span className="opacity-70"> · {s.code}</span> : null}
+                                  </button>
+                                );
+                              })
+                            ) : (
+                              <span className="text-[11px] text-muted-foreground">Você não tem repetidas para oferecer (marque em “Meu Álbum”).</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => setEditing(false)} className="flex-1 rounded-full border border-border px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted">
+                            Cancelar
+                          </button>
+                          <button type="button" onClick={trySubmit} disabled={editGetItems.length === 0 && editGiveItems.length === 0} className="flex-1 rounded-full bg-[color:var(--fifa-green)] px-3 py-2 text-xs font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50">
+                            Enviar contraproposta
+                          </button>
                         </div>
                       </div>
-                    )}
-
-                    {linked.lastEditBy && user && linked.lastEditBy !== user.uid && !iAgreed && (
-                      <p className="text-[11px] text-muted-foreground">A outra pessoa alterou a troca — confira e tope de novo.</p>
-                    )}
-
-                    {iAgreed ? (
-                      <div className="flex items-center gap-2">
-                        <span className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-2 text-xs font-semibold text-[color:var(--fifa-green)]">
-                          <Check className="h-3.5 w-3.5" /> Você topou — aguardando o outro
-                        </span>
-                        {canCancel && (
-                          <button type="button" onClick={cancelTrade} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10">
-                            <Ban className="h-4 w-4" /> Cancelar
-                          </button>
-                        )}
+                    ) : myTurn ? (
+                      /* Ações: minha vez */
+                      <div className="grid grid-cols-3 gap-2">
+                        <button type="button" onClick={doAccept} disabled={dealEmpty} className="inline-flex items-center justify-center gap-1 rounded-full bg-[color:var(--fifa-green)] px-2 py-2 text-xs font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50">
+                          <Check className="h-3.5 w-3.5" /> Aceitar
+                        </button>
+                        <button type="button" onClick={enterEdit} className="inline-flex items-center justify-center gap-1 rounded-full border border-[color:var(--fifa-green)] px-2 py-2 text-xs font-bold text-[color:var(--fifa-green)] transition-all hover:bg-[color:var(--fifa-green)]/10">
+                          <Repeat className="h-3.5 w-3.5" /> Contrapor
+                        </button>
+                        <button type="button" onClick={doRefuse} className="inline-flex items-center justify-center gap-1 rounded-full border border-destructive/40 px-2 py-2 text-xs font-bold text-destructive transition-all hover:bg-destructive/10">
+                          <Ban className="h-3.5 w-3.5" /> Recusar
+                        </button>
                       </div>
                     ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => linked && agree(linked)}
-                          disabled={dealEmpty}
-                          className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50"
-                        >
-                          <Handshake className="h-4 w-4" /> Topar troca
+                      /* Aguardando o outro */
+                      <div className="flex items-center gap-2">
+                        <span className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground">
+                          <Handshake className="h-3.5 w-3.5" /> Você propôs — aguardando
+                        </span>
+                        <button type="button" onClick={doRefuse} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-3 py-2 text-xs font-semibold text-destructive transition-all hover:bg-destructive/10">
+                          <Ban className="h-3.5 w-3.5" /> Cancelar
                         </button>
-                        {dealEmpty && <p className="text-center text-[11px] text-muted-foreground">Adicione pelo menos uma figurinha para topar.</p>}
-                        {canCancel && (
-                          <button type="button" onClick={cancelTrade} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10">
-                            <Ban className="h-4 w-4" /> Cancelar troca
-                          </button>
-                        )}
-                      </>
+                      </div>
                     )}
                   </div>
                 ) : iConfirmed ? (
@@ -321,6 +442,11 @@ export function ChatDrawer() {
                   </div>
                 ) : (
                   <>
+                    {!!value && (
+                      <div className="flex items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-1.5 text-xs font-bold text-[color:var(--fifa-green-deep)]">
+                        Acordo fechado · 💰 {fmtBRL(value)} combinado
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={() => setShowDelivery((v) => !v)}
@@ -383,7 +509,7 @@ export function ChatDrawer() {
               <input
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder={`Mensagem para ${chatTarget.name.split(" ")[0]}…`}
+                placeholder={`Mensagem para ${otherFirst}…`}
                 className="h-11 flex-1 rounded-full border border-border bg-card px-4 text-sm outline-none ring-[color:var(--fifa-green)] transition-all focus:ring-2"
               />
               <button
@@ -396,6 +522,8 @@ export function ChatDrawer() {
               </button>
             </form>
           </motion.aside>
+
+          <ValueModal open={valueOpen} receiveCount={editGetItems.length} giveCount={editGiveItems.length} initial={value} onCancel={() => setValueOpen(false)} onConfirm={(v) => submitCounter(v)} />
         </motion.div>
       )}
     </AnimatePresence>

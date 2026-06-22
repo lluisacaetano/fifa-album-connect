@@ -218,10 +218,12 @@ export function ConnectSection() {
 
   const totalMatches = everyone.reduce((acc, t) => acc + matchCount(t), 0);
 
-  const wantedOf = (t: Trader) => (t.hasStickers ?? []).filter((s) => iNeed(s.name));
-  const offeredOf = (t: Trader) => t.wants.filter((w) => iHaveForTrade(w)).map((name) => ({ code: playerIndex[norm(name)]?.code ?? "", name }));
+  // Todas as figurinhas DELE disponíveis para troca (eu escolho quais quero).
+  const theirStickers = (t: Trader) => t.hasStickers ?? [];
+  // Chaves (code-name) das que EU preciso, para marcar "você precisa" no modal.
+  const needsOf = (t: Trader) => new Set((t.hasStickers ?? []).filter((s) => iNeed(s.name)).map((s) => `${s.code}-${s.name}`));
 
-  async function sendTo(target: Trader, message: string, wanted: TradeItem[], offered: TradeItem[]) {
+  async function sendTo(target: Trader, message: string, wanted: TradeItem[]) {
     if (!user || !target.uid) return;
     await sendTradeRequest({
       fromUid: user.uid,
@@ -230,19 +232,23 @@ export function ConnectSection() {
       toUid: target.uid,
       toName: target.name,
       wanted,
-      offered,
+      offered: [],
       message: message || undefined,
     });
-    // Manda uma mensagem pronta no chat resumindo o pedido (não derruba o pedido se falhar).
+    // Posta o cartão inicial da proposta no chat (não derruba o pedido se falhar).
     try {
       const cid = chatId(user.uid, target.uid);
-      const wTxt = wanted.length ? wanted.map((s) => (s.code ? `${s.name} (${s.code})` : s.name)).join(", ") : null;
-      const oTxt = offered.length ? offered.map((s) => (s.code ? `${s.name} (${s.code})` : s.name)).join(", ") : "(nada por enquanto)";
-      let text = "🔄 Pedido de troca!";
-      if (wTxt) text += `\n🎯 Quero suas: ${wTxt}.`;
-      text += `\n🔁 Posso oferecer: ${oTxt}.`;
-      if (message.trim()) text += `\n\n${message.trim()}`;
-      await sendMessage(cid, { from: user.uid, fromName: user.name, to: target.uid, toName: target.name, text });
+      const wTxt = wanted.map((s) => (s.code ? `${s.name} (${s.code})` : s.name)).join(", ");
+      const text = message.trim() ? `Proposta de troca · quero: ${wTxt}\n\n${message.trim()}` : `Proposta de troca · quero: ${wTxt}`;
+      await sendMessage(cid, {
+        from: user.uid,
+        fromName: user.name,
+        to: target.uid,
+        toName: target.name,
+        text,
+        kind: "trade",
+        meta: { action: "propose", wanted, offered: [], by: user.uid },
+      });
     } catch {
       /* sem chat: o pedido já foi criado, segue o jogo */
     }
@@ -630,10 +636,10 @@ export function ConnectSection() {
       {/* Modal de envio de pedido */}
       <TradeRequestModal
         target={tradeTarget}
-        wanted={tradeTarget ? wantedOf(tradeTarget) : []}
-        offered={tradeTarget ? offeredOf(tradeTarget) : []}
+        wanted={tradeTarget ? theirStickers(tradeTarget) : []}
+        needs={tradeTarget ? needsOf(tradeTarget) : undefined}
         onClose={() => setTradeTarget(null)}
-        onSend={(message, wanted, offered) => sendTo(tradeTarget!, message, wanted, offered)}
+        onSend={(message, wanted) => sendTo(tradeTarget!, message, wanted)}
       />
     </section>
   );
