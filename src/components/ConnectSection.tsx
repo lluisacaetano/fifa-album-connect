@@ -65,26 +65,36 @@ export function ConnectSection() {
   const [missing, setMissing] = useState<Set<string>>(new Set());
   const [myDupes, setMyDupes] = useState<Set<string>>(new Set());
   useEffect(() => {
-    const miss = new Set<string>();
-    const dupes = new Set<string>();
-    for (const s of squads) {
-      let owned = new Set<number>();
-      let trade = new Set<number>();
-      try {
-        const o = localStorage.getItem(`album-owned-${s.code}`);
-        if (o) owned = new Set(JSON.parse(o) as number[]);
-        const t = localStorage.getItem(`album-trade-${s.code}`);
-        if (t) trade = new Set(JSON.parse(t) as number[]);
-      } catch {
-        /* ignora */
+    const readAlbum = () => {
+      const miss = new Set<string>();
+      const dupes = new Set<string>();
+      for (const s of squads) {
+        let owned = new Set<number>();
+        let trade = new Set<number>();
+        try {
+          const o = localStorage.getItem(`album-owned-${s.code}`);
+          if (o) owned = new Set(JSON.parse(o) as number[]);
+          const t = localStorage.getItem(`album-trade-${s.code}`);
+          if (t) trade = new Set(JSON.parse(t) as number[]);
+        } catch {
+          /* ignora */
+        }
+        for (const p of s.players) {
+          if (!owned.has(p.id)) miss.add(norm(p.name));
+          if (trade.has(p.id)) dupes.add(norm(p.name));
+        }
       }
-      for (const p of s.players) {
-        if (!owned.has(p.id)) miss.add(norm(p.name));
-        if (trade.has(p.id)) dupes.add(norm(p.name));
-      }
-    }
-    setMissing(miss);
-    setMyDupes(dupes);
+      setMissing(miss);
+      setMyDupes(dupes);
+    };
+    readAlbum();
+    // Relê na hora quando o álbum muda (ex.: baixa de uma troca finalizada).
+    window.addEventListener("album:changed", readAlbum);
+    window.addEventListener("storage", readAlbum);
+    return () => {
+      window.removeEventListener("album:changed", readAlbum);
+      window.removeEventListener("storage", readAlbum);
+    };
   }, [user]);
 
   // Nome do jogador -> seleção (para filtrar quem tem figurinha de um país).

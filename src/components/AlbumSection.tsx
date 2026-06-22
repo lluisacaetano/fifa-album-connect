@@ -168,6 +168,8 @@ export function AlbumSection() {
       localStorage.setItem(countKey(c), JSON.stringify(counts));
       localStorage.setItem(ownedKey(c), JSON.stringify(owned));
       localStorage.setItem(tradeKey(c), JSON.stringify(trade));
+      // Avisa o resto do app (ex.: seção Trocas) que o álbum mudou, p/ reler na hora.
+      window.dispatchEvent(new Event("album:changed"));
     } catch {
       /* ignora */
     }
