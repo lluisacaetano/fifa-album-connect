@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Globe, Minus, Plus, Repeat, Lock } from "lucide-react";
 import { squads, squadByCode } from "@/data/squads";
@@ -7,6 +7,8 @@ import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "@/lib/auth";
 import { db } from "@/lib/firebase";
 import { saveUserAlbum, type TradeSticker } from "@/lib/profile";
+import { useTrades } from "@/lib/trades-context";
+import { markTradeApplied } from "@/lib/trades";
 
 const countKey = (code: string) => `album-count-${code}`;
 const ownedKey = (code: string) => `album-owned-${code}`;
@@ -62,6 +64,20 @@ export function AlbumSection() {
   const [countMap, setCountMap] = useState<Record<string, Counts>>({});
   const [synced, setSynced] = useState(false); // já carregou o álbum do Firestore?
   const { user, hydrated, openAuth } = useAuth();
+  const { requests } = useTrades();
+  const applyingRef = useRef<Set<string>>(new Set());
+
+  // Índice por nome do jogador -> { code, id } (para dar baixa nas trocas concluídas).
+  const nameToCard = useMemo(() => {
+    const idx: Record<string, { code: string; id: number }> = {};
+    for (const s of squads) {
+      for (const p of s.players) {
+        const key = norm(p.name);
+        if (!(key in idx)) idx[key] = { code: s.code, id: p.id };
+      }
+    }
+    return idx;
+  }, []);
 
   // Índice reverso: número da figurinha ("BRA1") -> { code, id } local.
   const stickerIndex = useMemo(() => {
@@ -199,6 +215,50 @@ export function AlbumSection() {
     const t = setTimeout(() => saveUserAlbum(user.uid, syncPayload.album, syncPayload.trades, syncPayload.wants), 700);
     return () => clearTimeout(t);
   }, [syncPayload, user, synced]);
+
+  // Aplica em lote variações de quantidade (uma única atualização de estado).
+  function applyDeltas(deltas: { code: string; id: number; delta: number }[]) {
+    if (!deltas.length) return;
+    setCountMap((prev) => {
+      const next = { ...prev };
+      const touched = new Set<string>();
+      for (const { code, id, delta } of deltas) {
+        const counts: Counts = { ...(next[code] ?? {}) };
+        const v = (counts[id] ?? 0) + delta;
+        if (v <= 0) delete counts[id];
+        else counts[id] = v;
+        next[code] = counts;
+        touched.add(code);
+      }
+      for (const code of touched) persist(code, next[code]);
+      return next;
+    });
+  }
+
+  // Troca CONCLUÍDA (os dois confirmaram): dá baixa só nas figurinhas que EU entreguei.
+  // As que recebi, marco manualmente quando chegarem. Idempotente via appliedBy (Firestore).
+  useEffect(() => {
+    if (!user || !synced) return;
+    const pending = requests.filter(
+      (r) => r.status === "accepted" && r.participants.includes(user.uid) && !(r.appliedBy ?? []).includes(user.uid) && !applyingRef.current.has(r.id),
+    );
+    if (!pending.length) return;
+    const deltas: { code: string; id: number; delta: number }[] = [];
+    for (const r of pending) {
+      applyingRef.current.add(r.id);
+      const iGave = r.fromUid === user.uid ? r.offered : r.wanted;
+      for (const name of iGave) {
+        const ref = nameToCard[norm(name)];
+        if (ref) deltas.push({ code: ref.code, id: ref.id, delta: -1 });
+      }
+    }
+    applyDeltas(deltas);
+    pending.forEach((r) =>
+      markTradeApplied(r.id, user.uid).catch(() => {
+        applyingRef.current.delete(r.id);
+      }),
+    );
+  }, [requests, user, synced, nameToCard]);
 
   const allCards: Card[] = useMemo(() => {
     const source = isAll ? squads : [squad!];

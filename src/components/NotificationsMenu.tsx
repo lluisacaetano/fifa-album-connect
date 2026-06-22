@@ -16,10 +16,17 @@ export function NotificationsMenu() {
     if (!user) return [];
     const list: Note[] = [];
     for (const r of requests) {
+      if (!r.participants.includes(user.uid)) continue;
       const time = r.updatedAt?.seconds ?? r.createdAt?.seconds ?? 0;
-      if (r.toUid === user.uid && r.status === "pending") list.push({ id: r.id, icon: "in", text: `${r.fromName} quer trocar com você`, time });
-      else if (r.fromUid === user.uid && r.status === "accepted") list.push({ id: r.id, icon: "ok", text: `${r.toName} aceitou sua troca`, time });
-      else if (r.fromUid === user.uid && r.status === "declined") list.push({ id: r.id, icon: "no", text: `${r.toName} recusou seu pedido`, time });
+      const otherName = r.fromUid === user.uid ? r.toName : r.fromName;
+      const iConfirmed = (r.confirms ?? []).includes(user.uid);
+      if (r.status === "pending") {
+        list.push({ id: r.id, icon: "in", text: iConfirmed ? `Aguardando ${otherName} confirmar a entrega` : `Troca com ${otherName} — confirme sua entrega`, time });
+      } else if (r.status === "accepted") {
+        list.push({ id: r.id, icon: "ok", text: `Troca com ${otherName} concluída!`, time });
+      } else if (r.status === "declined") {
+        list.push({ id: r.id, icon: "no", text: `Troca com ${otherName} foi cancelada`, time });
+      }
     }
     for (const c of chatSummaries) {
       if (c.lastFrom === user.uid) continue;

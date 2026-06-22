@@ -241,7 +241,7 @@ export function ConnectSection() {
           <div className="grid h-[420px] place-items-center rounded-3xl border border-border bg-card text-sm text-muted-foreground">Carregando…</div>
         ) : !user ? (
           /* ---------- Prévia (chamariz): mapa borrado + chamada para cadastro ---------- */
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative h-[420px] overflow-hidden rounded-3xl border-2 border-border bg-muted shadow-xl sm:h-[480px]">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative isolate z-0 h-[420px] overflow-hidden rounded-3xl border-2 border-border bg-muted shadow-xl sm:h-[480px]">
             <div className="pointer-events-none absolute inset-0 scale-105 blur-[3px]" aria-hidden>
               {mounted && Map ? (
                 <Map.MapContainer center={[-15.78, -47.92]} zoom={4} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false} zoomControl={false} dragging={false} attributionControl={false}>
@@ -345,7 +345,7 @@ export function ConnectSection() {
 
             <div className="grid items-stretch gap-6 lg:grid-cols-[1.4fr_1fr]">
               {/* Mapa — acompanha a altura do card ao lado */}
-              <div className="relative h-full min-h-[360px] overflow-hidden rounded-3xl border-2 border-border bg-muted shadow-xl sm:min-h-[480px]">
+              <div className="relative isolate z-0 h-full min-h-[360px] overflow-hidden rounded-3xl border-2 border-border bg-muted shadow-xl sm:min-h-[480px]">
                 {mounted && Map ? (
                   <Map.MapContainer center={[-15.78, -47.92]} zoom={4} style={{ height: "100%", width: "100%" }} scrollWheelZoom={true}>
                     <Map.TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -536,8 +536,7 @@ export function ConnectSection() {
               )}
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-xs text-muted-foreground">
-              <span>Mapa com colecionadores reais e de demonstração.</span>
+            <div className="mt-6 text-center text-xs text-muted-foreground">
               <button onClick={openEdit} className="font-semibold text-[color:var(--fifa-green)] underline-offset-2 hover:underline">
                 Editar meu perfil
               </button>

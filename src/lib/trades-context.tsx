@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
-import { listenTradeRequests, setRequestStatus, type TradeRequest } from "@/lib/trades";
+import { confirmDelivery, listenTradeRequests, setRequestStatus, type DeliveryInfo, type TradeRequest } from "@/lib/trades";
 import { listenMyChats, type ChatSummary } from "@/lib/chat";
 import { playPing } from "@/lib/sound";
 
@@ -12,7 +12,7 @@ type TradesContextValue = {
   incomingPending: number;
   unread: number;
   markSeen: () => void;
-  accept: (id: string) => void;
+  confirm: (req: TradeRequest, info: DeliveryInfo) => Promise<void>;
   decline: (id: string) => void;
   panelOpen: boolean;
   openPanel: () => void;
@@ -65,21 +65,23 @@ export function TradesProvider({ children }: { children: ReactNode }) {
     });
   }, [user]);
 
-  const incomingPending = useMemo(() => requests.filter((r) => r.toUid === user?.uid && r.status === "pending").length, [requests, user]);
+  // Pendências MINHAS: trocas em aberto onde EU ainda não confirmei a entrega (fica até resolver).
+  const incomingPending = useMemo(
+    () => requests.filter((r) => r.status === "pending" && r.participants.includes(user?.uid ?? "") && !(r.confirms ?? []).includes(user?.uid ?? "")).length,
+    [requests, user],
+  );
 
-  // Não lidas: pedidos recebidos pendentes + meus enviados que mudaram de status.
+  // Não lidas = pendências minhas (persistem) + conclusões/recusas e mensagens novas (somem ao abrir).
   const unread = useMemo(() => {
     if (!user) return 0;
-    const reqUnread = requests.filter((r) => {
+    const transient = requests.filter((r) => {
       const t = notifTime(r);
       if (t <= seen) return false;
-      if (r.toUid === user.uid && r.status === "pending") return true;
-      if (r.fromUid === user.uid && r.status !== "pending") return true;
-      return false;
+      return (r.status === "accepted" || r.status === "declined") && r.participants.includes(user.uid);
     }).length;
     const chatUnread = chatSummaries.filter((c) => c.lastFrom !== user.uid && (c.updatedAt?.seconds ?? 0) > seen).length;
-    return reqUnread + chatUnread;
-  }, [requests, chatSummaries, user, seen]);
+    return incomingPending + transient + chatUnread;
+  }, [requests, chatSummaries, user, seen, incomingPending]);
 
   const markSeen = () => {
     if (!user) return;
@@ -100,7 +102,12 @@ export function TradesProvider({ children }: { children: ReactNode }) {
         incomingPending,
         unread,
         markSeen,
-        accept: (id) => setRequestStatus(id, "accepted"),
+        confirm: async (req, info) => {
+          if (!user) return;
+          const other = req.participants.find((p) => p !== user.uid);
+          const otherConfirmed = !!other && (req.confirms ?? []).includes(other);
+          await confirmDelivery(req.id, user.uid, info, otherConfirmed);
+        },
         decline: (id) => setRequestStatus(id, "declined"),
         panelOpen,
         openPanel: () => setPanelOpen(true),

@@ -21,7 +21,7 @@ function renderText(text: string) {
 
 export function ChatDrawer() {
   const { user } = useAuth();
-  const { chatTarget, closeChat, requests, accept, decline } = useTrades();
+  const { chatTarget, closeChat, requests, confirm, decline } = useTrades();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const [showDelivery, setShowDelivery] = useState(false);
@@ -35,11 +35,7 @@ export function ChatDrawer() {
   // Pedido de troca entre nós dois (para refletir aceitar/cancelar feito no chat).
   const linked = chatTarget ? requests.find((r) => r.participants?.includes(chatTarget.uid)) : undefined;
 
-  async function confirmTrade() {
-    if (!cid || !user) return;
-    await sendMessage(cid, { from: user.uid, fromName: user.name, text: "✅ Fechado! Troca combinada por aqui." });
-    if (linked && linked.status === "pending") accept(linked.id);
-  }
+  const iConfirmed = !!(linked && user && (linked.confirms ?? []).includes(user.uid));
 
   async function cancelTrade() {
     if (!cid || !user) return;
@@ -47,21 +43,19 @@ export function ChatDrawer() {
     if (linked && linked.status === "pending") decline(linked.id);
   }
 
+  // Confirmar entrega no chat = meu "OK" na troca (vira aceita quando os dois confirmam).
   async function sendDelivery() {
     if (!cid || !user) return;
+    const code = tracking.trim();
+    if (method !== "presencial" && !code) return;
     let body = "";
-    if (method === "presencial") {
-      body = "📍 Combinei entregar pessoalmente.";
-    } else {
-      const code = tracking.trim();
-      if (!code) return;
-      if (method === "correios") {
-        body = `📦 Enviei pelos Correios. Rastreio: ${code}\nhttps://rastreamento.correios.com.br/app/index.php?codigo=${encodeURIComponent(code)}`;
-      } else {
-        body = `🚚 Enviei por transportadora${carrier.trim() ? ` (${carrier.trim()})` : ""}. Rastreio: ${code}`;
-      }
-    }
+    if (method === "presencial") body = "📍 Combinei entregar pessoalmente. (confirmei meu lado)";
+    else if (method === "correios") body = `📦 Enviei pelos Correios. Rastreio: ${code}\nhttps://rastreamento.correios.com.br/app/index.php?codigo=${encodeURIComponent(code)}`;
+    else body = `🚚 Enviei por transportadora${carrier.trim() ? ` (${carrier.trim()})` : ""}. Rastreio: ${code}`;
     await sendMessage(cid, { from: user.uid, fromName: user.name, text: body });
+    if (linked && linked.status === "pending" && !iConfirmed) {
+      await confirm(linked, { method, tracking: code || undefined, carrier: carrier.trim() || undefined });
+    }
     setShowDelivery(false);
     setTracking("");
     setCarrier("");
@@ -155,7 +149,7 @@ export function ChatDrawer() {
                   showDelivery ? "border-[color:var(--fifa-green)] text-[color:var(--fifa-green)]" : "border-border text-foreground hover:bg-muted"
                 }`}
               >
-                <Truck className="h-4 w-4" /> Combinar entrega
+                <Truck className="h-4 w-4" /> {iConfirmed ? "Você já confirmou a entrega" : "Confirmar entrega"}
               </button>
 
               {showDelivery && (
@@ -190,27 +184,31 @@ export function ChatDrawer() {
                     disabled={method !== "presencial" && !tracking.trim()}
                     className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50"
                   >
-                    {method === "presencial" ? <MapPin className="h-4 w-4" /> : <Truck className="h-4 w-4" />} Enviar combinação
+                    {method === "presencial" ? <MapPin className="h-4 w-4" /> : <Truck className="h-4 w-4" />} Confirmar minha entrega
                   </button>
                 </div>
               )}
 
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={confirmTrade}
-                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]"
-                >
-                  <Check className="h-4 w-4" /> Troca feita
-                </button>
-                <button
-                  type="button"
-                  onClick={cancelTrade}
-                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10"
-                >
-                  <Ban className="h-4 w-4" /> Cancelar
-                </button>
-              </div>
+              {linked?.status === "accepted" ? (
+                <div className="flex items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-2 text-sm font-bold text-[color:var(--fifa-green)]">
+                  <Check className="h-4 w-4" /> Troca concluída pelos dois!
+                </div>
+              ) : linked?.status === "pending" ? (
+                <div className="flex items-center gap-2">
+                  {iConfirmed && (
+                    <span className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2 text-xs font-medium text-muted-foreground">
+                      <Check className="h-3.5 w-3.5 text-[color:var(--fifa-green)]" /> Aguardando o outro confirmar
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={cancelTrade}
+                    className={`inline-flex items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10 ${iConfirmed ? "" : "w-full"}`}
+                  >
+                    <Ban className="h-4 w-4" /> Cancelar troca
+                  </button>
+                </div>
+              ) : null}
             </div>
 
             {/* Caixa de envio */}
