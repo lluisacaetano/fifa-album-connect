@@ -1,16 +1,33 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Send, Check, Ban } from "lucide-react";
+import { X, Send, Check, Ban, Truck, MapPin } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTrades } from "@/lib/trades-context";
 import { chatId, listenMessages, sendMessage, type ChatMessage } from "@/lib/chat";
 import { Avatar } from "@/components/Avatar";
+
+// Transforma URLs do texto (ex.: link de rastreio) em links clicáveis.
+function renderText(text: string) {
+  return text.split(/(https?:\/\/[^\s]+)/g).map((part, i) =>
+    /^https?:\/\//.test(part) ? (
+      <a key={i} href={part} target="_blank" rel="noreferrer" className="font-semibold underline">
+        rastrear ↗
+      </a>
+    ) : (
+      <span key={i}>{part}</span>
+    ),
+  );
+}
 
 export function ChatDrawer() {
   const { user } = useAuth();
   const { chatTarget, closeChat, requests, accept, decline } = useTrades();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
+  const [showDelivery, setShowDelivery] = useState(false);
+  const [method, setMethod] = useState<"presencial" | "correios" | "transportadora">("presencial");
+  const [carrier, setCarrier] = useState("");
+  const [tracking, setTracking] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
 
   const cid = user && chatTarget ? chatId(user.uid, chatTarget.uid) : null;
@@ -28,6 +45,26 @@ export function ChatDrawer() {
     if (!cid || !user) return;
     await sendMessage(cid, { from: user.uid, fromName: user.name, text: "❌ Vou ter que cancelar essa troca, foi mal." });
     if (linked && linked.status === "pending") decline(linked.id);
+  }
+
+  async function sendDelivery() {
+    if (!cid || !user) return;
+    let body = "";
+    if (method === "presencial") {
+      body = "📍 Combinei entregar pessoalmente.";
+    } else {
+      const code = tracking.trim();
+      if (!code) return;
+      if (method === "correios") {
+        body = `📦 Enviei pelos Correios. Rastreio: ${code}\nhttps://rastreamento.correios.com.br/app/index.php?codigo=${encodeURIComponent(code)}`;
+      } else {
+        body = `🚚 Enviei por transportadora${carrier.trim() ? ` (${carrier.trim()})` : ""}. Rastreio: ${code}`;
+      }
+    }
+    await sendMessage(cid, { from: user.uid, fromName: user.name, text: body });
+    setShowDelivery(false);
+    setTracking("");
+    setCarrier("");
   }
 
   useEffect(() => {
@@ -96,11 +133,11 @@ export function ChatDrawer() {
                   return (
                     <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                       <div
-                        className={`max-w-[78%] rounded-2xl px-3.5 py-2 text-sm shadow-sm ${
+                        className={`max-w-[78%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm shadow-sm ${
                           mine ? "rounded-br-md bg-[color:var(--fifa-green)] text-white" : "rounded-bl-md bg-card text-card-foreground"
                         }`}
                       >
-                        {m.text}
+                        {renderText(m.text)}
                       </div>
                     </div>
                   );
@@ -109,22 +146,71 @@ export function ChatDrawer() {
               <div ref={endRef} />
             </div>
 
-            {/* Ações de troca */}
-            <div className="flex gap-2 border-t border-border bg-background px-3 pt-3">
+            {/* Ações de troca + entrega */}
+            <div className="space-y-2 border-t border-border bg-background px-3 pt-3">
               <button
                 type="button"
-                onClick={confirmTrade}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]"
+                onClick={() => setShowDelivery((v) => !v)}
+                className={`inline-flex w-full items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
+                  showDelivery ? "border-[color:var(--fifa-green)] text-[color:var(--fifa-green)]" : "border-border text-foreground hover:bg-muted"
+                }`}
               >
-                <Check className="h-4 w-4" /> Troca feita
+                <Truck className="h-4 w-4" /> Combinar entrega
               </button>
-              <button
-                type="button"
-                onClick={cancelTrade}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10"
-              >
-                <Ban className="h-4 w-4" /> Cancelar troca
-              </button>
+
+              {showDelivery && (
+                <div className="space-y-2 rounded-2xl border border-border bg-muted/40 p-3">
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {([
+                      ["presencial", "Pessoal"],
+                      ["correios", "Correios"],
+                      ["transportadora", "Transp."],
+                    ] as const).map(([key, label]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setMethod(key)}
+                        className={`rounded-lg px-2 py-1.5 text-xs font-semibold transition-all ${
+                          method === key ? "bg-[color:var(--fifa-green)] text-white" : "border border-border bg-card hover:border-[color:var(--fifa-green)]"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {method === "transportadora" && (
+                    <input value={carrier} onChange={(e) => setCarrier(e.target.value)} placeholder="Transportadora (ex.: Jadlog)" className="h-10 w-full rounded-lg border border-border bg-card px-3 text-sm outline-none ring-[color:var(--fifa-green)] focus:ring-2" />
+                  )}
+                  {method !== "presencial" && (
+                    <input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="Código de rastreio" className="h-10 w-full rounded-lg border border-border bg-card px-3 text-sm outline-none ring-[color:var(--fifa-green)] focus:ring-2" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={sendDelivery}
+                    disabled={method !== "presencial" && !tracking.trim()}
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50"
+                  >
+                    {method === "presencial" ? <MapPin className="h-4 w-4" /> : <Truck className="h-4 w-4" />} Enviar combinação
+                  </button>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={confirmTrade}
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]"
+                >
+                  <Check className="h-4 w-4" /> Troca feita
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelTrade}
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10"
+                >
+                  <Ban className="h-4 w-4" /> Cancelar
+                </button>
+              </div>
             </div>
 
             {/* Caixa de envio */}

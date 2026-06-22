@@ -17,12 +17,19 @@ service cloud.firestore {
         && request.auth.uid in resource.data.participants;
     }
 
-    match /chats/{cid}/messages/{mid} {
+    match /chats/{cid} {
       allow read: if request.auth != null
+        && request.auth.uid in resource.data.participants;
+      allow write: if request.auth != null
         && request.auth.uid in cid.split('_');
-      allow create: if request.auth != null
-        && request.auth.uid in cid.split('_')
-        && request.resource.data.from == request.auth.uid;
+
+      match /messages/{mid} {
+        allow read: if request.auth != null
+          && request.auth.uid in cid.split('_');
+        allow create: if request.auth != null
+          && request.auth.uid in cid.split('_')
+          && request.resource.data.from == request.auth.uid;
+      }
     }
   }
 }

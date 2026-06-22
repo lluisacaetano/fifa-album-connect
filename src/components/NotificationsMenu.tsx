@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bell, ArrowLeftRight, Check, Ban } from "lucide-react";
+import { Bell, ArrowLeftRight, Check, Ban, MessageCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useTrades } from "@/lib/trades-context";
+import { useTrades, type ChatTarget } from "@/lib/trades-context";
 
-type Note = { id: string; icon: "in" | "ok" | "no"; text: string; time: number };
+type Note = { id: string; icon: "in" | "ok" | "no" | "msg"; text: string; time: number; chat?: ChatTarget };
 
 export function NotificationsMenu() {
   const { user } = useAuth();
-  const { requests, unread, markSeen, openPanel } = useTrades();
+  const { requests, chatSummaries, unread, markSeen, openPanel, openChat } = useTrades();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -21,8 +21,14 @@ export function NotificationsMenu() {
       else if (r.fromUid === user.uid && r.status === "accepted") list.push({ id: r.id, icon: "ok", text: `${r.toName} aceitou sua troca`, time });
       else if (r.fromUid === user.uid && r.status === "declined") list.push({ id: r.id, icon: "no", text: `${r.toName} recusou seu pedido`, time });
     }
+    for (const c of chatSummaries) {
+      if (c.lastFrom === user.uid) continue;
+      const otherUid = c.participants.find((p) => p !== user.uid) ?? c.lastFrom;
+      const preview = c.lastText.length > 34 ? `${c.lastText.slice(0, 34)}…` : c.lastText;
+      list.push({ id: `chat-${c.id}`, icon: "msg", text: `${c.lastFromName}: ${preview}`, time: c.updatedAt?.seconds ?? 0, chat: { uid: otherUid, name: c.lastFromName } });
+    }
     return list.sort((a, b) => b.time - a.time).slice(0, 12);
-  }, [requests, user]);
+  }, [requests, chatSummaries, user]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -42,6 +48,7 @@ export function NotificationsMenu() {
     in: <ArrowLeftRight className="h-3.5 w-3.5 text-[color:var(--fifa-green)]" />,
     ok: <Check className="h-3.5 w-3.5 text-[color:var(--fifa-green)]" />,
     no: <Ban className="h-3.5 w-3.5 text-destructive" />,
+    msg: <MessageCircle className="h-3.5 w-3.5 text-[color:var(--fifa-blue)]" />,
   };
 
   return (
@@ -72,7 +79,8 @@ export function NotificationsMenu() {
                     key={`${n.id}-${n.icon}`}
                     onClick={() => {
                       setOpen(false);
-                      openPanel();
+                      if (n.chat) openChat(n.chat);
+                      else openPanel();
                     }}
                     className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted"
                   >

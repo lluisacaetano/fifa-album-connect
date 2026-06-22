@@ -343,9 +343,9 @@ export function ConnectSection() {
               </div>
             )}
 
-            <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-              {/* Mapa */}
-              <div className="relative h-[480px] overflow-hidden rounded-3xl border-2 border-border bg-muted shadow-xl">
+            <div className="grid items-stretch gap-6 lg:grid-cols-[1.4fr_1fr]">
+              {/* Mapa — acompanha a altura do card ao lado */}
+              <div className="relative h-full min-h-[480px] overflow-hidden rounded-3xl border-2 border-border bg-muted shadow-xl">
                 {mounted && Map ? (
                   <Map.MapContainer center={[-15.78, -47.92]} zoom={4} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
                     <Map.TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
