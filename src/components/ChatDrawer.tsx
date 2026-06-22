@@ -12,6 +12,8 @@ import { ValueModal } from "@/components/ValueModal";
 
 const keyOf = (s: TradeItem) => `${s.code}-${s.name}`;
 const fmtBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
+const NORM_RE = new RegExp("[\\u0300-\\u036f]", "g");
+const norm = (s: string) => s.normalize("NFD").replace(NORM_RE, "").toLowerCase();
 const uniqItems = (arr: TradeItem[]) => {
   const m = new Map<string, TradeItem>();
   for (const s of arr) m.set(keyOf(s), s);
@@ -86,6 +88,8 @@ export function ChatDrawer() {
   const [valueOpen, setValueOpen] = useState(false);
   const [otherPool, setOtherPool] = useState<TradeItem[]>([]);
   const [myPool, setMyPool] = useState<TradeItem[]>([]);
+  const [otherWants, setOtherWants] = useState<Set<string>>(new Set());
+  const [myWants, setMyWants] = useState<Set<string>>(new Set());
   const endRef = useRef<HTMLDivElement>(null);
 
   const cid = user && chatTarget ? chatId(user.uid, chatTarget.uid) : null;
@@ -109,8 +113,10 @@ export function ChatDrawer() {
   const otherFirst = chatTarget?.name.split(" ")[0] ?? "";
 
   // Pools: o que EU recebo = trades do outro; o que EU dou = meus trades.
-  const receivePool = uniqItems([...iGet, ...otherPool]);
-  const givePool = uniqItems([...iGive, ...myPool]);
+  // "Quero dele" = repetidas DELE que EU preciso. "Ofereço" = minhas repetidas que ELE precisa.
+  // (Mantém sempre os itens da rodada atual para os toggles refletirem o estado.)
+  const receivePool = uniqItems([...iGet, ...otherPool.filter((s) => myWants.has(norm(s.name)))]);
+  const givePool = uniqItems([...iGive, ...myPool.filter((s) => otherWants.has(norm(s.name)))]);
   const editGetItems = receivePool.filter((s) => editGet.has(keyOf(s)));
   const editGiveItems = givePool.filter((s) => editGive.has(keyOf(s)));
 
@@ -118,6 +124,8 @@ export function ChatDrawer() {
     if (!user || !chatTarget) {
       setOtherPool([]);
       setMyPool([]);
+      setOtherWants(new Set());
+      setMyWants(new Set());
       return;
     }
     let alive = true;
@@ -125,12 +133,15 @@ export function ChatDrawer() {
       (Array.isArray(arr) ? arr : [])
         .map((t: any) => (typeof t === "string" ? { code: "", name: t } : { code: String(t?.code ?? ""), name: String(t?.name ?? "") }))
         .filter((s: TradeItem) => s.name);
+    const toWants = (arr: unknown): Set<string> => new Set((Array.isArray(arr) ? arr : []).map((n: any) => norm(String(n))));
     (async () => {
       try {
         const [oSnap, mSnap] = await Promise.all([getDoc(doc(db, "users", chatTarget.uid)), getDoc(doc(db, "users", user.uid))]);
         if (!alive) return;
         setOtherPool(toItems(oSnap.data()?.trades));
         setMyPool(toItems(mSnap.data()?.trades));
+        setOtherWants(toWants(oSnap.data()?.wants));
+        setMyWants(toWants(mSnap.data()?.wants));
       } catch {
         /* ignora */
       }
