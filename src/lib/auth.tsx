@@ -3,6 +3,7 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -25,6 +26,7 @@ type AuthContextValue = {
   register: (data: RegisterData) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   updateProfileData: (data: { name: string; city: string; photo?: string }) => Promise<void>;
   logout: () => Promise<void>;
   editOpen: boolean;
@@ -136,6 +138,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setEditOpen(false);
   };
 
+  const resetPassword = async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
   const logout = async () => {
     await signOut(auth);
     setUser(null);
@@ -150,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         login,
         loginWithGoogle,
+        resetPassword,
         updateProfileData,
         logout,
         authOpen,

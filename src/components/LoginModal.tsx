@@ -7,7 +7,7 @@ import { CityAutocomplete } from "@/components/CityAutocomplete";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function LoginModal() {
-  const { authOpen, authMode, closeAuth, register, login, loginWithGoogle } = useAuth();
+  const { authOpen, authMode, closeAuth, register, login, loginWithGoogle, resetPassword } = useAuth();
   const [mode, setMode] = useState<AuthMode>(authMode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -15,6 +15,8 @@ export function LoginModal() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetMode, setResetMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const firstField = useRef<HTMLInputElement>(null);
 
   const isSignup = mode === "signup";
@@ -24,6 +26,8 @@ export function LoginModal() {
     if (!authOpen) return;
     setMode(authMode);
     setError("");
+    setResetMode(false);
+    setResetSent(false);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeAuth();
     };
@@ -93,7 +97,29 @@ export function LoginModal() {
 
   function switchMode() {
     setError("");
+    setResetMode(false);
+    setResetSent(false);
     setMode((m) => (m === "login" ? "signup" : "login"));
+  }
+
+  async function sendReset(e: React.FormEvent) {
+    e.preventDefault();
+    if (loading) return;
+    const cleanEmail = email.trim();
+    if (!EMAIL_RE.test(cleanEmail)) {
+      setError("Use um e-mail válido, ex.: voce@email.com");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    try {
+      await resetPassword(cleanEmail);
+      setResetSent(true);
+    } catch (err: any) {
+      setError(authErrorMessage(err?.code ?? ""));
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -131,16 +157,19 @@ export function LoginModal() {
               </button>
               <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/95 font-display text-2xl text-[color:var(--fifa-green)] shadow-md">26</span>
               <h2 id="auth-title" className="mt-4 font-display text-4xl leading-none">
-                {isSignup ? "CRIE SUA CONTA" : "ENTRE PRA TROCAR"}
+                {resetMode ? "REDEFINIR SENHA" : isSignup ? "CRIE SUA CONTA" : "ENTRE PRA TROCAR"}
               </h2>
               <p className="mt-2 max-w-xs text-sm text-white/90">
-                {isSignup
-                  ? "Sua carteirinha de colecionador: entre no mapa e troque com quem está perto de você."
-                  : "Bem-vindo de volta! Veja quem tem as figurinhas que faltam pra você."}
+                {resetMode
+                  ? "Enviamos um link no seu e-mail para você criar uma nova senha."
+                  : isSignup
+                    ? "Sua carteirinha de colecionador: entre no mapa e troque com quem está perto de você."
+                    : "Bem-vindo de volta! Veja quem tem as figurinhas que faltam pra você."}
               </p>
             </div>
 
             {/* Formulário */}
+            {!resetMode && (
             <form onSubmit={submit} className="space-y-4 px-7 py-6">
               <button
                 type="button"
@@ -209,6 +238,14 @@ export function LoginModal() {
                 {loading ? (isSignup ? "Criando conta…" : "Entrando…") : isSignup ? "Criar conta e começar a trocar" : "Entrar e começar a trocar"}
               </button>
 
+              {!isSignup && (
+                <p className="-mt-1 text-center text-sm">
+                  <button type="button" onClick={() => { setError(""); setResetMode(true); }} className="text-muted-foreground underline-offset-2 hover:underline">
+                    Esqueci minha senha
+                  </button>
+                </p>
+              )}
+
               <p className="text-center text-sm text-muted-foreground">
                 {isSignup ? "Já tem conta?" : "Ainda não tem conta?"}{" "}
                 <button type="button" onClick={switchMode} className="font-bold text-[color:var(--fifa-green)] underline-offset-2 hover:underline">
@@ -216,6 +253,46 @@ export function LoginModal() {
                 </button>
               </p>
             </form>
+            )}
+
+            {resetMode && (
+              <form onSubmit={sendReset} className="space-y-4 px-7 py-6">
+                {resetSent ? (
+                  <div className="rounded-xl bg-[color:var(--fifa-green)]/10 px-4 py-4 text-sm text-[color:var(--fifa-green)]">
+                    Se existe uma conta com <strong>{email.trim()}</strong>, enviamos um link para redefinir a senha. Confira sua caixa de entrada (e o spam).
+                  </div>
+                ) : (
+                  <>
+                    <Field label="E-mail" icon={<Mail className="h-4 w-4" />}>
+                      <input
+                        ref={firstField}
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="voce@email.com"
+                        className="h-12 w-full rounded-xl border border-border bg-background pl-11 pr-4 text-sm outline-none ring-[color:var(--fifa-green)] transition-all focus:ring-2"
+                      />
+                    </Field>
+
+                    {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">{error}</p>}
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green)] px-6 py-3.5 text-sm font-bold text-white transition-all hover:scale-[1.02] hover:bg-[color:var(--fifa-green-deep)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
+                    >
+                      <Mail className="h-4 w-4" /> {loading ? "Enviando…" : "Enviar link de redefinição"}
+                    </button>
+                  </>
+                )}
+
+                <p className="text-center text-sm text-muted-foreground">
+                  <button type="button" onClick={() => { setResetMode(false); setResetSent(false); setError(""); }} className="font-bold text-[color:var(--fifa-green)] underline-offset-2 hover:underline">
+                    Voltar para o login
+                  </button>
+                </p>
+              </form>
+            )}
           </motion.div>
         </motion.div>
       )}
