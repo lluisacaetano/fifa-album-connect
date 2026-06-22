@@ -16,6 +16,7 @@ export type TradeRequest = {
   status: TradeStatus;
   participants: string[];
   createdAt?: { seconds: number } | null;
+  updatedAt?: { seconds: number } | null;
 };
 
 type SendInput = Omit<TradeRequest, "id" | "status" | "participants" | "createdAt">;
@@ -46,5 +47,5 @@ export function listenTradeRequests(uid: string, cb: (list: TradeRequest[]) => v
 }
 
 export async function setRequestStatus(id: string, status: TradeStatus): Promise<void> {
-  await updateDoc(doc(db, "tradeRequests", id), { status });
+  await updateDoc(doc(db, "tradeRequests", id), { status, updatedAt: serverTimestamp() });
 }

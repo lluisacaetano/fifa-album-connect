@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Star, ArrowLeftRight, Check, Sparkles, Lock, Repeat, Bell, Navigation } from "lucide-react";
+import { Search, MapPin, Star, ArrowLeftRight, Check, Sparkles, Lock, Repeat, Bell, Navigation, MessageCircle } from "lucide-react";
 import { collection, getDocs } from "firebase/firestore";
 import { squads } from "@/data/squads";
 import { traders, type Trader } from "@/data/traders";
@@ -8,9 +8,10 @@ import { initials } from "@/data/players";
 import { useAuth } from "@/lib/auth";
 import { db } from "@/lib/firebase";
 import { haversineKm } from "@/lib/profile";
-import { listenTradeRequests, sendTradeRequest, setRequestStatus, type TradeRequest } from "@/lib/trades";
+import { sendTradeRequest } from "@/lib/trades";
+import { useTrades } from "@/lib/trades-context";
 import { TradeRequestModal } from "@/components/TradeRequestModal";
-import { TradeRequestsPanel } from "@/components/TradeRequestsPanel";
+import { Avatar } from "@/components/Avatar";
 
 const ACCENTS = new RegExp("[\\u0300-\\u036f]", "g");
 const norm = (s: string) => s.normalize("NFD").replace(ACCENTS, "").toLowerCase();
@@ -31,6 +32,7 @@ function fmtDist(km: number): string {
 
 export function ConnectSection() {
   const { user, hydrated, openAuth, openEdit } = useAuth();
+  const { requests, incomingPending, openPanel, openChat } = useTrades();
 
   const [query, setQuery] = useState("");
   const [onlyMatches, setOnlyMatches] = useState(false);
@@ -41,8 +43,6 @@ export function ConnectSection() {
   const [Lib, setLib] = useState<any>(null);
   const [realTraders, setRealTraders] = useState<Trader[]>([]);
   const [myLoc, setMyLoc] = useState<{ lat: number; lng: number } | null>(null);
-  const [requests, setRequests] = useState<TradeRequest[]>([]);
-  const [panelOpen, setPanelOpen] = useState(false);
   const [tradeTarget, setTradeTarget] = useState<Trader | null>(null);
 
   // Índice por nome do jogador -> foto + código da figurinha (ex.: "BRA10").
@@ -152,6 +152,7 @@ export function ConnectSection() {
             lng: u.lng + jitter(h, 13),
             avatar: initials(u.name || "?"),
             isMe,
+            photo: typeof u.photo === "string" ? u.photo : undefined,
           });
         });
         setRealTraders(list);
@@ -164,16 +165,6 @@ export function ConnectSection() {
     };
   }, [user, myDupes]);
 
-  // Escuta os pedidos de troca em tempo real.
-  useEffect(() => {
-    if (!user) {
-      setRequests([]);
-      return;
-    }
-    return listenTradeRequests(user.uid, setRequests);
-  }, [user]);
-
-  const incomingPending = useMemo(() => requests.filter((r) => r.toUid === user?.uid && r.status === "pending").length, [requests, user]);
   const pendingToUids = useMemo(
     () => new Set(requests.filter((r) => r.fromUid === user?.uid && r.status === "pending").map((r) => r.toUid)),
     [requests, user],
@@ -310,7 +301,7 @@ export function ConnectSection() {
               >
                 <Sparkles className="h-4 w-4" /> Só compatíveis
               </button>
-              <button onClick={() => setPanelOpen(true)} className="relative flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold transition-all hover:border-[color:var(--fifa-green)]">
+              <button onClick={openPanel} className="relative flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold transition-all hover:border-[color:var(--fifa-green)]">
                 <Bell className="h-4 w-4" /> Meus pedidos
                 {incomingPending > 0 && (
                   <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[color:var(--fifa-green)] px-1 text-[11px] font-bold text-white">{incomingPending}</span>
@@ -353,7 +344,7 @@ export function ConnectSection() {
               {selected && (
                 <motion.div key={selected.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-border bg-card p-6 shadow-xl">
                   <div className="flex items-center gap-4">
-                    <div className="grid h-16 w-16 place-items-center rounded-full bg-fifa-gradient font-display text-2xl text-white">{selected.avatar}</div>
+                    <Avatar name={selected.name} photo={selected.photo} size={64} />
                     <div>
                       <h3 className="flex items-center gap-2 font-display text-2xl">
                         {selected.name}
@@ -446,15 +437,23 @@ export function ConnectSection() {
                       <MapPin className="h-4 w-4" /> Esta é a sua localização no mapa
                     </div>
                   ) : selected.uid ? (
-                    pendingToUids.has(selected.uid) ? (
-                      <div className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green-deep)] px-6 py-3 text-sm font-semibold text-white">
-                        <Check className="h-4 w-4" /> Pedido enviado
-                      </div>
-                    ) : (
-                      <button onClick={() => setTradeTarget(selected)} className="group mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green)] px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-[1.02] hover:bg-[color:var(--fifa-green-deep)]">
-                        <ArrowLeftRight className="h-4 w-4 transition-transform group-hover:rotate-180" /> Solicitar troca
+                    <div className="mt-6 flex gap-2">
+                      {pendingToUids.has(selected.uid) ? (
+                        <div className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green-deep)] px-4 py-3 text-sm font-semibold text-white">
+                          <Check className="h-4 w-4" /> Pedido enviado
+                        </div>
+                      ) : (
+                        <button onClick={() => setTradeTarget(selected)} className="group flex flex-1 items-center justify-center gap-2 rounded-full bg-[color:var(--fifa-green)] px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]">
+                          <ArrowLeftRight className="h-4 w-4 transition-transform group-hover:rotate-180" /> Solicitar troca
+                        </button>
+                      )}
+                      <button
+                        onClick={() => openChat({ uid: selected.uid!, name: selected.name, photo: selected.photo })}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[color:var(--fifa-green)]/40 px-4 py-3 text-sm font-semibold text-[color:var(--fifa-green)] transition-all hover:bg-[color:var(--fifa-green)]/10"
+                      >
+                        <MessageCircle className="h-4 w-4" /> Conversar
                       </button>
-                    )
+                    </div>
                   ) : (
                     <button
                       onClick={() => setRequested((prev) => new Set(prev).add(selected.id))}
@@ -494,18 +493,6 @@ export function ConnectSection() {
         onClose={() => setTradeTarget(null)}
         onSend={(message) => sendTo(tradeTarget!, message)}
       />
-
-      {/* Painel de pedidos */}
-      {user && (
-        <TradeRequestsPanel
-          open={panelOpen}
-          onClose={() => setPanelOpen(false)}
-          requests={requests}
-          myUid={user.uid}
-          onAccept={(id) => setRequestStatus(id, "accepted")}
-          onDecline={(id) => setRequestStatus(id, "declined")}
-        />
-      )}
     </section>
   );
 }

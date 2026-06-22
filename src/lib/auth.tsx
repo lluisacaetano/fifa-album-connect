@@ -13,7 +13,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { ensureUserLocation, geocodeCity } from "@/lib/profile";
 
-export type User = { uid: string; name: string; email: string; city?: string };
+export type User = { uid: string; name: string; email: string; city?: string; photo?: string };
 export type AuthMode = "login" | "signup";
 
 type RegisterData = { name: string; email: string; city?: string; password: string };
@@ -21,10 +21,11 @@ type RegisterData = { name: string; email: string; city?: string; password: stri
 type AuthContextValue = {
   user: User | null;
   hydrated: boolean;
+  needsCity: boolean; // logado (ex.: Google) mas sem cidade definida
   register: (data: RegisterData) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
-  updateProfileData: (data: { name: string; city: string }) => Promise<void>;
+  updateProfileData: (data: { name: string; city: string; photo?: string }) => Promise<void>;
   logout: () => Promise<void>;
   editOpen: boolean;
   openEdit: () => void;
@@ -43,6 +44,7 @@ async function loadProfile(fbUser: FirebaseUser): Promise<User> {
     uid: fbUser.uid,
     name: fbUser.displayName || (fbUser.email ? fbUser.email.split("@")[0] : "Colecionador"),
     email: fbUser.email ?? "",
+    photo: fbUser.photoURL ?? undefined,
   };
   try {
     const snap = await getDoc(doc(db, "users", fbUser.uid));
@@ -50,7 +52,7 @@ async function loadProfile(fbUser: FirebaseUser): Promise<User> {
       const data = snap.data() as Partial<User> & { lat?: number; lng?: number };
       // Preenche as coordenadas de quem se cadastrou antes do mapa real (best-effort).
       if (data.city && typeof data.lat !== "number") void ensureUserLocation(fbUser.uid, data.city);
-      return { ...base, city: data.city, name: data.name || base.name };
+      return { ...base, city: data.city, name: data.name || base.name, photo: data.photo ?? fbUser.photoURL ?? undefined };
     }
   } catch {
     /* Firestore pode não estar habilitado ainda — ignora */
@@ -108,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await setDoc(
         doc(db, "users", cred.user.uid),
-        { name: cred.user.displayName ?? "", email: cred.user.email ?? "" },
+        { name: cred.user.displayName ?? "", email: cred.user.email ?? "", photo: cred.user.photoURL ?? null },
         { merge: true },
       );
     } catch {
@@ -118,17 +120,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthOpen(false);
   };
 
-  const updateProfileData = async ({ name, city }: { name: string; city: string }) => {
+  const updateProfileData = async ({ name, city, photo }: { name: string; city: string; photo?: string }) => {
     const current = auth.currentUser;
     if (!current) return;
     await updateProfile(current, { displayName: name });
     const loc = city ? await geocodeCity(city) : null;
     try {
-      await setDoc(doc(db, "users", current.uid), { name, city, lat: loc?.lat ?? null, lng: loc?.lng ?? null }, { merge: true });
+      const patch: Record<string, unknown> = { name, city, lat: loc?.lat ?? null, lng: loc?.lng ?? null };
+      if (photo !== undefined) patch.photo = photo;
+      await setDoc(doc(db, "users", current.uid), patch, { merge: true });
     } catch {
       /* ignora */
     }
-    setUser((u) => (u ? { ...u, name, city } : u));
+    setUser((u) => (u ? { ...u, name, city, ...(photo !== undefined ? { photo } : {}) } : u));
     setEditOpen(false);
   };
 
@@ -142,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         hydrated,
+        needsCity: hydrated && !!user && !user.city,
         register,
         login,
         loginWithGoogle,

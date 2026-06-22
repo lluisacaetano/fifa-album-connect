@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Check, Ban, Inbox, Send, Clock } from "lucide-react";
+import { X, Check, Ban, Inbox, Send, Clock, MessageCircle } from "lucide-react";
 import type { TradeRequest, TradeStatus } from "@/lib/trades";
+import type { ChatTarget } from "@/lib/trades-context";
 
 type Props = {
   open: boolean;
@@ -9,6 +10,7 @@ type Props = {
   myUid: string;
   onAccept: (id: string) => void;
   onDecline: (id: string) => void;
+  onChat: (t: ChatTarget) => void;
 };
 
 const STATUS: Record<TradeStatus, { label: string; cls: string }> = {
@@ -31,7 +33,7 @@ function Chips({ items, tone }: { items: string[]; tone: "green" | "blue" }) {
   );
 }
 
-export function TradeRequestsPanel({ open, onClose, requests, myUid, onAccept, onDecline }: Props) {
+export function TradeRequestsPanel({ open, onClose, requests, myUid, onAccept, onDecline, onChat }: Props) {
   const incoming = requests.filter((r) => r.toUid === myUid);
   const outgoing = requests.filter((r) => r.fromUid === myUid);
 
@@ -88,16 +90,21 @@ export function TradeRequestsPanel({ open, onClose, requests, myUid, onAccept, o
                             </div>
                           </div>
                         </div>
-                        {r.status === "pending" && (
-                          <div className="mt-4 flex gap-2">
-                            <button onClick={() => onAccept(r.id)} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]">
-                              <Check className="h-4 w-4" /> Aceitar
-                            </button>
-                            <button onClick={() => onDecline(r.id)} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-all hover:bg-muted">
-                              <Ban className="h-4 w-4" /> Recusar
-                            </button>
-                          </div>
-                        )}
+                        <div className="mt-4 flex gap-2">
+                          {r.status === "pending" && (
+                            <>
+                              <button onClick={() => onAccept(r.id)} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]">
+                                <Check className="h-4 w-4" /> Aceitar
+                              </button>
+                              <button onClick={() => onDecline(r.id)} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-all hover:bg-muted">
+                                <Ban className="h-4 w-4" /> Recusar
+                              </button>
+                            </>
+                          )}
+                          <button onClick={() => onChat({ uid: r.fromUid, name: r.fromName })} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[color:var(--fifa-green)]/40 px-4 py-2 text-sm font-semibold text-[color:var(--fifa-green)] transition-all hover:bg-[color:var(--fifa-green)]/10">
+                            <MessageCircle className="h-4 w-4" /> Conversar
+                          </button>
+                        </div>
                       </article>
                     ))}
                   </div>
@@ -128,6 +135,9 @@ export function TradeRequestsPanel({ open, onClose, requests, myUid, onAccept, o
                             <Chips items={r.wanted} tone="green" />
                           </div>
                         </div>
+                        <button onClick={() => onChat({ uid: r.toUid, name: r.toName })} className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-full border border-[color:var(--fifa-green)]/40 px-4 py-2 text-sm font-semibold text-[color:var(--fifa-green)] transition-all hover:bg-[color:var(--fifa-green)]/10">
+                          <MessageCircle className="h-4 w-4" /> Conversar
+                        </button>
                       </article>
                     ))}
                   </div>

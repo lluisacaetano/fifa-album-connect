@@ -34,5 +34,14 @@ service cloud.firestore {
       allow delete: if request.auth != null
         && request.auth.uid in resource.data.participants;
     }
+
+    // Chat: a sala tem id "uidA_uidB" (ordenado). Só os dois participantes acessam.
+    match /chats/{cid}/messages/{mid} {
+      allow read: if request.auth != null
+        && request.auth.uid in cid.split('_');
+      allow create: if request.auth != null
+        && request.auth.uid in cid.split('_')
+        && request.resource.data.from == request.auth.uid;
+    }
   }
 }

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Moon, Sun, Menu, X, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { Avatar } from "@/components/Avatar";
+import { NotificationsMenu } from "@/components/NotificationsMenu";
 
 const links = [
   { href: "#home", id: "home", label: "Home" },
@@ -112,11 +114,10 @@ export function Navbar() {
                 title="Editar perfil"
                 className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 py-1 pl-1 pr-3 transition-colors hover:bg-white/20"
               >
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-fifa-gradient text-[11px] font-bold text-white">
-                  {firstName.slice(0, 1)}
-                </span>
+                <Avatar name={user.name} photo={user.photo} size={28} />
                 <span className="max-w-[90px] truncate text-sm font-semibold">{firstName}</span>
               </button>
+              <NotificationsMenu />
               <button
                 onClick={logout}
                 aria-label="Sair"
@@ -164,21 +165,28 @@ export function Navbar() {
           ))}
           {hydrated && user ? (
             <div className="mt-1 flex items-center justify-between rounded-xl bg-white/10 px-4 py-3">
-              <span className="flex items-center gap-2 text-sm font-semibold">
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-fifa-gradient text-[11px] font-bold text-white">
-                  {firstName.slice(0, 1)}
-                </span>
-                {firstName}
-              </span>
               <button
                 onClick={() => {
-                  logout();
                   setOpen(false);
+                  openEdit();
                 }}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/80"
+                className="flex items-center gap-2 text-sm font-semibold"
               >
-                <LogOut className="h-4 w-4" /> Sair
+                <Avatar name={user.name} photo={user.photo} size={28} />
+                {firstName}
               </button>
+              <div className="flex items-center gap-2">
+                <NotificationsMenu />
+                <button
+                  onClick={() => {
+                    logout();
+                    setOpen(false);
+                  }}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/80"
+                >
+                  <LogOut className="h-4 w-4" /> Sair
+                </button>
+              </div>
             </div>
           ) : (
             <button
