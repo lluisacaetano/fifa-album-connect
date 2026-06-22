@@ -85,6 +85,21 @@ Regras do Firestore (`firestore.rules`): perfis com **leitura pública** (necess
 ### 3.5 Build e deploy
 Vite + Nitro (preset **Vercel** → `.vercel/output`). Deploy na **Vercel** (atualiza no push) e preview na **Lovable** (publish manual).
 
+### 3.6 Coleta de dados e fontes (com estratégia de _fallback_)
+Os dados das seleções foram **coletados por scripts** (`scripts/`) e gravados como JSON estático (`src/data/`). Como cada API/fonte gratuita tem **limites** e nem sempre tem tudo, a coleta **combina várias fontes**: quando uma não tinha a imagem/informação **ou** a cota da requisição estourava, **a coleta caía para outra fonte**. Resumo:
+
+| Dado | Fonte principal | Fallback / complemento |
+|---|---|---|
+| **Elenco** (nome, posição, número, idade) | **API-Football** (plano grátis) | — |
+| **Dados/estatísticas dos jogadores** (jogos, gols, assistências) | **Dataset do Kaggle** `swaptr/fifa-wc-2026-players` (CSV) | API-Football |
+| **Fotos** dos jogadores | **TheSportsDB** (recortes hi-res, fundo transparente) | **Foto da API-Football** quando não havia correspondência confiável; fotos **manuais** com prioridade; remoção de fundo com **rembg** |
+| **Informações/descrições** (biografia, carreira, valor de mercado) | **Wikipédia (PT)** | **Transfermarkt** (wrapper público) |
+| **Bandeiras** | flagcdn.com | — |
+| **Placares ao vivo** (em runtime) | API **ESPN** | exibe o horário se indisponível |
+| **Cidades e geocodificação** (em runtime) | **IBGE** + **Nominatim/OpenStreetMap** | capital da UF se o geocoder falhar |
+
+Cuidados: os scripts são **resumíveis** (cache local), respeitam os **limites de requisição** (throttle — ex.: API-Football 100/dia e 10/min), confirmam a correspondência **por nome + nacionalidade/clube** (para não pegar o jogador, clube ou homônimo errado) e fazem **ajustes oficiais por seleção** (ex.: montar o álbum oficial Panini do Brasil e corrigir números de camisa).
+
 ---
 
 ## 4. Como a ferramenta de IA foi utilizada no projeto

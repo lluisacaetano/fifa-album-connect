@@ -84,17 +84,31 @@ Coleções usadas: `users`, `tradeRequests`, `chats/{cid}/messages`, `prediction
 
 ---
 
-## 🗂️ Dados dos jogadores
+## 🗂️ Dados dos jogadores e fontes
 
-Os elencos são **buscados uma vez** e gravados em `src/data/` (como não mudam, o JSON funciona como "banco" estático).
+Os dados das seleções são **coletados uma vez** por scripts (`scripts/`) e gravados em `src/data/` — como os elencos não mudam, o JSON funciona como "banco" estático (sem servidor/DB em runtime para isso).
 
+### Fontes (e estratégia de _fallback_)
+Como cada API gratuita tem **limites** e nem sempre tem tudo, a coleta combina **várias fontes** — quando uma não tinha a informação/imagem **ou** a cota estourava, caímos para outra:
+
+| Dado | Fonte principal | Fallback / complemento |
+|---|---|---|
+| **Elenco** (nome, posição, número, idade) | **API-Football** (`fetch-squads.mjs`, `fetch-fullnames.mjs`) | — |
+| **Estatísticas** (jogos, gols, assistências) | **Dataset do Kaggle** `swaptr/fifa-wc-2026-players` → `scripts/fifa-wc-2026-players.csv` (`merge-kaggle.mjs`) | API-Football (`enrich-stats.mjs`) |
+| **Foto** do jogador | **TheSportsDB** — _cutouts_ hi-res PNG transparente (`fetch-photos.mjs`) | **foto da API-Football** quando não há match confiável (guardada em `p.photoApi`); fotos **manuais** têm prioridade (`apply-custom-photos.mjs`); remoção de fundo em lote com **rembg** (`rembg_batch.py`) |
+| **Descrição / informações** (bio, carreira, valor) | **Wikipédia (PT)** (`enrich-wikipedia.mjs`) | **Transfermarkt** (wrapper público, `enrich-tm.mjs`) |
+| **Bandeiras** | flagcdn.com | — |
+| **Placares ao vivo** (em runtime) | API **ESPN** | mostra o horário se indisponível |
+| **Cidades / geocodificação** (em runtime) | **IBGE** (lista de cidades) + **Nominatim/OSM** (lat/lng) | capital da UF se o geocoder falhar |
+
+Boas práticas dos scripts: **resumíveis** (cache em `/tmp/apif`), com **throttle** (respeitam os limites — ex.: API-Football 100/dia e 10/min), confirmação de **match por nome + nacionalidade/clube** (evita jogador/clube errado), e ajustes oficiais por seleção (`album-<código>.mjs`, ex.: monta o álbum oficial Panini do Brasil e corrige nº de camisas).
+
+### Arquivos de dados
 | Arquivo | Conteúdo |
 |---|---|
 | `src/data/worldcup.json` | 48 seleções, grupos, estádios e partidas |
 | `src/data/squads.generated.json` | Elencos completos (gerados pelos scripts) |
 | `src/data/squads.ts` / `players.ts` / `nations.ts` | Formato unificado, curadoria e metadados |
-
-Scripts em `scripts/` baixam elencos (API-Football) e fotos hi-res (TheSportsDB), com _throttle_ e cache. Veja os comentários de cada script.
 
 ---
 
