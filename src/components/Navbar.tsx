@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Sun, Menu, X, LogOut, MessageSquare } from "lucide-react";
+import { Moon, Sun, MoreVertical, X, LogOut, MessageSquare } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTrades } from "@/lib/trades-context";
 import { Avatar } from "@/components/Avatar";
@@ -12,7 +12,6 @@ const links = [
   { href: "#selecoes", id: "selecoes", label: "Seleções" },
   { href: "#grupos", id: "grupos", label: "Grupos" },
   { href: "#partidas", id: "partidas", label: "Partidas" },
-  { href: "#palpites", id: "palpites", label: "Palpites" },
   { href: "#conectar", id: "conectar", label: "Trocas" },
   { href: "#album", id: "album", label: "Meu Álbum" },
 ];
@@ -110,6 +109,21 @@ export function Navbar() {
           >
             {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
+          {hydrated && user && (
+            <div className="flex items-center gap-1.5 sm:hidden">
+              <button
+                onClick={openMessages}
+                aria-label="Mensagens"
+                className="relative grid h-9 w-9 place-items-center rounded-full border border-white/20 text-white/90 transition-all hover:bg-white/10"
+              >
+                <MessageSquare className="h-4 w-4" />
+                {chatUnread > 0 && (
+                  <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[color:var(--fifa-green)] px-1 text-[10px] font-bold text-white">{chatUnread}</span>
+                )}
+              </button>
+              <NotificationsMenu />
+            </div>
+          )}
           {hydrated && user ? (
             <div className="hidden items-center gap-2 sm:flex">
               <button
@@ -152,9 +166,9 @@ export function Navbar() {
           <button
             className="grid h-9 w-9 place-items-center rounded-full border border-white/20 text-white lg:hidden"
             onClick={() => setOpen((o) => !o)}
-            aria-label="Menu"
+            aria-label="Mais opções"
           >
-            {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            {open ? <X className="h-4 w-4" /> : <MoreVertical className="h-4 w-4" />}
           </button>
         </div>
       </div>
@@ -189,31 +203,15 @@ export function Navbar() {
                 <Avatar name={user.name} photo={user.photo} size={28} />
                 {firstName}
               </button>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    openMessages();
-                  }}
-                  aria-label="Mensagens"
-                  className="relative grid h-9 w-9 place-items-center rounded-full border border-white/20 text-white/90 transition-all hover:bg-white/10"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  {chatUnread > 0 && (
-                    <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[color:var(--fifa-green)] px-1 text-[10px] font-bold text-white">{chatUnread}</span>
-                  )}
-                </button>
-                <NotificationsMenu />
-                <button
-                  onClick={() => {
-                    logout();
-                    setOpen(false);
-                  }}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/80"
-                >
-                  <LogOut className="h-4 w-4" /> Sair
-                </button>
-              </div>
+              <button
+                onClick={() => {
+                  logout();
+                  setOpen(false);
+                }}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/80"
+              >
+                <LogOut className="h-4 w-4" /> Sair
+              </button>
             </div>
           ) : (
             <button

@@ -76,28 +76,28 @@ export function Hero() {
   const Content = ({ variant }: { variant: "base" | "top" }) => (
     <div className="relative mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-6 text-center">
       <h1
-        className="font-display leading-[0.88] text-6xl sm:text-8xl lg:text-[9.5rem]"
+        className="font-display leading-[0.88] text-[2.75rem] sm:text-8xl lg:text-[9.5rem]"
         style={{ color: "currentColor" }}
       >
         ÁLBUM
         <span className="block">DE FIGURINHAS</span>
-        <span className="mt-2 block text-2xl sm:text-3xl lg:text-4xl tracking-[0.4em]">
+        <span className="mt-2 block text-lg tracking-[0.18em] sm:text-3xl sm:tracking-[0.4em] lg:text-4xl">
           FIFA WORLD CUP 2026
         </span>
       </h1>
 
       <p
-        className="mt-8 max-w-xl text-base sm:text-lg"
+        className="mt-6 max-w-xl text-sm sm:mt-8 sm:text-lg"
         style={{ opacity: 0.92 }}
       >
         Colecione, troque e complete seu álbum digital. Encontre colecionadores
         perto de você e conquiste cada figurinha que falta.
       </p>
 
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+      <div className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
         <a
           href="#album"
-          className="group inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold shadow-xl transition-all hover:scale-[1.03]"
+          className="group inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold shadow-xl transition-all hover:scale-[1.03] sm:w-auto"
           style={{
             background: variant === "base" ? GREEN_DEEP : YELLOW,
             color: variant === "base" ? YELLOW : GREEN_DEEP,
@@ -108,7 +108,7 @@ export function Hero() {
         </a>
         <a
           href="#jogadores"
-          className="inline-flex items-center gap-2 rounded-full border-2 px-6 py-3 text-sm font-semibold transition-all hover:scale-[1.03]"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 px-6 py-3 text-sm font-semibold transition-all hover:scale-[1.03] sm:w-auto"
           style={{
             borderColor: variant === "base" ? GREEN_DEEP : YELLOW,
             color: variant === "base" ? GREEN_DEEP : YELLOW,

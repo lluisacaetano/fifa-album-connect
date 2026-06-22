@@ -116,6 +116,11 @@
     font-family: var(--font-display);
     letter-spacing: 0.01em;
   }
+  /* Ao navegar pelos links do menu, dá um respiro pro título não ficar
+     escondido atrás da navbar flutuante (vale no mobile e no desktop). */
+  section[id] {
+    scroll-margin-top: 5rem;
+  }
 }
 
 /* No celular, campos com fonte < 16px fazem o iOS dar aquele zoom ao focar.
