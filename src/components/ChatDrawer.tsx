@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Send, Check, Ban, Truck, MapPin, ShieldAlert, Handshake, Repeat } from "lucide-react";
+import { X, Send, Check, Ban, Truck, MapPin, ShieldAlert, Handshake, Repeat, ArrowLeftRight, Clock } from "lucide-react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth";
@@ -17,13 +17,6 @@ const uniqItems = (arr: TradeItem[]) => {
   for (const s of arr) m.set(keyOf(s), s);
   return [...m.values()];
 };
-const ACTION_LABEL: Record<TradeAction, string> = {
-  propose: "fez uma proposta",
-  counter: "fez uma contraproposta",
-  accept: "aceitou a troca",
-  refuse: "recusou a troca",
-};
-
 // Transforma URLs do texto (ex.: link de rastreio) em links clicáveis.
 function renderText(text: string) {
   return text.split(/(https?:\/\/[^\s]+)/g).map((part, i) =>
@@ -38,7 +31,7 @@ function renderText(text: string) {
 }
 
 function ItemChips({ items, tone }: { items: TradeItem[]; tone: "green" | "blue" }) {
-  if (!items.length) return <span className="text-[11px] text-muted-foreground">—</span>;
+  if (!items.length) return <span className="text-[11px] italic text-muted-foreground">nada ainda</span>;
   const cls = tone === "green" ? "bg-[color:var(--fifa-green)]/12 text-[color:var(--fifa-green)]" : "bg-[color:var(--fifa-blue)]/12 text-[color:var(--fifa-blue)]";
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -48,6 +41,27 @@ function ItemChips({ items, tone }: { items: TradeItem[]; tone: "green" | "blue"
           {s.code ? <span className="opacity-70"> · {s.code}</span> : null}
         </span>
       ))}
+    </div>
+  );
+}
+
+// Resumo de um deal: "recebe / dá / R$" — usado nos cartões e no painel ao vivo.
+function DealRows({ get, give, value }: { get: TradeItem[]; give: TradeItem[]; value?: number }) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-start gap-2">
+        <span className="mt-1 w-10 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-green)]">recebe</span>
+        <ItemChips items={get} tone="green" />
+      </div>
+      <div className="flex items-start gap-2">
+        <span className="mt-1 w-10 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-blue)]">dá</span>
+        <ItemChips items={give} tone="blue" />
+      </div>
+      {!!value && (
+        <div className="ml-12 inline-flex items-center gap-1 rounded-full bg-[color:var(--fifa-yellow)]/30 px-2 py-0.5 text-[11px] font-bold text-[color:var(--fifa-green-deep)]">
+          💰 {fmtBRL(value)}
+        </div>
+      )}
     </div>
   );
 }
@@ -243,27 +257,34 @@ export function ChatDrawer() {
   function TradeCard({ m }: { m: ChatMessage }) {
     const meta = m.meta!;
     const mine = m.from === user!.uid;
-    const gets = iAmFrom ? meta.wanted : meta.offered;
-    const gives = iAmFrom ? meta.offered : meta.wanted;
-    const decided = meta.action === "accept" || meta.action === "refuse";
-    return (
-      <div className="mx-auto w-full max-w-[88%] rounded-2xl border border-border bg-card px-3.5 py-2.5 text-card-foreground shadow-sm">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-[color:var(--fifa-green)]">
-          {mine ? "Você" : m.fromName.split(" ")[0]} {ACTION_LABEL[meta.action]}
+    const who = mine ? "Você" : m.fromName.split(" ")[0];
+
+    // Aceitou / Recusou: pílula compacta centralizada.
+    if (meta.action === "accept" || meta.action === "refuse") {
+      const ok = meta.action === "accept";
+      return (
+        <div className="flex justify-center py-0.5">
+          <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold ${ok ? "bg-[color:var(--fifa-green)]/12 text-[color:var(--fifa-green)]" : "bg-destructive/10 text-destructive"}`}>
+            {ok ? <Check className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />} {who} {ok ? "aceitou a troca" : "recusou a troca"}
+          </span>
         </div>
-        {!decided && (
-          <div className="mt-1.5 space-y-1.5">
-            <div className="flex items-start gap-1.5">
-              <span className="mt-0.5 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-green)]">recebe</span>
-              <ItemChips items={gets} tone="green" />
-            </div>
-            <div className="flex items-start gap-1.5">
-              <span className="mt-0.5 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-blue)]">dá</span>
-              <ItemChips items={gives} tone="blue" />
-            </div>
-            {!!meta.value && <div className="text-[11px] font-bold text-[color:var(--fifa-green-deep)]">💰 {fmtBRL(meta.value)}</div>}
-          </div>
-        )}
+      );
+    }
+
+    const isCounter = meta.action === "counter";
+    return (
+      <div className="mx-auto w-full max-w-[86%] overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+        <div className="flex items-center gap-2 border-b border-border bg-[color:var(--fifa-green)]/[0.07] px-3 py-1.5">
+          <span className="grid h-6 w-6 place-items-center rounded-full bg-[color:var(--fifa-green)]/15 text-[color:var(--fifa-green)]">
+            {isCounter ? <Repeat className="h-3.5 w-3.5" /> : <ArrowLeftRight className="h-3.5 w-3.5" />}
+          </span>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[color:var(--fifa-green-deep)]">
+            {who} {isCounter ? "contrapôs" : "propôs"}
+          </span>
+        </div>
+        <div className="px-3 py-2.5">
+          <DealRows get={iAmFrom ? meta.wanted : meta.offered} give={iAmFrom ? meta.offered : meta.wanted} value={meta.value} />
+        </div>
       </div>
     );
   }
@@ -339,23 +360,6 @@ export function ChatDrawer() {
                 ) : !bothAgreed ? (
                   /* ---------- NEGOCIAÇÃO ---------- */
                   <div className="space-y-2.5 rounded-2xl border border-border bg-muted/40 p-3">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                      {myTurn ? "Sua vez — responda à proposta" : `Aguardando ${otherFirst} responder`}
-                    </div>
-
-                    {/* Deal atual */}
-                    <div className="space-y-1.5 rounded-xl bg-card/70 p-2.5">
-                      <div className="flex items-start gap-1.5">
-                        <span className="mt-0.5 w-10 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-green)]">recebe</span>
-                        <ItemChips items={iGet} tone="green" />
-                      </div>
-                      <div className="flex items-start gap-1.5">
-                        <span className="mt-0.5 w-10 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-blue)]">dá</span>
-                        <ItemChips items={iGive} tone="blue" />
-                      </div>
-                      {!!value && <div className="text-[11px] font-bold text-[color:var(--fifa-green-deep)]">💰 {fmtBRL(value)}</div>}
-                    </div>
-
                     {editing ? (
                       /* Editor de contraproposta */
                       <div className="space-y-2.5">
@@ -405,25 +409,33 @@ export function ChatDrawer() {
                         </div>
                       </div>
                     ) : myTurn ? (
-                      /* Ações: minha vez */
-                      <div className="grid grid-cols-3 gap-2">
-                        <button type="button" onClick={doAccept} disabled={dealEmpty} className="inline-flex items-center justify-center gap-1 rounded-full bg-[color:var(--fifa-green)] px-2 py-2 text-xs font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50">
-                          <Check className="h-3.5 w-3.5" /> Aceitar
-                        </button>
-                        <button type="button" onClick={enterEdit} className="inline-flex items-center justify-center gap-1 rounded-full border border-[color:var(--fifa-green)] px-2 py-2 text-xs font-bold text-[color:var(--fifa-green)] transition-all hover:bg-[color:var(--fifa-green)]/10">
-                          <Repeat className="h-3.5 w-3.5" /> Contrapor
-                        </button>
-                        <button type="button" onClick={doRefuse} className="inline-flex items-center justify-center gap-1 rounded-full border border-destructive/40 px-2 py-2 text-xs font-bold text-destructive transition-all hover:bg-destructive/10">
-                          <Ban className="h-3.5 w-3.5" /> Recusar
-                        </button>
-                      </div>
+                      /* Minha vez: resumo do deal + ações */
+                      <>
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[color:var(--fifa-green)]">
+                          <Handshake className="h-3.5 w-3.5" /> Sua vez — responda
+                        </div>
+                        <div className="rounded-xl bg-card p-2.5 shadow-sm">
+                          <DealRows get={iGet} give={iGive} value={value} />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <button type="button" onClick={doAccept} disabled={dealEmpty} className="inline-flex items-center justify-center gap-1 rounded-full bg-[color:var(--fifa-green)] px-2 py-2.5 text-xs font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50">
+                            <Check className="h-3.5 w-3.5" /> Aceitar
+                          </button>
+                          <button type="button" onClick={enterEdit} className="inline-flex items-center justify-center gap-1 rounded-full border border-[color:var(--fifa-green)] px-2 py-2.5 text-xs font-bold text-[color:var(--fifa-green)] transition-all hover:bg-[color:var(--fifa-green)]/10">
+                            <Repeat className="h-3.5 w-3.5" /> Contrapor
+                          </button>
+                          <button type="button" onClick={doRefuse} className="inline-flex items-center justify-center gap-1 rounded-full border border-destructive/40 px-2 py-2.5 text-xs font-bold text-destructive transition-all hover:bg-destructive/10">
+                            <Ban className="h-3.5 w-3.5" /> Recusar
+                          </button>
+                        </div>
+                      </>
                     ) : (
-                      /* Aguardando o outro */
+                      /* Aguardando o outro — enxuto, sem repetir o deal (já está no cartão acima) */
                       <div className="flex items-center gap-2">
-                        <span className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground">
-                          <Handshake className="h-3.5 w-3.5" /> Você propôs — aguardando
+                        <span className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2.5 text-xs font-semibold text-muted-foreground">
+                          <Clock className="h-3.5 w-3.5" /> Aguardando {otherFirst} responder
                         </span>
-                        <button type="button" onClick={doRefuse} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-3 py-2 text-xs font-semibold text-destructive transition-all hover:bg-destructive/10">
+                        <button type="button" onClick={doRefuse} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2.5 text-xs font-semibold text-destructive transition-all hover:bg-destructive/10">
                           <Ban className="h-3.5 w-3.5" /> Cancelar
                         </button>
                       </div>

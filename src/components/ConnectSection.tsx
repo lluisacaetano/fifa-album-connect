@@ -235,17 +235,18 @@ export function ConnectSection() {
       offered: [],
       message: message || undefined,
     });
-    // Posta o cartão inicial da proposta no chat (não derruba o pedido se falhar).
+    // Manda a saudação (padrão se vazia) + o cartão da proposta (não derruba o pedido se falhar).
     try {
       const cid = chatId(user.uid, target.uid);
+      const greeting = message.trim() || "Oi! Topa combinar uma troca?";
+      await sendMessage(cid, { from: user.uid, fromName: user.name, to: target.uid, toName: target.name, text: greeting });
       const wTxt = wanted.map((s) => (s.code ? `${s.name} (${s.code})` : s.name)).join(", ");
-      const text = message.trim() ? `Proposta de troca · quero: ${wTxt}\n\n${message.trim()}` : `Proposta de troca · quero: ${wTxt}`;
       await sendMessage(cid, {
         from: user.uid,
         fromName: user.name,
         to: target.uid,
         toName: target.name,
-        text,
+        text: `Proposta de troca · quero: ${wTxt}`,
         kind: "trade",
         meta: { action: "propose", wanted, offered: [], by: user.uid },
       });
