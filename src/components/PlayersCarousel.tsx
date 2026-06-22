@@ -178,6 +178,7 @@ export function PlayersCarousel() {
                     src={p.photo ?? ""}
                     alt={p.name}
                     loading="lazy"
+                    style={p.photoScale ? { transform: `scale(${p.photoScale})`, transformOrigin: "bottom center" } : undefined}
                     className="relative mx-auto h-full w-auto max-w-full object-contain object-bottom drop-shadow-[0_18px_30px_rgba(0,0,0,0.45)] [mask-image:linear-gradient(to_bottom,#000_84%,transparent)]"
                   />
                 </motion.div>

@@ -2,7 +2,11 @@
 // Todos os elencos vêm da API-Football (squads.generated.json): nome, idade, nº,
 // posição, foto e — quando enriquecido — clube e estatísticas da temporada.
 import rawSquads from "./squads.generated.json";
+import overrides from "./photo-overrides.json";
 import { nations } from "./nations";
+
+// Ajustes manuais de foto por jogador (zoom), chave "<code>-<number>".
+const photoOverrides = overrides as Record<string, { scale?: number }>;
 
 export type SquadPlayer = {
   id: number;
@@ -12,6 +16,7 @@ export type SquadPlayer = {
   age?: number | null;
   photo: string | null;
   photoCutout?: boolean; // true = foto recortada hi-res (não a foto pequena da API)
+  photoScale?: number; // zoom individual da foto no card (ex.: 1.4 = 40% maior)
   club?: string | null;
   goals?: number | null;
   assists?: number | null;
@@ -46,7 +51,12 @@ const squadList: CountrySquad[] = Object.entries(generated)
     code,
     name: squad.name ?? meta[code]?.name ?? code,
     colors: meta[code]?.colors ?? DEFAULT_COLORS,
-    players: byNumber(squad.players ?? []).slice(0, 26), // elenco da Copa = máx. 26
+    players: byNumber(squad.players ?? [])
+      .slice(0, 26) // elenco da Copa = máx. 26
+      .map((p) => {
+        const ov = photoOverrides[`${code}-${p.number}`];
+        return ov?.scale ? { ...p, photoScale: ov.scale } : p;
+      }),
   }))
   .filter((s) => s.players.length > 0)
   // Brasil sempre primeiro, depois as outras em ordem alfabética.

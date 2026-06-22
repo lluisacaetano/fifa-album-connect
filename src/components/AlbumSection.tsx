@@ -9,7 +9,7 @@ const ACCENTS = new RegExp("[\\u0300-\\u036f]", "g");
 const norm = (s: string) => s.normalize("NFD").replace(ACCENTS, "").toLowerCase();
 
 // Cada figurinha exibida carrega o país a que pertence (necessário na visão "Todos").
-type Card = { id: number; name: string; position: string; number?: string | null; photo: string | null; photoCutout?: boolean; code: string; country: string };
+type Card = { id: number; name: string; position: string; number?: string | null; photo: string | null; photoCutout?: boolean; photoScale?: number; code: string; country: string };
 
 const BRAZIL_COLORS: [string, string] = ["#009739", "#FFDF00"];
 
@@ -218,6 +218,7 @@ export function AlbumSection() {
                         src={c.photo}
                         alt={c.name}
                         loading="lazy"
+                        style={c.photoScale ? { transform: `scale(${c.photoScale})`, transformOrigin: "bottom center" } : undefined}
                         className="absolute inset-x-0 bottom-0 mx-auto h-[88%] w-auto object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.45)]"
                       />
                     ) : (
