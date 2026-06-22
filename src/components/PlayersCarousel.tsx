@@ -49,11 +49,6 @@ export function PlayersCarousel() {
 
   return (
     <section id="jogadores" className="relative overflow-hidden py-20 text-white" style={{ background: sectionBg }}>
-      {/* Decoração: estrela grande translúcida no canto */}
-      <div aria-hidden className="pointer-events-none absolute -left-10 top-4 select-none font-display text-[16rem] leading-none text-white/10">
-        ★
-      </div>
-
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-7 flex flex-col items-center text-center">
           <motion.h2
@@ -77,7 +72,7 @@ export function PlayersCarousel() {
               </SelectValue>
             </SelectTrigger>
             <SelectContent className="max-h-80">
-              {squads.map((s) => (
+              {[...squads].sort((a, b) => a.name.localeCompare(b.name, "pt")).map((s) => (
                 <SelectItem key={s.code} value={s.code} className="cursor-pointer">
                   <span className="flex items-center gap-2">
                     <img src={`https://flagcdn.com/w40/${s.code}.png`} alt="" className="h-4 w-6 rounded-sm object-cover ring-1 ring-black/10" />

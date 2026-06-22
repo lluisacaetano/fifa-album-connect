@@ -117,7 +117,7 @@ export function AlbumSection() {
             <Globe className="h-4 w-4" />
             Todos
           </button>
-          {squads.map((s) => {
+          {[...squads].sort((a, b) => a.name.localeCompare(b.name, "pt")).map((s) => {
             const active = s.code === code;
             return (
               <button
