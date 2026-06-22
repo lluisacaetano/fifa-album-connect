@@ -8,7 +8,8 @@ import { initials } from "@/data/players";
 import { useAuth } from "@/lib/auth";
 import { db } from "@/lib/firebase";
 import { haversineKm } from "@/lib/profile";
-import { sendTradeRequest } from "@/lib/trades";
+import { sendTradeRequest, type TradeItem } from "@/lib/trades";
+import { chatId, sendMessage } from "@/lib/chat";
 import { useTrades } from "@/lib/trades-context";
 import { TradeRequestModal } from "@/components/TradeRequestModal";
 import { Avatar } from "@/components/Avatar";
@@ -220,7 +221,7 @@ export function ConnectSection() {
   const wantedOf = (t: Trader) => (t.hasStickers ?? []).filter((s) => iNeed(s.name));
   const offeredOf = (t: Trader) => t.wants.filter((w) => iHaveForTrade(w)).map((name) => ({ code: playerIndex[norm(name)]?.code ?? "", name }));
 
-  async function sendTo(target: Trader, message: string) {
+  async function sendTo(target: Trader, message: string, wanted: TradeItem[], offered: TradeItem[]) {
     if (!user || !target.uid) return;
     await sendTradeRequest({
       fromUid: user.uid,
@@ -228,10 +229,23 @@ export function ConnectSection() {
       fromCity: user.city,
       toUid: target.uid,
       toName: target.name,
-      wanted: wantedOf(target),
-      offered: offeredOf(target),
+      wanted,
+      offered,
       message: message || undefined,
     });
+    // Manda uma mensagem pronta no chat resumindo o pedido (não derruba o pedido se falhar).
+    try {
+      const cid = chatId(user.uid, target.uid);
+      const wTxt = wanted.length ? wanted.map((s) => (s.code ? `${s.name} (${s.code})` : s.name)).join(", ") : null;
+      const oTxt = offered.length ? offered.map((s) => (s.code ? `${s.name} (${s.code})` : s.name)).join(", ") : "(nada por enquanto)";
+      let text = "🔄 Pedido de troca!";
+      if (wTxt) text += `\n🎯 Quero suas: ${wTxt}.`;
+      text += `\n🔁 Posso oferecer: ${oTxt}.`;
+      if (message.trim()) text += `\n\n${message.trim()}`;
+      await sendMessage(cid, { from: user.uid, fromName: user.name, to: target.uid, toName: target.name, text });
+    } catch {
+      /* sem chat: o pedido já foi criado, segue o jogo */
+    }
   }
 
   // Colecionadores perto/compatíveis (mais matches primeiro, depois os demais).
@@ -242,11 +256,13 @@ export function ConnectSection() {
   const me = useMemo(() => realTraders.find((t) => t.isMe) ?? null, [realTraders]);
   const panel = selected ?? me;
 
-  // Derivados do colecionador exibido no painel.
+  // Derivados do colecionador exibido no painel. Limites compactos (1-2 linhas + "+N").
   const selMatched = panel ? panel.has.filter(iNeed) : [];
-  const selHasShown = panel ? [...panel.has].sort((a, b) => Number(iNeed(b)) - Number(iNeed(a))).slice(0, 18) : [];
+  const selMatchedShown = selMatched.slice(0, 5); // 1 linha de figurinhas
+  const selHasSorted = panel ? [...panel.has].sort((a, b) => Number(iNeed(b)) - Number(iNeed(a))) : [];
+  const selHasShown = selHasSorted.slice(0, 6); // ~2 linhas
   const selWantsSorted = panel ? [...panel.wants].sort((a, b) => Number(iHaveForTrade(b)) - Number(iHaveForTrade(a))) : [];
-  const selWantsShown = selWantsSorted.slice(0, 12);
+  const selWantsShown = selWantsSorted.slice(0, 6); // ~2 linhas
   const selDist = panel ? distOf(panel) : null;
 
   return (
@@ -495,7 +511,7 @@ export function ConnectSection() {
                       </div>
                       {selMatched.length ? (
                         <div className="mt-3 flex flex-wrap gap-2.5">
-                          {selMatched.map((name) => {
+                          {selMatchedShown.map((name) => {
                             const info = playerIndex[norm(name)];
                             return (
                               <div key={name} className="w-14 text-center">
@@ -511,6 +527,11 @@ export function ConnectSection() {
                               </div>
                             );
                           })}
+                          {selMatched.length > selMatchedShown.length && (
+                            <div className="grid w-14 place-items-center">
+                              <span className="font-display text-lg text-[color:var(--fifa-green)]">+{selMatched.length - selMatchedShown.length}</span>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <p className="mt-2 text-xs text-muted-foreground">Nada que falte no seu álbum por enquanto — mas pode ter repetidas que te interessam.</p>
@@ -606,7 +627,7 @@ export function ConnectSection() {
         wanted={tradeTarget ? wantedOf(tradeTarget) : []}
         offered={tradeTarget ? offeredOf(tradeTarget) : []}
         onClose={() => setTradeTarget(null)}
-        onSend={(message) => sendTo(tradeTarget!, message)}
+        onSend={(message, wanted, offered) => sendTo(tradeTarget!, message, wanted, offered)}
       />
     </section>
   );
