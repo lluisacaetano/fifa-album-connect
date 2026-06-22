@@ -8,9 +8,15 @@ import { useTrades } from "@/lib/trades-context";
 import { chatId, listenMessages, sendMessage, type ChatMessage, type TradeCardMeta } from "@/lib/chat";
 import type { TradeAction, TradeItem } from "@/lib/trades";
 import { Avatar } from "@/components/Avatar";
+import { ConfirmModal } from "@/components/ConfirmModal";
 
 const keyOf = (s: TradeItem) => `${s.code}-${s.name}`;
 const fmtBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
+// Formata o input de R$ para "X,00" (duas casas).
+const fmtMoneyInput = (s: string) => {
+  const n = Number(s.replace(",", ".")) || 0;
+  return n > 0 ? n.toFixed(2).replace(".", ",") : "";
+};
 const NORM_RE = new RegExp("[\\u0300-\\u036f]", "g");
 const norm = (s: string) => s.normalize("NFD").replace(NORM_RE, "").toLowerCase();
 const uniqItems = (arr: TradeItem[]) => {
@@ -76,7 +82,7 @@ function DealRows({ get, give, value }: { get: TradeItem[]; give: TradeItem[]; v
 
 export function ChatDrawer() {
   const { user } = useAuth();
-  const { chatTarget, closeChat, requests, confirmReceipt, counter, accept, refuse } = useTrades();
+  const { chatTarget, closeChat, requests, confirmReceipt, counter, accept, refuse, chatHidden } = useTrades();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const [showDelivery, setShowDelivery] = useState(false);
@@ -88,6 +94,7 @@ export function ChatDrawer() {
   const [editGet, setEditGet] = useState<Set<string>>(new Set());
   const [editGive, setEditGive] = useState<Set<string>>(new Set());
   const [editValue, setEditValue] = useState(""); // R$ inline quando as quantidades não batem
+  const [confirmReceiptOpen, setConfirmReceiptOpen] = useState(false);
   const [otherPool, setOtherPool] = useState<TradeItem[]>([]);
   const [myPool, setMyPool] = useState<TradeItem[]>([]);
   const [otherWants, setOtherWants] = useState<Set<string>>(new Set());
@@ -227,8 +234,8 @@ export function ChatDrawer() {
     if (method !== "presencial" && !code) return;
     let body = "";
     if (method === "presencial") body = "📍 Vou entregar pessoalmente.";
-    else if (method === "correios") body = `📦 Enviei pelos Correios. Rastreio: ${code}\nhttps://rastreamento.correios.com.br/app/index.php?codigo=${encodeURIComponent(code)}`;
-    else body = `🚚 Enviei por transportadora${carrier.trim() ? ` (${carrier.trim()})` : ""}. Rastreio: ${code}`;
+    else if (method === "correios") body = `📦 Vou enviar pelos Correios. Rastreio: ${code}\nhttps://rastreamento.correios.com.br/app/index.php?codigo=${encodeURIComponent(code)}`;
+    else body = `🚚 Vou enviar por transportadora${carrier.trim() ? ` (${carrier.trim()})` : ""}. Rastreio: ${code}`;
     await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: body });
     setShowDelivery(false);
     setTracking("");
@@ -236,9 +243,12 @@ export function ChatDrawer() {
   }
 
   // Confirmar recebimento (p/ quem RECEBE) — uma vez só; fecha quando todos confirmam.
-  async function doConfirmReceipt() {
-    if (!cid || !user || !chatTarget || !linked) return;
-    if (!window.confirm("Confirmar que você JÁ recebeu as figurinhas? Isso não pode ser desfeito.")) return;
+  function doConfirmReceipt() {
+    if (!iReceived) setConfirmReceiptOpen(true);
+  }
+  async function reallyConfirmReceipt() {
+    setConfirmReceiptOpen(false);
+    if (!cid || !user || !chatTarget || !linked || iReceived) return;
     await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: "✅ Recebi! Confirmado." });
     await confirmReceipt(linked);
   }
@@ -313,6 +323,10 @@ export function ChatDrawer() {
   // Senão, a pessoa precisa Responder (escolher o que quer / combinar R$).
   const canAccept = !!value || (iGet.length === iGive.length && iGet.length > 0);
 
+  // Esconde mensagens anteriores a um "apagar conversa" (limpa o histórico pra mim).
+  const hiddenAt = cid ? (chatHidden[cid] ?? 0) : 0;
+  const visibleMessages = messages.filter((m) => (m.createdAt?.seconds ?? Number.MAX_SAFE_INTEGER) > hiddenAt);
+
   return (
     <AnimatePresence>
       {chatTarget && user && (
@@ -346,14 +360,14 @@ export function ChatDrawer() {
               </span>
             </div>
 
-            {/* Mensagens */}
+            {/* Mensagens (esconde as anteriores a um "apagar conversa") */}
             <div className="flex-1 space-y-2 overflow-auto bg-muted/40 px-4 py-4">
-              {messages.length === 0 ? (
+              {visibleMessages.length === 0 ? (
                 <div className="mt-10 text-center text-sm text-muted-foreground">
                   Diga oi para {otherFirst} e combine as figurinhas. 👋
                 </div>
               ) : (
-                messages.map((m) => {
+                visibleMessages.map((m) => {
                   if (m.kind === "trade" && m.meta) return <TradeCard key={m.id} m={m} />;
                   const mine = m.from === user.uid;
                   return (
@@ -430,7 +444,7 @@ export function ChatDrawer() {
                             </div>
                             <div className="mt-1.5 flex items-center gap-2 rounded-lg border border-border bg-card px-2.5 ring-[color:var(--fifa-green)] focus-within:ring-2">
                               <span className="text-xs font-bold text-muted-foreground">R$</span>
-                              <input value={editValue} onChange={(e) => setEditValue(e.target.value)} inputMode="decimal" placeholder="0,00" className="h-9 flex-1 bg-transparent text-sm outline-none" />
+                              <input value={editValue} onChange={(e) => setEditValue(e.target.value)} onBlur={() => setEditValue(fmtMoneyInput(editValue))} inputMode="decimal" placeholder="0,00" className="h-9 flex-1 bg-transparent text-sm outline-none" />
                             </div>
                           </div>
                         )}
@@ -577,6 +591,15 @@ export function ChatDrawer() {
               </button>
             </form>
           </motion.aside>
+
+          <ConfirmModal
+            open={confirmReceiptOpen}
+            title="Confirmar recebimento"
+            message="Confirme só quando você JÁ recebeu as figurinhas. Isso não pode ser desfeito."
+            confirmLabel="Já recebi"
+            onConfirm={reallyConfirmReceipt}
+            onCancel={() => setConfirmReceiptOpen(false)}
+          />
         </motion.div>
       )}
     </AnimatePresence>

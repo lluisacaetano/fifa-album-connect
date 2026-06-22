@@ -235,8 +235,9 @@ export function AlbumSection() {
     });
   }
 
-  // Troca CONCLUÍDA (os dois confirmaram): dá baixa só nas figurinhas que EU entreguei.
-  // As que recebi, marco manualmente quando chegarem. Idempotente via appliedBy (Firestore).
+  // Troca FINALIZADA (recebimentos confirmados): dá baixa só nas figurinhas que EU
+  // ENTREGUEI (−1). As que recebi são marcadas MANUALMENTE quando chegarem.
+  // Idempotente via appliedBy (Firestore).
   useEffect(() => {
     if (!user || !synced) return;
     const pending = requests.filter(
@@ -246,7 +247,7 @@ export function AlbumSection() {
     const deltas: { code: string; id: number; delta: number }[] = [];
     for (const r of pending) {
       applyingRef.current.add(r.id);
-      const iGave: any[] = r.fromUid === user.uid ? r.offered : r.wanted;
+      const iGave: any[] = r.fromUid === user.uid ? r.offered : r.wanted; // o que EU entreguei
       for (const item of iGave) {
         const code = typeof item === "string" ? "" : (item?.code ?? "");
         const name = typeof item === "string" ? item : (item?.name ?? "");
