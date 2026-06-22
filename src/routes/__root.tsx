@@ -64,13 +64,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Álbum FIFA 2026 — Colecione, troque e complete" },
       { name: "description", content: "Rede social para colecionadores do álbum FIFA World Cup 2026: jogadores, partidas e trocas em tempo real." },
-      { property: "og:title", content: "Álbum FIFA 2026" },
-      { property: "og:description", content: "Colecione, troque e complete seu álbum digital da Copa do Mundo 2026." },
+      { property: "og:title", content: "Álbum FIFA 2026 — Colecione, troque e complete" },
+      { property: "og:description", content: "Rede social para colecionadores do álbum FIFA World Cup 2026: jogadores, partidas e trocas em tempo real." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Álbum FIFA 2026 — Colecione, troque e complete" },
+      { name: "twitter:description", content: "Rede social para colecionadores do álbum FIFA World Cup 2026: jogadores, partidas e trocas em tempo real." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cbc67529-9988-4180-89c3-9f01bc60c307/id-preview-c9dfecb0--6bdef81f-6714-4099-9060-c4e346fd7d0d.lovable.app-1782148821991.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cbc67529-9988-4180-89c3-9f01bc60c307/id-preview-c9dfecb0--6bdef81f-6714-4099-9060-c4e346fd7d0d.lovable.app-1782148821991.png" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
