@@ -93,12 +93,16 @@ Os dados das seleções foram **coletados por scripts** (`scripts/`) e gravados 
 | **Elenco** (nome, posição, número, idade) | **API-Football** (plano grátis) | — |
 | **Dados/estatísticas dos jogadores** (jogos, gols, assistências) | **Dataset do Kaggle** `swaptr/fifa-wc-2026-players` (CSV) | API-Football |
 | **Fotos** dos jogadores | **TheSportsDB** (recortes hi-res, fundo transparente) | **Foto da API-Football** quando não havia correspondência confiável; fotos **manuais** com prioridade; remoção de fundo com **rembg** |
-| **Informações/descrições** (biografia, carreira, valor de mercado) | **Wikipédia (PT)** | **Transfermarkt** (wrapper público) |
+| **Informações/descrições** (biografia, carreira, valor de mercado) | **Wikipédia (PT)** | **Wikipédia (EN) traduzida** para PT via Google Translate quando não havia verbete em PT; e **Transfermarkt** (wrapper público) |
 | **Bandeiras** | flagcdn.com | — |
-| **Placares ao vivo** (em runtime) | API **ESPN** | exibe o horário se indisponível |
+| **Jogos, partidas e resultados/placares** (em runtime) | API **ESPN** (scoreboard da Copa) | exibe só o horário agendado se indisponível |
 | **Cidades e geocodificação** (em runtime) | **IBGE** + **Nominatim/OpenStreetMap** | capital da UF se o geocoder falhar |
 
 Cuidados: os scripts são **resumíveis** (cache local), respeitam os **limites de requisição** (throttle — ex.: API-Football 100/dia e 10/min), confirmam a correspondência **por nome + nacionalidade/clube** (para não pegar o jogador, clube ou homônimo errado) e fazem **ajustes oficiais por seleção** (ex.: montar o álbum oficial Panini do Brasil e corrigir números de camisa).
+
+**Recorte e padronização das imagens em PNG.** Para que toda figurinha tivesse o jogador **recortado com fundo transparente** (visual de álbum), montamos um pipeline de imagem: (1) `localize-photos.mjs` baixa a melhor foto de cada jogador para `public/players/` — quando vinha da TheSportsDB (já recortada) aplica um `-trim`; quando vinha com fundo (API-Football), marca para recorte; (2) `rembg_batch.py` faz a **remoção de fundo em lote** com o modelo **u2net** (carregado uma única vez), gerando **PNG transparente**; (3) `apply-custom-photos.mjs` sobrepõe as fotos **manuais** com prioridade, **convertendo qualquer formato** (`.webp`/`.jpg`/`.png`) **para `.png`** via `sips` (nativo do macOS). Assim, independentemente da fonte, a imagem final é sempre um **PNG padronizado**.
+
+**Atualização dos jogos, partidas e resultados.** O calendário base das partidas fica em `src/data/worldcup.json`, mas os **placares e o andamento dos jogos são atualizados em tempo de execução** pela **API da ESPN** (endpoint *scoreboard* da Copa). O app lê o `state` de cada jogo — `pre` (agendado), `in` (ao vivo, com indicador "● ao vivo") e `post` (encerrado) — e usa esses dados em dois lugares: na lista de **Partidas** (placar ao vivo/final) e no **ranking de Palpites**, onde os jogos com `state: "post"` definem o resultado real usado para pontuar quem acertou.
 
 ---
 
@@ -135,7 +139,7 @@ A versão **mobile** tem o mesmo conjunto de funcionalidades (menu adaptado, swi
 
 ## 6. Links
 
-- **Aplicação (Vercel):** `https://fifa-album.vercel.app`  _(confirmar URL final)_
+- **Aplicação (Vercel):** https://fifa-album.vercel.app
 - **Preview (Lovable):** `https://fifa-album-connect.lovable.app`
 - **Repositórios (GitHub):**
   - `https://github.com/luisacaetano/fifa-album-connect`

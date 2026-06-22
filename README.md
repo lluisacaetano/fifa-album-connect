@@ -2,8 +2,7 @@
 
 Rede social e álbum digital de figurinhas da **Copa do Mundo FIFA 2026** (Canadá · México · EUA). Colecione as figurinhas das 48 seleções, **troque com colecionadores perto de você** num mapa em tempo real, **dê palpites** nos jogos e dispute o ranking. Funciona em **web (desktop/tablet) e mobile**.
 
-> 🔗 **App no ar (Vercel):** `https://fifa-album.vercel.app` · **Preview (Lovable):** `https://fifa-album-connect.lovable.app`
-> _(confirme as URLs finais no seu deploy)_
+> 🔗 **App no ar (Vercel):** https://fifa-album.vercel.app · **Preview (Lovable):** https://fifa-album-connect.lovable.app
 
 Projeto acadêmico da disciplina de **Inteligência Artificial** — desenvolvido com ferramentas de IA (**Lovable** + **Claude Code**). Não afiliado à FIFA.
 
@@ -96,10 +95,14 @@ Como cada API gratuita tem **limites** e nem sempre tem tudo, a coleta combina *
 | **Elenco** (nome, posição, número, idade) | **API-Football** (`fetch-squads.mjs`, `fetch-fullnames.mjs`) | — |
 | **Estatísticas** (jogos, gols, assistências) | **Dataset do Kaggle** `swaptr/fifa-wc-2026-players` → `scripts/fifa-wc-2026-players.csv` (`merge-kaggle.mjs`) | API-Football (`enrich-stats.mjs`) |
 | **Foto** do jogador | **TheSportsDB** — _cutouts_ hi-res PNG transparente (`fetch-photos.mjs`) | **foto da API-Football** quando não há match confiável (guardada em `p.photoApi`); fotos **manuais** têm prioridade (`apply-custom-photos.mjs`); remoção de fundo em lote com **rembg** (`rembg_batch.py`) |
-| **Descrição / informações** (bio, carreira, valor) | **Wikipédia (PT)** (`enrich-wikipedia.mjs`) | **Transfermarkt** (wrapper público, `enrich-tm.mjs`) |
+| **Descrição / informações** (bio, carreira, valor) | **Wikipédia (PT)** (`enrich-wikipedia.mjs`) | **Wikipédia (EN) traduzida** p/ PT via Google Translate (sem verbete PT); **Transfermarkt** (wrapper público, `enrich-tm.mjs`) |
 | **Bandeiras** | flagcdn.com | — |
-| **Placares ao vivo** (em runtime) | API **ESPN** | mostra o horário se indisponível |
+| **Jogos, partidas e resultados/placares** (em runtime) | API **ESPN** (scoreboard da Copa) | mostra só o horário agendado se indisponível |
 | **Cidades / geocodificação** (em runtime) | **IBGE** (lista de cidades) + **Nominatim/OSM** (lat/lng) | capital da UF se o geocoder falhar |
+
+> **Recorte/PNG das figurinhas:** para deixar o jogador recortado com fundo transparente, o pipeline é: `localize-photos.mjs` baixa a melhor foto p/ `public/players/` (`-trim` nos cutouts, marca o resto p/ recorte) → `rembg_batch.py` remove o fundo em lote (modelo **u2net**, carregado 1×) gerando **PNG transparente** → `apply-custom-photos.mjs` sobrepõe fotos manuais **convertendo `.webp`/`.jpg`/`.png` → `.png`** via `sips`. Resultado: imagem final sempre **PNG padronizado**.
+>
+> **Atualização de jogos/resultados:** o calendário fica em `worldcup.json`, mas **placares e andamento são atualizados em runtime pela API ESPN** (`state`: `pre`/`in`/`post`) — alimentando a lista de **Partidas** (ao vivo/final) e o **ranking de Palpites** (jogos `post` definem o resultado real para pontuar).
 
 Boas práticas dos scripts: **resumíveis** (cache em `/tmp/apif`), com **throttle** (respeitam os limites — ex.: API-Football 100/dia e 10/min), confirmação de **match por nome + nacionalidade/clube** (evita jogador/clube errado), e ajustes oficiais por seleção (`album-<código>.mjs`, ex.: monta o álbum oficial Panini do Brasil e corrige nº de camisas).
 
