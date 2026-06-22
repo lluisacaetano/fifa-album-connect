@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { X, MessageCircle } from "lucide-react";
+import { X, MessageCircle, Trash2 } from "lucide-react";
 import type { ChatSummary } from "@/lib/chat";
 import type { ChatTarget } from "@/lib/trades-context";
 import { Avatar } from "@/components/Avatar";
@@ -10,11 +10,15 @@ type Props = {
   summaries: ChatSummary[];
   myUid: string;
   reads: Record<string, number>;
+  hidden: Record<string, number>;
   onOpenChat: (t: ChatTarget) => void;
+  onDelete: (cid: string) => void;
 };
 
-export function MessagesInbox({ open, onClose, summaries, myUid, reads, onOpenChat }: Props) {
-  const list = [...summaries].sort((a, b) => (b.updatedAt?.seconds ?? 0) - (a.updatedAt?.seconds ?? 0));
+export function MessagesInbox({ open, onClose, summaries, myUid, reads, hidden, onOpenChat, onDelete }: Props) {
+  const list = [...summaries]
+    .filter((c) => (c.updatedAt?.seconds ?? 0) > (hidden[c.id] ?? 0)) // some se apagada (volta com msg nova)
+    .sort((a, b) => (b.updatedAt?.seconds ?? 0) - (a.updatedAt?.seconds ?? 0));
 
   return (
     <AnimatePresence>
@@ -51,21 +55,30 @@ export function MessagesInbox({ open, onClose, summaries, myUid, reads, onOpenCh
                   // Não lida = a última foi do outro E chegou depois de eu abrir essa conversa.
                   const unread = !mineLast && (c.updatedAt?.seconds ?? 0) > (reads[c.id] ?? 0);
                   return (
-                    <button
-                      key={c.id}
-                      onClick={() => onOpenChat({ uid: otherUid, name: otherName })}
-                      className="flex w-full items-center gap-3 border-b border-border px-5 py-3.5 text-left transition-colors hover:bg-muted"
-                    >
-                      <Avatar name={otherName} size={44} />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate font-semibold">{otherName}</div>
-                        <div className={`truncate text-sm ${unread ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
-                          {mineLast ? "Você: " : ""}
-                          {c.lastText}
+                    <div key={c.id} className="flex w-full items-center gap-1 border-b border-border pr-2 transition-colors hover:bg-muted">
+                      <button
+                        onClick={() => onOpenChat({ uid: otherUid, name: otherName })}
+                        className="flex min-w-0 flex-1 items-center gap-3 py-3.5 pl-5 text-left"
+                      >
+                        <Avatar name={otherName} size={44} />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate font-semibold">{otherName}</div>
+                          <div className={`truncate text-sm ${unread ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+                            {mineLast ? "Você: " : ""}
+                            {c.lastText}
+                          </div>
                         </div>
-                      </div>
-                      {unread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[color:var(--fifa-green)]" aria-label="Nova" />}
-                    </button>
+                        {unread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[color:var(--fifa-green)]" aria-label="Nova" />}
+                      </button>
+                      <button
+                        onClick={() => onDelete(c.id)}
+                        aria-label={`Apagar conversa com ${otherName}`}
+                        title="Apagar conversa"
+                        className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   );
                 })
               )}

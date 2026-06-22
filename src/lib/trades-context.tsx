@@ -29,6 +29,8 @@ type TradesContextValue = {
   closeMessages: () => void;
   chatUnread: number;
   chatReads: Record<string, number>;
+  chatHidden: Record<string, number>;
+  hideChat: (cid: string) => void;
 };
 
 const TradesContext = createContext<TradesContextValue | null>(null);
@@ -43,6 +45,7 @@ export function TradesProvider({ children }: { children: ReactNode }) {
   const [chatTarget, setChatTarget] = useState<ChatTarget>(null);
   const [seen, setSeen] = useState(0);
   const [chatReads, setChatReads] = useState<Record<string, number>>({});
+  const [chatHidden, setChatHidden] = useState<Record<string, number>>({});
   const chatPeakRef = useRef(0);
   const chatReadyRef = useRef(false);
 
@@ -54,6 +57,7 @@ export function TradesProvider({ children }: { children: ReactNode }) {
     try {
       setSeen(Number(localStorage.getItem(`trades-seen-${user.uid}`) || 0));
       setChatReads(JSON.parse(localStorage.getItem(`chat-reads-${user.uid}`) || "{}"));
+      setChatHidden(JSON.parse(localStorage.getItem(`chat-hidden-${user.uid}`) || "{}"));
     } catch {
       /* ignora */
     }
@@ -71,6 +75,23 @@ export function TradesProvider({ children }: { children: ReactNode }) {
       const next = { ...prev, [cid]: ts };
       try {
         localStorage.setItem(`chat-reads-${user.uid}`, JSON.stringify(next));
+      } catch {
+        /* ignora */
+      }
+      return next;
+    });
+  };
+
+  // Apaga (oculta pra mim) uma conversa. Some da lista; se chegar mensagem nova
+  // depois, ela reaparece (compara com o updatedAt da conversa).
+  const hideChat = (cid: string) => {
+    if (!user) return;
+    const summary = chatSummaries.find((c) => c.id === cid);
+    const ts = Math.max(Math.floor(Date.now() / 1000), (summary?.updatedAt?.seconds ?? 0) + 1);
+    setChatHidden((prev) => {
+      const next = { ...prev, [cid]: ts };
+      try {
+        localStorage.setItem(`chat-hidden-${user.uid}`, JSON.stringify(next));
       } catch {
         /* ignora */
       }
@@ -180,6 +201,8 @@ export function TradesProvider({ children }: { children: ReactNode }) {
         closeMessages: () => setMessagesOpen(false),
         chatUnread,
         chatReads,
+        chatHidden,
+        hideChat,
       }}
     >
       {children}
