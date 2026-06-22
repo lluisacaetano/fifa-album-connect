@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Globe } from "lucide-react";
+import { Search, Globe, Minus, Plus, Repeat } from "lucide-react";
 import { squads, squadByCode } from "@/data/squads";
 import { initials } from "@/data/players";
 
-const storageKey = (code: string) => `album-owned-${code}`;
+const countKey = (code: string) => `album-count-${code}`;
+const ownedKey = (code: string) => `album-owned-${code}`;
+const tradeKey = (code: string) => `album-trade-${code}`;
 const ACCENTS = new RegExp("[\\u0300-\\u036f]", "g");
 const norm = (s: string) => s.normalize("NFD").replace(ACCENTS, "").toLowerCase();
 
@@ -24,6 +26,8 @@ type Card = {
   code: string;
   country: string;
 };
+
+type Counts = Record<number, number>;
 
 // Monta as 20 figurinhas oficiais de uma seleção (escudo + 18 jogadores + foto),
 // na ordem certa. Se ainda não migrada ao álbum, mostra o elenco bruto (sem especiais).
@@ -49,20 +53,30 @@ const BRAZIL_COLORS: [string, string] = ["#009739", "#FFDF00"];
 export function AlbumSection() {
   const [code, setCode] = useState("br");
   const [query, setQuery] = useState("");
-  const [ownedMap, setOwnedMap] = useState<Record<string, Set<number>>>({});
+  const [view, setView] = useState<"all" | "trade">("all"); // "trade" = só as repetidas
+  // Quantidade de cada figurinha. 0 = falta, 1 = tenho, 2+ = repetida (para troca).
+  const [countMap, setCountMap] = useState<Record<string, Counts>>({});
 
   // Carrega do navegador o que já está marcado em TODAS as seleções (1x ao montar).
+  // Migra do formato antigo (só "tenho/não tenho") para quantidades, se preciso.
   useEffect(() => {
-    const map: Record<string, Set<number>> = {};
+    const map: Record<string, Counts> = {};
     for (const s of squads) {
+      const counts: Counts = {};
       try {
-        const saved = localStorage.getItem(storageKey(s.code));
-        map[s.code] = saved ? new Set(JSON.parse(saved) as number[]) : new Set();
+        const saved = localStorage.getItem(countKey(s.code));
+        if (saved) {
+          Object.assign(counts, JSON.parse(saved) as Counts);
+        } else {
+          const owned = localStorage.getItem(ownedKey(s.code));
+          if (owned) for (const id of JSON.parse(owned) as number[]) counts[id] = 1;
+        }
       } catch {
-        map[s.code] = new Set();
+        /* ignora */
       }
+      map[s.code] = counts;
     }
-    setOwnedMap(map);
+    setCountMap(map);
   }, []);
 
   const isAll = code === "all";
@@ -72,44 +86,68 @@ export function AlbumSection() {
   const [c1] = isAll ? BRAZIL_COLORS : squad!.colors;
   const sectionBg = `linear-gradient(160deg, ${c1} 0%, color-mix(in srgb, ${c1} 42%, #04140b) 95%)`;
 
-  function ownedHas(c: string, id: number) {
-    return ownedMap[c]?.has(id) ?? false;
+  const getCount = (c: string, id: number) => countMap[c]?.[id] ?? 0;
+
+  // Salva quantidade + os derivados que a seção de Trocas lê (tenho / repetidas).
+  function persist(c: string, counts: Counts) {
+    const owned: number[] = [];
+    const trade: number[] = [];
+    for (const [id, n] of Object.entries(counts)) {
+      const idNum = Number(id);
+      if (n >= 1) owned.push(idNum);
+      if (n >= 2) trade.push(idNum);
+    }
+    try {
+      localStorage.setItem(countKey(c), JSON.stringify(counts));
+      localStorage.setItem(ownedKey(c), JSON.stringify(owned));
+      localStorage.setItem(tradeKey(c), JSON.stringify(trade));
+    } catch {
+      /* ignora */
+    }
   }
 
-  function toggle(c: string, id: number) {
-    setOwnedMap((prev) => {
-      const next = new Set(prev[c] ?? []);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      try {
-        localStorage.setItem(storageKey(c), JSON.stringify([...next]));
-      } catch {
-        /* ignora */
-      }
-      return { ...prev, [c]: next };
+  function setCount(c: string, id: number, n: number) {
+    setCountMap((prev) => {
+      const counts: Counts = { ...(prev[c] ?? {}) };
+      if (n <= 0) delete counts[id];
+      else counts[id] = n;
+      persist(c, counts);
+      return { ...prev, [c]: counts };
     });
   }
+
+  // Clique cicla: falta (0) → tenho (1) → troca (2) → falta (0).
+  const cycle = (c: string, id: number) => {
+    const n = getCount(c, id);
+    setCount(c, id, n >= 2 ? 0 : n + 1);
+  };
+  const inc = (c: string, id: number) => setCount(c, id, getCount(c, id) + 1);
+  const dec = (c: string, id: number) => setCount(c, id, Math.max(1, getCount(c, id) - 1)); // mín. 1: para zerar, clique na figurinha
 
   const allCards: Card[] = useMemo(() => {
     const source = isAll ? squads : [squad!];
     return source.flatMap((s) => albumCards(s));
   }, [isAll, squad]);
 
-  const ownedCount = allCards.filter((c) => ownedHas(c.code, c.id)).length;
+  const ownedCount = allCards.filter((c) => getCount(c.code, c.id) >= 1).length;
+  const tradeCount = allCards.filter((c) => getCount(c.code, c.id) >= 2).length;
   const progress = allCards.length ? Math.round((ownedCount / allCards.length) * 100) : 0;
 
   // Progresso GERAL do álbum (todas as seleções somadas).
   const totalAll = useMemo(() => squads.reduce((n, s) => n + s.players.length, 0), []);
-  const ownedAll = squads.reduce((n, s) => n + s.players.filter((p) => ownedHas(s.code, p.id)).length, 0);
+  const ownedAll = squads.reduce((n, s) => n + s.players.filter((p) => getCount(s.code, p.id) >= 1).length, 0);
   const progressAll = totalAll ? Math.round((ownedAll / totalAll) * 100) : 0;
 
-  const visible = useMemo(() => {
+  const searched = useMemo(() => {
     const q = norm(query.trim());
     if (!q) return allCards;
     // busca por nome OU pelo número da figurinha (ex.: "BRA1", "bra 1", "1")
     const qNum = q.replace(/\s+/g, "");
     return allCards.filter((c) => norm(c.name).includes(q) || (c.sticker && norm(c.sticker).includes(qNum)));
   }, [allCards, query]);
+
+  // Na visão "Para troca", mostra só as figurinhas com 2+ (repetidas).
+  const visible = view === "trade" ? searched.filter((c) => getCount(c.code, c.id) >= 2) : searched;
 
   const titleLabel = isAll ? "Todas as seleções" : squad!.name;
 
@@ -127,7 +165,7 @@ export function AlbumSection() {
               MEU ÁLBUM
             </motion.h2>
             <p className="mt-2 max-w-lg text-sm text-white/80">
-              Escolha uma seleção (ou <strong>Todos</strong>) e clique nas figurinhas para marcar quais você <strong>tem</strong>. Salvo por país.
+              1 clique = você <strong>tem</strong>. Clique <strong>de novo</strong> e ela vira <strong>troca</strong> (repetida). Use o + para contar mais de uma.
             </p>
           </div>
 
@@ -136,6 +174,7 @@ export function AlbumSection() {
               { l: "Total", v: allCards.length },
               { l: "Tenho", v: ownedCount },
               { l: "Faltam", v: allCards.length - ownedCount },
+              { l: "Troco", v: tradeCount },
             ].map((s) => (
               <div key={s.l} className="rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-center backdrop-blur-sm">
                 <div className="font-display text-3xl text-[color:var(--fifa-yellow)]">{s.v}</div>
@@ -175,6 +214,29 @@ export function AlbumSection() {
           })}
         </div>
 
+        {/* Alternar entre o álbum inteiro e só as figurinhas para troca */}
+        <div className="mb-5 inline-flex rounded-full border border-white/20 bg-white/10 p-1 backdrop-blur-sm">
+          {[
+            { key: "all" as const, label: "Álbum" },
+            { key: "trade" as const, label: `Para troca${tradeCount ? ` · ${tradeCount}` : ""}` },
+          ].map((opt) => {
+            const active = view === opt.key;
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => setView(opt.key)}
+                className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
+                  active ? "bg-white text-[color:var(--fifa-green-deep)] shadow" : "text-white/80 hover:text-white"
+                }`}
+              >
+                {opt.key === "trade" && <Repeat className="h-3.5 w-3.5" />}
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Busca (ao digitar, pula para "Todos") + progresso */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="relative sm:w-80">
@@ -207,53 +269,95 @@ export function AlbumSection() {
         </div>
 
         {visible.length === 0 ? (
-          <p className="py-12 text-center text-sm text-white/70">Nenhum jogador encontrado para “{query}”.</p>
+          view === "trade" ? (
+            <div className="rounded-2xl border border-dashed border-white/25 bg-white/5 py-12 text-center">
+              <Repeat className="mx-auto h-7 w-7 text-[color:var(--fifa-yellow)]" />
+              <p className="mt-3 text-sm font-semibold text-white/85">
+                {query ? `Nenhuma repetida encontrada para “${query}”.` : "Você ainda não tem figurinhas para troca."}
+              </p>
+              {!query && (
+                <p className="mx-auto mt-1 max-w-sm text-xs text-white/65">
+                  Marque uma figurinha que você tem e toque no <strong>+</strong> para contar as repetidas. A partir de 2, ela aparece aqui.
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="py-12 text-center text-sm text-white/70">Nenhum jogador encontrado para “{query}”.</p>
+          )
         ) : (
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-6 lg:grid-cols-9">
             {visible.map((c, i) => {
-              const has = ownedHas(c.code, c.id);
+              const count = getCount(c.code, c.id);
+              const has = count >= 1;
+              const forTrade = count >= 2;
               return (
-                <motion.button
+                <motion.div
                   key={`${c.code}-${c.id}`}
-                  type="button"
-                  onClick={() => toggle(c.code, c.id)}
-                  aria-pressed={has}
-                  title={has ? `Você tem ${c.name} (${c.country}) — clique para desmarcar` : `Falta ${c.name} (${c.country}) — clique se conseguiu`}
                   initial={{ opacity: 0, scale: 0.85 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: Math.min(i * 0.015, 0.3), duration: 0.25 }}
                   whileHover={{ y: -6, rotate: has ? -2 : 0 }}
-                  whileTap={{ scale: 0.92 }}
-                  className={`group foil-sheen relative aspect-[3/4] cursor-pointer rounded-xl border-2 p-[3px] text-left transition-all ${
-                    has ? "border-[color:var(--fifa-yellow)] bg-fifa-gradient text-white shadow-lg" : "border-white/30 bg-white/10 text-white/80 backdrop-blur-sm"
+                  className={`group foil-sheen relative aspect-[3/4] rounded-xl border-2 p-[3px] text-left transition-all ${
+                    forTrade
+                      ? "border-[color:var(--fifa-yellow)] bg-fifa-gradient text-white shadow-[0_0_0_2px_rgba(255,223,0,0.35),0_8px_20px_-6px_rgba(0,0,0,0.5)]"
+                      : has
+                        ? "border-[color:var(--fifa-yellow)] bg-fifa-gradient text-white shadow-lg"
+                        : "border-white/30 bg-white/10 text-white/80 backdrop-blur-sm"
                   }`}
                 >
                   {has && <span className="foil-sheen-layer rounded-xl" aria-hidden />}
 
+                  {/* Clique principal: marca / desmarca que você TEM a figurinha. */}
+                  <button
+                    type="button"
+                    onClick={() => cycle(c.code, c.id)}
+                    aria-pressed={has}
+                    title={
+                      forTrade
+                        ? `${c.name} (${c.country}) está para troca — clique para limpar`
+                        : has
+                          ? `Você tem ${c.name} (${c.country}) — clique de novo para marcar como troca`
+                          : `Falta ${c.name} (${c.country}) — clique se conseguiu`
+                    }
+                    className="absolute inset-0 z-[1] rounded-xl outline-none ring-[color:var(--fifa-yellow)] focus-visible:ring-2"
+                  />
+
+                  {/* Badge canto: + (falta), ✓ (tenho), ou ×N (repetidas) */}
                   <span
-                    className={`absolute right-1 top-1 z-10 grid h-5 w-5 place-items-center rounded-full text-[11px] font-bold shadow ${
-                      has ? "bg-white text-[color:var(--fifa-green)]" : "bg-white/80 text-[color:var(--fifa-green-deep)]"
+                    className={`pointer-events-none absolute right-1 top-1 z-10 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[11px] font-bold shadow ${
+                      forTrade
+                        ? "bg-[color:var(--fifa-yellow)] text-[color:var(--fifa-green-deep)]"
+                        : has
+                          ? "bg-white text-[color:var(--fifa-green)]"
+                          : "bg-white/80 text-[color:var(--fifa-green-deep)]"
                     }`}
                   >
-                    {has ? "✓" : "+"}
+                    {forTrade ? `×${count}` : has ? "✓" : "+"}
                   </span>
 
+                  {/* Etiqueta TROCA quando há repetidas */}
+                  {forTrade && (
+                    <span className="pointer-events-none absolute left-1 top-1 z-10 inline-flex items-center gap-0.5 rounded-md bg-[color:var(--fifa-blue)] px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-white shadow">
+                      <Repeat className="h-2.5 w-2.5" /> Troca
+                    </span>
+                  )}
+
                   {/* No modo "Todos" a bandeira; o número da figurinha (BRA2) sempre que houver */}
-                  {isAll && (
+                  {isAll && !forTrade && (
                     <img
                       src={`https://flagcdn.com/w40/${c.code}.png`}
                       alt={c.country}
-                      className="absolute left-1.5 top-1.5 z-10 h-3.5 w-5 rounded-[2px] object-cover shadow ring-1 ring-black/20"
+                      className="pointer-events-none absolute left-1.5 top-1.5 z-10 h-3.5 w-5 rounded-[2px] object-cover shadow ring-1 ring-black/20"
                     />
                   )}
                   {c.sticker && (
-                    <span className={`absolute bottom-7 left-1.5 z-10 rounded-md bg-black/45 px-1 text-[9px] font-bold tracking-wide ${has ? "text-[color:var(--fifa-yellow)]" : "text-white/85"}`}>
+                    <span className={`pointer-events-none absolute bottom-9 left-1.5 z-10 rounded-md bg-black/45 px-1 text-[9px] font-bold tracking-wide ${has ? "text-[color:var(--fifa-yellow)]" : "text-white/85"}`}>
                       {c.sticker}
                     </span>
                   )}
 
-                  <div className={`relative flex h-full w-full flex-col items-center justify-end overflow-hidden rounded-lg ${has ? "" : "opacity-80 grayscale"}`}>
+                  <div className={`pointer-events-none relative flex h-full w-full flex-col items-center justify-end overflow-hidden rounded-lg ${has ? "" : "opacity-80 grayscale"}`}>
                     {c.kind === "crest" ? (
                       <div className="absolute inset-0 grid place-items-center bg-white/10 p-3">
                         <img src={`${c.photo}?v=2`} alt={c.name} loading="lazy" className="max-h-full max-w-full object-contain drop-shadow-[0_3px_5px_rgba(0,0,0,0.4)]" />
@@ -277,11 +381,35 @@ export function AlbumSection() {
                       </div>
                     )}
 
-                    <div className={`relative z-[1] w-full rounded-md px-1 py-1 text-center font-display text-[11px] leading-tight ${has ? "bg-black/35 text-white" : "bg-black/30 text-white"}`}>
+                    <div className={`relative z-[1] w-full rounded-md px-1 pb-6 pt-1 text-center font-display text-[11px] leading-tight ${has ? "bg-black/35 text-white" : "bg-black/30 text-white"}`}>
                       {c.name}
                     </div>
                   </div>
-                </motion.button>
+
+                  {/* Contador de repetidas — aparece quando você já tem a figurinha. */}
+                  {has && (
+                    <div className="absolute inset-x-1.5 bottom-1.5 z-20 flex items-center justify-between rounded-full bg-black/55 px-1 py-0.5 backdrop-blur-sm">
+                      <button
+                        type="button"
+                        onClick={() => dec(c.code, c.id)}
+                        disabled={count <= 1}
+                        aria-label="Tirar uma repetida"
+                        className="grid h-5 w-5 place-items-center rounded-full text-white transition-colors hover:bg-white/20 disabled:opacity-30"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </button>
+                      <span className="px-1 text-[11px] font-bold text-white">{count}</span>
+                      <button
+                        type="button"
+                        onClick={() => inc(c.code, c.id)}
+                        aria-label="Tenho mais uma (para trocar)"
+                        className="grid h-5 w-5 place-items-center rounded-full text-white transition-colors hover:bg-[color:var(--fifa-yellow)] hover:text-[color:var(--fifa-green-deep)]"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
               );
             })}
           </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Sun, Menu, X } from "lucide-react";
+import { Moon, Sun, Menu, X, LogOut } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 
 const links = [
   { href: "#home", id: "home", label: "Home" },
@@ -17,6 +18,8 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [dark, setDark] = useState(false);
   const [active, setActive] = useState("home");
+  const { user, hydrated, openAuth, logout } = useAuth();
+  const firstName = user?.name.split(" ")[0] ?? "";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -102,12 +105,31 @@ export function Navbar() {
           >
             {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
-          <a
-            href="#conectar"
-            className="hidden rounded-full bg-[color:var(--fifa-yellow)] px-5 py-2 text-sm font-bold text-[color:var(--fifa-green-deep)] shadow-md transition-all hover:scale-105 sm:inline-flex"
-          >
-            Entrar
-          </a>
+          {hydrated && user ? (
+            <div className="hidden items-center gap-2 sm:flex">
+              <span className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 py-1 pl-1 pr-3">
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-fifa-gradient text-[11px] font-bold text-white">
+                  {firstName.slice(0, 1)}
+                </span>
+                <span className="max-w-[90px] truncate text-sm font-semibold">{firstName}</span>
+              </span>
+              <button
+                onClick={logout}
+                aria-label="Sair"
+                title="Sair"
+                className="grid h-9 w-9 place-items-center rounded-full border border-white/20 text-white/90 transition-all hover:scale-105 hover:bg-white/10"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => openAuth("login")}
+              className="hidden rounded-full bg-[color:var(--fifa-yellow)] px-5 py-2 text-sm font-bold text-[color:var(--fifa-green-deep)] shadow-md transition-all hover:scale-105 sm:inline-flex"
+            >
+              Entrar
+            </button>
+          )}
           <button
             className="grid h-9 w-9 place-items-center rounded-full border border-white/20 text-white lg:hidden"
             onClick={() => setOpen((o) => !o)}
@@ -136,13 +158,35 @@ export function Navbar() {
               {l.label}
             </a>
           ))}
-          <a
-            href="#conectar"
-            onClick={() => setOpen(false)}
-            className="mt-1 block rounded-xl bg-[color:var(--fifa-yellow)] px-4 py-3 text-center text-sm font-bold text-[color:var(--fifa-green-deep)]"
-          >
-            Entrar
-          </a>
+          {hydrated && user ? (
+            <div className="mt-1 flex items-center justify-between rounded-xl bg-white/10 px-4 py-3">
+              <span className="flex items-center gap-2 text-sm font-semibold">
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-fifa-gradient text-[11px] font-bold text-white">
+                  {firstName.slice(0, 1)}
+                </span>
+                {firstName}
+              </span>
+              <button
+                onClick={() => {
+                  logout();
+                  setOpen(false);
+                }}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/80"
+              >
+                <LogOut className="h-4 w-4" /> Sair
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                setOpen(false);
+                openAuth("login");
+              }}
+              className="mt-1 block w-full rounded-xl bg-[color:var(--fifa-yellow)] px-4 py-3 text-center text-sm font-bold text-[color:var(--fifa-green-deep)]"
+            >
+              Entrar
+            </button>
+          )}
         </motion.div>
       )}
     </motion.header>
