@@ -38,21 +38,21 @@ export function ChatDrawer() {
   const iConfirmed = !!(linked && user && (linked.confirms ?? []).includes(user.uid));
 
   async function cancelTrade() {
-    if (!cid || !user) return;
-    await sendMessage(cid, { from: user.uid, fromName: user.name, text: "❌ Vou ter que cancelar essa troca, foi mal." });
+    if (!cid || !user || !chatTarget) return;
+    await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: "❌ Vou ter que cancelar essa troca, foi mal." });
     if (linked && linked.status === "pending") decline(linked.id);
   }
 
   // Confirmar entrega no chat = meu "OK" na troca (vira aceita quando os dois confirmam).
   async function sendDelivery() {
-    if (!cid || !user) return;
+    if (!cid || !user || !chatTarget) return;
     const code = tracking.trim();
     if (method !== "presencial" && !code) return;
     let body = "";
-    if (method === "presencial") body = "📍 Combinei entregar pessoalmente. (confirmei meu lado)";
+    if (method === "presencial") body = "📍 Combinei entregar pessoalmente.";
     else if (method === "correios") body = `📦 Enviei pelos Correios. Rastreio: ${code}\nhttps://rastreamento.correios.com.br/app/index.php?codigo=${encodeURIComponent(code)}`;
     else body = `🚚 Enviei por transportadora${carrier.trim() ? ` (${carrier.trim()})` : ""}. Rastreio: ${code}`;
-    await sendMessage(cid, { from: user.uid, fromName: user.name, text: body });
+    await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: body });
     if (linked && linked.status === "pending" && !iConfirmed) {
       await confirm(linked, { method, tracking: code || undefined, carrier: carrier.trim() || undefined });
     }
@@ -85,9 +85,9 @@ export function ChatDrawer() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const t = text.trim();
-    if (!t || !cid || !user) return;
+    if (!t || !cid || !user || !chatTarget) return;
     setText("");
-    await sendMessage(cid, { from: user.uid, fromName: user.name, text: t });
+    await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: t });
   }
 
   return (
@@ -145,14 +145,19 @@ export function ChatDrawer() {
               <button
                 type="button"
                 onClick={() => setShowDelivery((v) => !v)}
-                className={`inline-flex w-full items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
-                  showDelivery ? "border-[color:var(--fifa-green)] text-[color:var(--fifa-green)]" : "border-border text-foreground hover:bg-muted"
+                disabled={iConfirmed}
+                className={`inline-flex w-full items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition-all disabled:cursor-default disabled:opacity-70 ${
+                  iConfirmed
+                    ? "border-[color:var(--fifa-green)]/40 text-[color:var(--fifa-green)]"
+                    : showDelivery
+                      ? "border-[color:var(--fifa-green)] text-[color:var(--fifa-green)]"
+                      : "border-border text-foreground hover:bg-muted"
                 }`}
               >
-                <Truck className="h-4 w-4" /> {iConfirmed ? "Você já confirmou a entrega" : "Confirmar entrega"}
+                {iConfirmed ? <Check className="h-4 w-4" /> : <Truck className="h-4 w-4" />} {iConfirmed ? "Você já confirmou a entrega" : "Confirmar entrega"}
               </button>
 
-              {showDelivery && (
+              {showDelivery && !iConfirmed && (
                 <div className="space-y-2 rounded-2xl border border-border bg-muted/40 p-3">
                   <div className="grid grid-cols-3 gap-1.5">
                     {([

@@ -12,6 +12,7 @@ export type ChatMessage = {
 export type ChatSummary = {
   id: string;
   participants: string[];
+  names?: Record<string, string>; // uid -> nome (dos dois lados)
   lastText: string;
   lastFrom: string;
   lastFromName: string;
@@ -32,13 +33,20 @@ export function listenMessages(cid: string, cb: (msgs: ChatMessage[]) => void): 
   );
 }
 
-export async function sendMessage(cid: string, msg: { from: string; fromName: string; text: string }): Promise<void> {
-  await addDoc(collection(db, "chats", cid, "messages"), { ...msg, createdAt: serverTimestamp() });
-  // Resumo da conversa (para notificar o outro lado de novas mensagens).
+export async function sendMessage(cid: string, msg: { from: string; fromName: string; to: string; toName: string; text: string }): Promise<void> {
+  await addDoc(collection(db, "chats", cid, "messages"), { from: msg.from, fromName: msg.fromName, text: msg.text, createdAt: serverTimestamp() });
+  // Resumo da conversa (notifica o outro lado e alimenta a caixa de mensagens).
   try {
     await setDoc(
       doc(db, "chats", cid),
-      { participants: cid.split("_"), lastText: msg.text, lastFrom: msg.from, lastFromName: msg.fromName, updatedAt: serverTimestamp() },
+      {
+        participants: cid.split("_"),
+        names: { [msg.from]: msg.fromName, [msg.to]: msg.toName },
+        lastText: msg.text,
+        lastFrom: msg.from,
+        lastFromName: msg.fromName,
+        updatedAt: serverTimestamp(),
+      },
       { merge: true },
     );
   } catch {

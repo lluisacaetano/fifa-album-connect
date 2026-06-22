@@ -20,6 +20,10 @@ type TradesContextValue = {
   chatTarget: ChatTarget;
   openChat: (t: ChatTarget) => void;
   closeChat: () => void;
+  messagesOpen: boolean;
+  openMessages: () => void;
+  closeMessages: () => void;
+  chatUnread: number;
 };
 
 const TradesContext = createContext<TradesContextValue | null>(null);
@@ -30,6 +34,7 @@ export function TradesProvider({ children }: { children: ReactNode }) {
   const [requests, setRequests] = useState<TradeRequest[]>([]);
   const [chatSummaries, setChatSummaries] = useState<ChatSummary[]>([]);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [messagesOpen, setMessagesOpen] = useState(false);
   const [chatTarget, setChatTarget] = useState<ChatTarget>(null);
   const [seen, setSeen] = useState(0);
   const chatPeakRef = useRef(0);
@@ -79,9 +84,15 @@ export function TradesProvider({ children }: { children: ReactNode }) {
       if (t <= seen) return false;
       return (r.status === "accepted" || r.status === "declined") && r.participants.includes(user.uid);
     }).length;
-    const chatUnread = chatSummaries.filter((c) => c.lastFrom !== user.uid && (c.updatedAt?.seconds ?? 0) > seen).length;
-    return incomingPending + transient + chatUnread;
+    const chats = chatSummaries.filter((c) => c.lastFrom !== user.uid && (c.updatedAt?.seconds ?? 0) > seen).length;
+    return incomingPending + transient + chats;
   }, [requests, chatSummaries, user, seen, incomingPending]);
+
+  // Conversas com mensagem nova (para o badge do ícone de mensagens no menu).
+  const chatUnread = useMemo(
+    () => (user ? chatSummaries.filter((c) => c.lastFrom !== user.uid && (c.updatedAt?.seconds ?? 0) > seen).length : 0),
+    [chatSummaries, user, seen],
+  );
 
   const markSeen = () => {
     if (!user) return;
@@ -115,6 +126,13 @@ export function TradesProvider({ children }: { children: ReactNode }) {
         chatTarget,
         openChat: (t) => setChatTarget(t),
         closeChat: () => setChatTarget(null),
+        messagesOpen,
+        openMessages: () => {
+          markSeen();
+          setMessagesOpen(true);
+        },
+        closeMessages: () => setMessagesOpen(false),
+        chatUnread,
       }}
     >
       {children}
