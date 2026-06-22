@@ -218,8 +218,8 @@ export function AlbumSection() {
                         src={c.photo}
                         alt={c.name}
                         loading="lazy"
-                        style={c.photoScale ? { transform: `scale(${c.photoScale})`, transformOrigin: "bottom center" } : undefined}
-                        className="absolute inset-x-0 bottom-0 mx-auto h-[88%] w-auto object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.45)]"
+                        style={c.photoScale ? { transform: `scale(${c.photoScale})`, transformOrigin: "top center" } : undefined}
+                        className="absolute inset-0 h-full w-full object-cover object-top drop-shadow-[0_4px_6px_rgba(0,0,0,0.45)]"
                       />
                     ) : (
                       <div
