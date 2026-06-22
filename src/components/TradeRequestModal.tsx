@@ -107,7 +107,7 @@ export function TradeRequestModal({ target, wanted, offered, onClose, onSend }: 
 
                 <div>
                   <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[color:var(--fifa-blue)]">
-                    <Repeat className="h-3.5 w-3.5" /> Você pode oferecer
+                    <Repeat className="h-3.5 w-3.5" /> Você pode oferecer <span className="font-medium normal-case tracking-normal text-muted-foreground">(opcional)</span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {offered.length ? (
@@ -118,7 +118,7 @@ export function TradeRequestModal({ target, wanted, offered, onClose, onSend }: 
                         </span>
                       ))
                     ) : (
-                      <span className="text-xs text-muted-foreground">Marque repetidas em “Meu Álbum” para ter o que oferecer.</span>
+                      <span className="text-xs text-muted-foreground">Sem nada para oferecer? Tudo bem — você pode pedir mesmo assim (marque repetidas em “Meu Álbum” se quiser oferecer).</span>
                     )}
                   </div>
                 </div>

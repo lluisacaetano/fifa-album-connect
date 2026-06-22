@@ -29,10 +29,16 @@ export type TradeRequest = {
 
 type SendInput = Omit<TradeRequest, "id" | "status" | "participants" | "createdAt">;
 
-// Cria um pedido de troca.
+// Cria um pedido de troca. Oferecer é OPCIONAL (offered pode ser []), e
+// campos vazios (message/fromCity) são omitidos — o Firestore rejeita undefined.
 export async function sendTradeRequest(data: SendInput): Promise<void> {
+  const { message, fromCity, wanted, offered, ...rest } = data;
   await addDoc(collection(db, "tradeRequests"), {
-    ...data,
+    ...rest,
+    wanted: wanted ?? [],
+    offered: offered ?? [],
+    ...(fromCity ? { fromCity } : {}),
+    ...(message ? { message } : {}),
     participants: [data.fromUid, data.toUid],
     status: "pending" as TradeStatus,
     createdAt: serverTimestamp(),
