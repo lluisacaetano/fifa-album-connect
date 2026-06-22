@@ -217,6 +217,9 @@ export function ConnectSection() {
     });
   }
 
+  // Ranking: quem tem mais figurinhas que faltam no seu álbum (melhores trocas).
+  const topMatches = useMemo(() => filtered.filter((t) => !t.isMe && matchCount(t) > 0).slice(0, 12), [filtered, missing]);
+
   // Derivados do colecionador selecionado.
   const selMatched = selected ? selected.has.filter(iNeed) : [];
   const selHasShown = selected ? [...selected.has].sort((a, b) => Number(iNeed(b)) - Number(iNeed(a))).slice(0, 18) : [];
@@ -307,6 +310,38 @@ export function ConnectSection() {
                 )}
               </button>
             </div>
+
+            {topMatches.length > 0 && (
+              <div className="mb-6">
+                <div className="mb-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[color:var(--fifa-green)]">
+                  <Sparkles className="h-4 w-4" /> Quem tem mais figurinhas que faltam pra você
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {topMatches.map((t) => {
+                    const d = distOf(t);
+                    return (
+                      <button
+                        key={t.id}
+                        onClick={() => setSelected(t)}
+                        className={`flex min-w-[250px] shrink-0 items-center gap-3 rounded-2xl border bg-card p-3 text-left transition-all hover:border-[color:var(--fifa-green)] ${
+                          selected?.id === t.id ? "border-[color:var(--fifa-green)] ring-2 ring-[color:var(--fifa-green)]/25" : "border-border"
+                        }`}
+                      >
+                        <Avatar name={t.name} photo={t.photo} size={44} />
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold">{t.name}</div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            {t.city}
+                            {d != null ? ` · ${fmtDist(d)}` : ""}
+                          </div>
+                          <div className="mt-0.5 text-sm font-bold text-[color:var(--fifa-green)]">{matchCount(t)} que você precisa</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
               {/* Mapa */}
