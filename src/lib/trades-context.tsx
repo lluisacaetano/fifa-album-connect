@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { confirmDelivery, listenTradeRequests, rateUser, setRequestStatus, type DeliveryInfo, type TradeRequest } from "@/lib/trades";
-import { listenMyChats, type ChatSummary } from "@/lib/chat";
+import { chatId, listenMyChats, type ChatSummary } from "@/lib/chat";
 import { playPing } from "@/lib/sound";
 
 export type ChatTarget = { uid: string; name: string; photo?: string } | null;
@@ -25,6 +25,7 @@ type TradesContextValue = {
   openMessages: () => void;
   closeMessages: () => void;
   chatUnread: number;
+  chatReads: Record<string, number>;
 };
 
 const TradesContext = createContext<TradesContextValue | null>(null);
@@ -38,6 +39,7 @@ export function TradesProvider({ children }: { children: ReactNode }) {
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [chatTarget, setChatTarget] = useState<ChatTarget>(null);
   const [seen, setSeen] = useState(0);
+  const [chatReads, setChatReads] = useState<Record<string, number>>({});
   const chatPeakRef = useRef(0);
   const chatReadyRef = useRef(false);
 
@@ -48,11 +50,30 @@ export function TradesProvider({ children }: { children: ReactNode }) {
     }
     try {
       setSeen(Number(localStorage.getItem(`trades-seen-${user.uid}`) || 0));
+      setChatReads(JSON.parse(localStorage.getItem(`chat-reads-${user.uid}`) || "{}"));
     } catch {
       /* ignora */
     }
     return listenTradeRequests(user.uid, setRequests);
   }, [user]);
+
+  // Marca uma conversa como lida (timestamp), zerando o ponto verde dela.
+  // Usa o updatedAt da conversa (+1) p/ não reaparecer por diferença de relógio.
+  const markChatRead = (otherUid: string) => {
+    if (!user) return;
+    const cid = chatId(user.uid, otherUid);
+    const summary = chatSummaries.find((c) => c.id === cid);
+    const ts = Math.max(Math.floor(Date.now() / 1000), (summary?.updatedAt?.seconds ?? 0) + 1);
+    setChatReads((prev) => {
+      const next = { ...prev, [cid]: ts };
+      try {
+        localStorage.setItem(`chat-reads-${user.uid}`, JSON.stringify(next));
+      } catch {
+        /* ignora */
+      }
+      return next;
+    });
+  };
 
   // Conversas: toca um som quando chega mensagem nova de outra pessoa.
   useEffect(() => {
@@ -77,7 +98,8 @@ export function TradesProvider({ children }: { children: ReactNode }) {
     [requests, user],
   );
 
-  // Não lidas = pendências minhas (persistem) + conclusões/recusas e mensagens novas (somem ao abrir).
+  // Sino = só trocas (pendências minhas persistem + conclusões/recusas somem ao abrir).
+  // Mensagens NÃO entram aqui — têm o ícone próprio de chat.
   const unread = useMemo(() => {
     if (!user) return 0;
     const transient = requests.filter((r) => {
@@ -85,14 +107,13 @@ export function TradesProvider({ children }: { children: ReactNode }) {
       if (t <= seen) return false;
       return (r.status === "accepted" || r.status === "declined") && r.participants.includes(user.uid);
     }).length;
-    const chats = chatSummaries.filter((c) => c.lastFrom !== user.uid && (c.updatedAt?.seconds ?? 0) > seen).length;
-    return incomingPending + transient + chats;
-  }, [requests, chatSummaries, user, seen, incomingPending]);
+    return incomingPending + transient;
+  }, [requests, user, seen, incomingPending]);
 
-  // Conversas com mensagem nova (para o badge do ícone de mensagens no menu).
+  // Conversas com mensagem nova que ainda não abri (badge do ícone de mensagens).
   const chatUnread = useMemo(
-    () => (user ? chatSummaries.filter((c) => c.lastFrom !== user.uid && (c.updatedAt?.seconds ?? 0) > seen).length : 0),
-    [chatSummaries, user, seen],
+    () => (user ? chatSummaries.filter((c) => c.lastFrom !== user.uid && (c.updatedAt?.seconds ?? 0) > (chatReads[c.id] ?? 0)).length : 0),
+    [chatSummaries, user, chatReads],
   );
 
   const markSeen = () => {
@@ -130,15 +151,19 @@ export function TradesProvider({ children }: { children: ReactNode }) {
         openPanel: () => setPanelOpen(true),
         closePanel: () => setPanelOpen(false),
         chatTarget,
-        openChat: (t) => setChatTarget(t),
-        closeChat: () => setChatTarget(null),
-        messagesOpen,
-        openMessages: () => {
-          markSeen();
-          setMessagesOpen(true);
+        openChat: (t) => {
+          if (t) markChatRead(t.uid);
+          setChatTarget(t);
         },
+        closeChat: () => {
+          if (chatTarget) markChatRead(chatTarget.uid);
+          setChatTarget(null);
+        },
+        messagesOpen,
+        openMessages: () => setMessagesOpen(true),
         closeMessages: () => setMessagesOpen(false),
         chatUnread,
+        chatReads,
       }}
     >
       {children}

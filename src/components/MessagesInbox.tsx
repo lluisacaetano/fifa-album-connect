@@ -9,10 +9,11 @@ type Props = {
   onClose: () => void;
   summaries: ChatSummary[];
   myUid: string;
+  reads: Record<string, number>;
   onOpenChat: (t: ChatTarget) => void;
 };
 
-export function MessagesInbox({ open, onClose, summaries, myUid, onOpenChat }: Props) {
+export function MessagesInbox({ open, onClose, summaries, myUid, reads, onOpenChat }: Props) {
   const list = [...summaries].sort((a, b) => (b.updatedAt?.seconds ?? 0) - (a.updatedAt?.seconds ?? 0));
 
   return (
@@ -47,7 +48,8 @@ export function MessagesInbox({ open, onClose, summaries, myUid, onOpenChat }: P
                   const otherUid = c.participants.find((p) => p !== myUid) ?? c.lastFrom;
                   const otherName = c.names?.[otherUid] ?? (c.lastFrom !== myUid ? c.lastFromName : "Colecionador");
                   const mineLast = c.lastFrom === myUid;
-                  const unread = !mineLast; // última mensagem foi do outro
+                  // Não lida = a última foi do outro E chegou depois de eu abrir essa conversa.
+                  const unread = !mineLast && (c.updatedAt?.seconds ?? 0) > (reads[c.id] ?? 0);
                   return (
                     <button
                       key={c.id}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Star, ArrowLeftRight, Check, Sparkles, Lock, Repeat, Bell, Navigation, MessageCircle } from "lucide-react";
+import { Search, MapPin, Star, ArrowLeftRight, Check, Sparkles, Lock, Repeat, Bell, Navigation, MessageCircle, ChevronDown } from "lucide-react";
 import { collection, getDocs } from "firebase/firestore";
 import { squads } from "@/data/squads";
 import { type Trader } from "@/data/traders";
@@ -319,30 +319,36 @@ export function ConnectSection() {
                   className="h-12 w-full rounded-full border border-border bg-card pl-11 pr-4 text-sm outline-none ring-[color:var(--fifa-green)] transition-all focus:ring-2"
                 />
               </div>
-              <select
-                value={countryFilter}
-                onChange={(e) => setCountryFilter(e.target.value)}
-                className="h-12 rounded-full border border-border bg-card px-4 text-sm font-semibold outline-none ring-[color:var(--fifa-green)] focus:ring-2"
-              >
-                <option value="all">Todas as seleções</option>
-                {[...squads].sort((a, b) => a.name.localeCompare(b.name, "pt")).map((s) => (
-                  <option key={s.code} value={s.code}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={radiusKm}
-                onChange={(e) => setRadiusKm(Number(e.target.value))}
-                title={myLoc ? "Filtrar por distância" : "Defina sua cidade para filtrar por distância"}
-                className="h-12 rounded-full border border-border bg-card px-4 text-sm font-semibold outline-none ring-[color:var(--fifa-green)] focus:ring-2 disabled:opacity-50"
-                disabled={!myLoc}
-              >
-                <option value={0}>Qualquer distância</option>
-                <option value={50}>Até 50 km</option>
-                <option value={200}>Até 200 km</option>
-                <option value={500}>Até 500 km</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={countryFilter}
+                  onChange={(e) => setCountryFilter(e.target.value)}
+                  className="h-12 w-[200px] appearance-none truncate rounded-full border border-border bg-card pl-4 pr-9 text-sm font-semibold outline-none ring-[color:var(--fifa-green)] focus:ring-2"
+                >
+                  <option value="all">Todas as seleções</option>
+                  {[...squads].sort((a, b) => a.name.localeCompare(b.name, "pt")).map((s) => (
+                    <option key={s.code} value={s.code}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              </div>
+              <div className="relative">
+                <select
+                  value={radiusKm}
+                  onChange={(e) => setRadiusKm(Number(e.target.value))}
+                  title={myLoc ? "Filtrar por distância" : "Defina sua cidade para filtrar por distância"}
+                  className="h-12 w-[185px] appearance-none truncate rounded-full border border-border bg-card pl-4 pr-9 text-sm font-semibold outline-none ring-[color:var(--fifa-green)] focus:ring-2 disabled:opacity-50"
+                  disabled={!myLoc}
+                >
+                  <option value={0}>Qualquer distância</option>
+                  <option value={50}>Até 50 km</option>
+                  <option value={200}>Até 200 km</option>
+                  <option value={500}>Até 500 km</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              </div>
               <button
                 onClick={() => setOnlyMatches((v) => !v)}
                 className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all ${onlyMatches ? "border-[color:var(--fifa-green)] bg-[color:var(--fifa-green)] text-white" : "border-border bg-card hover:border-[color:var(--fifa-green)]"}`}
