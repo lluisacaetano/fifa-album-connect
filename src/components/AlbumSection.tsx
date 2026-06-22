@@ -3,7 +3,9 @@ import { motion } from "framer-motion";
 import { Search, Globe, Minus, Plus, Repeat } from "lucide-react";
 import { squads, squadByCode } from "@/data/squads";
 import { initials } from "@/data/players";
+import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "@/lib/auth";
+import { db } from "@/lib/firebase";
 import { saveUserAlbum, type TradeSticker } from "@/lib/profile";
 
 const countKey = (code: string) => `album-count-${code}`;
@@ -58,7 +60,19 @@ export function AlbumSection() {
   const [view, setView] = useState<"all" | "trade">("all"); // "trade" = só as repetidas
   // Quantidade de cada figurinha. 0 = falta, 1 = tenho, 2+ = repetida (para troca).
   const [countMap, setCountMap] = useState<Record<string, Counts>>({});
+  const [synced, setSynced] = useState(false); // já carregou o álbum do Firestore?
   const { user } = useAuth();
+
+  // Índice reverso: número da figurinha ("BRA1") -> { code, id } local.
+  const stickerIndex = useMemo(() => {
+    const idx: Record<string, { code: string; id: number }> = {};
+    for (const s of squads) {
+      for (const card of albumCards(s)) {
+        idx[card.sticker ?? `${card.code}#${card.id}`] = { code: card.code, id: card.id };
+      }
+    }
+    return idx;
+  }, []);
 
   // Carrega do navegador o que já está marcado em TODAS as seleções (1x ao montar).
   // Migra do formato antigo (só "tenho/não tenho") para quantidades, se preciso.
@@ -81,6 +95,40 @@ export function AlbumSection() {
     }
     setCountMap(map);
   }, []);
+
+  // Ao logar, carrega o álbum do Firestore (sincroniza entre dispositivos).
+  // O banco prevalece quando tem dados; senão mantém o que já estava no aparelho.
+  useEffect(() => {
+    if (!user) {
+      setSynced(false);
+      return;
+    }
+    let alive = true;
+    (async () => {
+      try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const album = snap.exists() ? (snap.data() as { album?: Record<string, number> }).album : null;
+        if (alive && album && Object.keys(album).length) {
+          const next: Record<string, Counts> = {};
+          for (const [key, n] of Object.entries(album)) {
+            const ref = stickerIndex[key];
+            const count = Number(n);
+            if (!ref || !count) continue;
+            (next[ref.code] ??= {})[ref.id] = count;
+          }
+          setCountMap(next);
+          for (const code of Object.keys(next)) persist(code, next[code]);
+        }
+      } catch {
+        /* sem Firestore / sem permissão — segue com o que está no aparelho */
+      } finally {
+        if (alive) setSynced(true);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [user, stickerIndex]);
 
   const isAll = code === "all";
   const squad = isAll ? null : squadByCode(code) ?? squads[0];
@@ -145,12 +193,12 @@ export function AlbumSection() {
     return { album, trades };
   }, [countMap]);
 
-  // Salva no Firestore (com debounce) quando logado.
+  // Salva no Firestore (com debounce) quando logado — só após carregar o álbum do banco.
   useEffect(() => {
-    if (!user) return;
+    if (!user || !synced) return;
     const t = setTimeout(() => saveUserAlbum(user.uid, syncPayload.album, syncPayload.trades), 700);
     return () => clearTimeout(t);
-  }, [syncPayload, user]);
+  }, [syncPayload, user, synced]);
 
   const allCards: Card[] = useMemo(() => {
     const source = isAll ? squads : [squad!];
