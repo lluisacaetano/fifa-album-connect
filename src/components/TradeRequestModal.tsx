@@ -77,7 +77,7 @@ export function TradeRequestModal({ target, wanted, offered, onClose, onSend }: 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
-            className="relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-card shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)]"
+            className="relative z-10 flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-card shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)]"
           >
             <div className="group foil-sheen relative bg-fifa-gradient px-7 pb-6 pt-7 text-white">
               <span className="foil-sheen-layer" aria-hidden />

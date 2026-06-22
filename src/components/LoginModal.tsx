@@ -5,6 +5,8 @@ import { useAuth, authErrorMessage, type AuthMode } from "@/lib/auth";
 import { CityAutocomplete } from "@/components/CityAutocomplete";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Senha forte: mín. 8, com minúscula, maiúscula e número.
+const STRONG_RE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
 export function LoginModal() {
   const { authOpen, authMode, closeAuth, register, login, loginWithGoogle, resetPassword } = useAuth();
@@ -13,6 +15,7 @@ export function LoginModal() {
   const [email, setEmail] = useState("");
   const [city, setCity] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resetMode, setResetMode] = useState(false);
@@ -47,16 +50,25 @@ export function LoginModal() {
       setError("Use um e-mail válido, ex.: voce@email.com");
       return;
     }
-    if (password.length < 6) {
-      setError("A senha precisa ter pelo menos 6 caracteres.");
-      return;
-    }
-    if (isSignup && name.trim().length < 2) {
-      setError("Digite seu nome para os outros colecionadores te reconhecerem.");
-      return;
-    }
-    if (isSignup && !city.trim()) {
-      setError("Escolha sua cidade na lista.");
+    if (isSignup) {
+      if (name.trim().length < 2) {
+        setError("Digite seu nome para os outros colecionadores te reconhecerem.");
+        return;
+      }
+      if (!city.trim()) {
+        setError("Escolha sua cidade na lista.");
+        return;
+      }
+      if (!STRONG_RE.test(password)) {
+        setError("A senha precisa ter no mínimo 8 caracteres, com letra maiúscula, minúscula e número.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError("As senhas não conferem.");
+        return;
+      }
+    } else if (password.length < 1) {
+      setError("Digite sua senha.");
       return;
     }
 
@@ -72,6 +84,7 @@ export function LoginModal() {
       setEmail("");
       setCity("");
       setPassword("");
+      setConfirmPassword("");
     } catch (err: any) {
       setError(authErrorMessage(err?.code ?? ""));
     } finally {
@@ -143,7 +156,7 @@ export function LoginModal() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-white/15 bg-card shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)]"
+            className="relative z-10 max-h-[90dvh] w-full max-w-md overflow-y-auto overflow-x-hidden rounded-3xl border border-white/15 bg-card shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)]"
           >
             {/* Topo holográfico */}
             <div className="group foil-sheen relative bg-fifa-gradient px-7 pb-8 pt-7 text-white">
@@ -222,10 +235,27 @@ export function LoginModal() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={isSignup ? "Crie uma senha" : "Sua senha"}
+                  placeholder={isSignup ? "Mín. 8 com maiúscula, minúscula e número" : "Sua senha"}
                   className="h-12 w-full rounded-xl border border-border bg-background pl-11 pr-4 text-sm outline-none ring-[color:var(--fifa-green)] transition-all focus:ring-2"
                 />
               </Field>
+
+              {isSignup && (
+                <>
+                  <Field label="Confirme a senha" icon={<Lock className="h-4 w-4" />}>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Repita a senha"
+                      className="h-12 w-full rounded-xl border border-border bg-background pl-11 pr-4 text-sm outline-none ring-[color:var(--fifa-green)] transition-all focus:ring-2"
+                    />
+                  </Field>
+                  {confirmPassword.length > 0 && password !== confirmPassword && (
+                    <p className="-mt-2 text-xs font-medium text-destructive">As senhas não conferem.</p>
+                  )}
+                </>
+              )}
 
               {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">{error}</p>}
 

@@ -325,8 +325,8 @@ export function ConnectSection() {
               ))}
             </div>
 
-            <div className="mb-6 flex flex-wrap items-center gap-3">
-              <div className="relative min-w-[240px] flex-1">
+            <div className="mb-6 space-y-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-3 sm:space-y-0">
+              <div className="relative sm:min-w-[240px] sm:flex-1">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   value={query}
@@ -335,48 +335,54 @@ export function ConnectSection() {
                   className="h-12 w-full rounded-full border border-border bg-card pl-11 pr-4 text-sm outline-none ring-[color:var(--fifa-green)] transition-all focus:ring-2"
                 />
               </div>
-              <div className="relative">
-                <select
-                  value={countryFilter}
-                  onChange={(e) => setCountryFilter(e.target.value)}
-                  className="h-12 w-[200px] appearance-none truncate rounded-full border border-border bg-card pl-4 pr-9 text-sm font-semibold outline-none ring-[color:var(--fifa-green)] focus:ring-2"
-                >
-                  <option value="all">Todas as seleções</option>
-                  {[...squads].sort((a, b) => a.name.localeCompare(b.name, "pt")).map((s) => (
-                    <option key={s.code} value={s.code}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+              <div className="grid grid-cols-2 gap-2 sm:contents">
+                <div className="relative">
+                  <select
+                    value={countryFilter}
+                    onChange={(e) => setCountryFilter(e.target.value)}
+                    className="h-12 w-full appearance-none truncate rounded-full border border-border bg-card pl-4 pr-9 text-sm font-semibold outline-none ring-[color:var(--fifa-green)] focus:ring-2 sm:w-[190px]"
+                  >
+                    <option value="all">Todas as seleções</option>
+                    {[...squads].sort((a, b) => a.name.localeCompare(b.name, "pt")).map((s) => (
+                      <option key={s.code} value={s.code}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                </div>
+                <div className="relative">
+                  <select
+                    value={radiusKm}
+                    onChange={(e) => setRadiusKm(Number(e.target.value))}
+                    title={myLoc ? "Filtrar por distância" : "Defina sua cidade para filtrar por distância"}
+                    className="h-12 w-full appearance-none truncate rounded-full border border-border bg-card pl-4 pr-9 text-sm font-semibold outline-none ring-[color:var(--fifa-green)] focus:ring-2 disabled:opacity-50 sm:w-[160px]"
+                    disabled={!myLoc}
+                  >
+                    <option value={0}>Qualquer distância</option>
+                    <option value={50}>Até 50 km</option>
+                    <option value={200}>Até 200 km</option>
+                    <option value={500}>Até 500 km</option>
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                </div>
               </div>
-              <div className="relative">
-                <select
-                  value={radiusKm}
-                  onChange={(e) => setRadiusKm(Number(e.target.value))}
-                  title={myLoc ? "Filtrar por distância" : "Defina sua cidade para filtrar por distância"}
-                  className="h-12 w-[185px] appearance-none truncate rounded-full border border-border bg-card pl-4 pr-9 text-sm font-semibold outline-none ring-[color:var(--fifa-green)] focus:ring-2 disabled:opacity-50"
-                  disabled={!myLoc}
+
+              <div className="grid grid-cols-2 gap-2 sm:contents">
+                <button
+                  onClick={() => setOnlyMatches((v) => !v)}
+                  className={`flex h-11 items-center justify-center gap-2 rounded-full border px-4 text-sm font-semibold transition-all ${onlyMatches ? "border-[color:var(--fifa-green)] bg-[color:var(--fifa-green)] text-white" : "border-border bg-card hover:border-[color:var(--fifa-green)]"}`}
                 >
-                  <option value={0}>Qualquer distância</option>
-                  <option value={50}>Até 50 km</option>
-                  <option value={200}>Até 200 km</option>
-                  <option value={500}>Até 500 km</option>
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Sparkles className="h-4 w-4" /> Só compatíveis
+                </button>
+                <button onClick={openPanel} className="relative flex h-11 items-center justify-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-semibold transition-all hover:border-[color:var(--fifa-green)]">
+                  <Bell className="h-4 w-4" /> Meus pedidos
+                  {incomingPending > 0 && (
+                    <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[color:var(--fifa-green)] px-1 text-[11px] font-bold text-white">{incomingPending}</span>
+                  )}
+                </button>
               </div>
-              <button
-                onClick={() => setOnlyMatches((v) => !v)}
-                className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all ${onlyMatches ? "border-[color:var(--fifa-green)] bg-[color:var(--fifa-green)] text-white" : "border-border bg-card hover:border-[color:var(--fifa-green)]"}`}
-              >
-                <Sparkles className="h-4 w-4" /> Só compatíveis
-              </button>
-              <button onClick={openPanel} className="relative flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold transition-all hover:border-[color:var(--fifa-green)]">
-                <Bell className="h-4 w-4" /> Meus pedidos
-                {incomingPending > 0 && (
-                  <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-[color:var(--fifa-green)] px-1 text-[11px] font-bold text-white">{incomingPending}</span>
-                )}
-              </button>
             </div>
 
             {topMatches.length > 0 && (

@@ -439,8 +439,7 @@ export function MatchesSection() {
                                               />
                                               <span className="absolute inset-y-0 right-2 flex items-center text-[11px] font-bold text-[color:var(--fifa-green-deep)]">{r.n} · {pct}%</span>
                                             </div>
-                                            {isMine && <span className="shrink-0 rounded-full bg-[color:var(--fifa-yellow)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-green-deep)]">você</span>}
-                                            {isResult && !isMine && <Trophy className="h-4 w-4 shrink-0 text-[color:var(--fifa-green)]" />}
+                                            {isResult && <Trophy className="h-4 w-4 shrink-0 text-[color:var(--fifa-green)]" />}
                                           </div>
                                         );
                                       })}
