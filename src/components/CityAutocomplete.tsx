@@ -44,6 +44,7 @@ export function CityAutocomplete({ value, onChange, id }: Props) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const boxRef = useRef<HTMLDivElement>(null);
+  const lastEmitted = useRef(value); // último valor que ESTE campo emitiu (p/ detectar mudança externa)
 
   useEffect(() => {
     let alive = true;
@@ -55,9 +56,13 @@ export function CityAutocomplete({ value, onChange, id }: Props) {
     };
   }, []);
 
-  // Mantém o texto em sincronia se o valor for limpo de fora (ex.: reset do form).
+  // Reflete valores vindos de FORA (ex.: cidade do perfil ao abrir "Editar perfil",
+  // ou reset do form). Ignora as mudanças que o próprio campo emitiu ao digitar/escolher.
   useEffect(() => {
-    if (value === "") setInput("");
+    if (value !== lastEmitted.current) {
+      setInput(value);
+      lastEmitted.current = value;
+    }
   }, [value]);
 
   // Fecha ao clicar fora.
@@ -84,6 +89,7 @@ export function CityAutocomplete({ value, onChange, id }: Props) {
   }, [input, all]);
 
   function pick(c: City) {
+    lastEmitted.current = c.label;
     onChange(c.label);
     setInput(c.label);
     setOpen(false);
@@ -93,8 +99,9 @@ export function CityAutocomplete({ value, onChange, id }: Props) {
     setInput(v);
     setActive(0);
     setOpen(true);
-    onChange(""); // só vale quando uma cidade da lista é escolhida
-    if (loadFailed) onChange(v.trim()); // sem API: aceita o texto digitado
+    const emitted = loadFailed ? v.trim() : ""; // sem API aceita o texto; com API só vale ao escolher da lista
+    lastEmitted.current = emitted;
+    onChange(emitted);
   }
 
   function onKeyDown(e: React.KeyboardEvent) {
