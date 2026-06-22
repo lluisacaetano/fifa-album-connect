@@ -37,6 +37,9 @@ export function ChatDrawer() {
   const linked = between.find((r) => r.status === "pending") ?? between.find((r) => r.status === "accepted");
 
   const iConfirmed = !!(linked && user && (linked.confirms ?? []).includes(user.uid));
+  // Já enviado pelos Correios/transportadora? Então não dá mais para cancelar.
+  const shipped = Object.values(linked?.delivery ?? {}).some((d) => d.method === "correios" || d.method === "transportadora");
+  const canCancel = linked?.status === "pending" && !shipped;
 
   async function cancelTrade() {
     if (!cid || !user || !chatTarget) return;
@@ -153,9 +156,11 @@ export function ChatDrawer() {
                     <span className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-2 text-xs font-semibold text-[color:var(--fifa-green)]">
                       <Check className="h-3.5 w-3.5" /> Você confirmou — aguardando o outro
                     </span>
-                    <button type="button" onClick={cancelTrade} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10">
-                      <Ban className="h-4 w-4" /> Cancelar
-                    </button>
+                    {canCancel && (
+                      <button type="button" onClick={cancelTrade} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10">
+                        <Ban className="h-4 w-4" /> Cancelar
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <>
@@ -204,9 +209,13 @@ export function ChatDrawer() {
                       </div>
                     )}
 
-                    <button type="button" onClick={cancelTrade} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10">
-                      <Ban className="h-4 w-4" /> Cancelar troca
-                    </button>
+                    {canCancel ? (
+                      <button type="button" onClick={cancelTrade} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10">
+                        <Ban className="h-4 w-4" /> Cancelar troca
+                      </button>
+                    ) : (
+                      <p className="text-center text-[11px] text-muted-foreground">Já enviado pelos Correios/transportadora — não dá mais para cancelar.</p>
+                    )}
                   </>
                 )}
               </div>

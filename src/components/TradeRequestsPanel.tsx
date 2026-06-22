@@ -43,6 +43,8 @@ function RequestCard({ r, myUid, onConfirm, onDecline, onChat }: { r: TradeReque
   const iGet = iAmFrom ? r.wanted : r.offered; // o que EU recebo
   const iConfirmed = (r.confirms ?? []).includes(myUid);
   const otherConfirmed = (r.confirms ?? []).includes(otherUid);
+  // Já enviado pelos Correios/transportadora? Então não dá mais para cancelar.
+  const shipped = Object.values(r.delivery ?? {}).some((d) => d.method === "correios" || d.method === "transportadora");
 
   const [form, setForm] = useState(false);
   const [method, setMethod] = useState<DeliveryMethod>("presencial");
@@ -154,12 +156,15 @@ function RequestCard({ r, myUid, onConfirm, onDecline, onChat }: { r: TradeReque
         <button onClick={() => onChat({ uid: otherUid, name: otherName })} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[color:var(--fifa-green)]/40 px-4 py-2 text-sm font-semibold text-[color:var(--fifa-green)] transition-all hover:bg-[color:var(--fifa-green)]/10">
           <MessageCircle className="h-4 w-4" /> Conversar
         </button>
-        {r.status === "pending" && (
+        {r.status === "pending" && !shipped && (
           <button onClick={() => onDecline(r.id)} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-all hover:bg-muted">
             <Ban className="h-4 w-4" /> Cancelar
           </button>
         )}
       </div>
+      {r.status === "pending" && shipped && (
+        <p className="mt-2 text-[11px] text-muted-foreground">Já enviado pelos Correios/transportadora — não dá mais para cancelar.</p>
+      )}
     </article>
   );
 }
