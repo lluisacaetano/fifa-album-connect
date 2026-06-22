@@ -19,20 +19,20 @@ export function TradeRequestModal({ target, wanted, offered, onClose, onSend }: 
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
-  // Multi-seleção: por padrão tudo marcado; o usuário desmarca o que não quer.
-  const [selWanted, setSelWanted] = useState<Set<string>>(new Set());
-  const [selOffered, setSelOffered] = useState<Set<string>>(new Set());
+  // Multi-seleção: rastreia os DESMARCADOS (default vazio = tudo marcado).
+  // Assim não depende do timing de carregamento de wanted/offered.
+  const [offWanted, setOffWanted] = useState<Set<string>>(new Set());
+  const [offOffered, setOffOffered] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (target) {
       setMessage("");
       setDone(false);
       setError("");
-      setSelWanted(new Set(wanted.map(keyOf)));
-      setSelOffered(new Set(offered.map(keyOf)));
+      setOffWanted(new Set());
+      setOffOffered(new Set());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [target]);
+  }, [target?.id]);
 
   const toggle = (set: React.Dispatch<React.SetStateAction<Set<string>>>, key: string) =>
     set((prev) => {
@@ -56,8 +56,8 @@ export function TradeRequestModal({ target, wanted, offered, onClose, onSend }: 
     setSending(true);
     setError("");
     try {
-      const selW = wanted.filter((s) => selWanted.has(keyOf(s)));
-      const selO = offered.filter((s) => selOffered.has(keyOf(s)));
+      const selW = wanted.filter((s) => !offWanted.has(keyOf(s)));
+      const selO = offered.filter((s) => !offOffered.has(keyOf(s)));
       await onSend(message.trim(), selW, selO);
       setDone(true);
     } catch {
@@ -113,15 +113,15 @@ export function TradeRequestModal({ target, wanted, offered, onClose, onSend }: 
                         <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[color:var(--fifa-green)]">
                           <Sparkles className="h-3.5 w-3.5" /> Você quer dele <span className="font-medium normal-case tracking-normal text-muted-foreground">(toque para escolher)</span>
                         </div>
-                        <div className="mt-2 flex flex-wrap gap-2">
+                        <div className="mt-2 flex max-h-28 flex-wrap gap-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
                           {wanted.length ? (
                             wanted.map((s) => {
-                              const on = selWanted.has(keyOf(s));
+                              const on = !offWanted.has(keyOf(s));
                               return (
                                 <button
                                   key={keyOf(s)}
                                   type="button"
-                                  onClick={() => toggle(setSelWanted, keyOf(s))}
+                                  onClick={() => toggle(setOffWanted, keyOf(s))}
                                   className={`rounded-full px-3 py-1 text-xs font-semibold transition-all ${on ? "bg-[color:var(--fifa-green)] text-white" : "border border-[color:var(--fifa-green)]/40 text-[color:var(--fifa-green)] opacity-60 hover:opacity-100"}`}
                                 >
                                   {s.name}
@@ -139,15 +139,15 @@ export function TradeRequestModal({ target, wanted, offered, onClose, onSend }: 
                         <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[color:var(--fifa-blue)]">
                           <Repeat className="h-3.5 w-3.5" /> Você pode oferecer <span className="font-medium normal-case tracking-normal text-muted-foreground">(opcional)</span>
                         </div>
-                        <div className="mt-2 flex flex-wrap gap-2">
+                        <div className="mt-2 flex max-h-28 flex-wrap gap-2 overflow-y-auto pr-1 [scrollbar-width:thin]">
                           {offered.length ? (
                             offered.map((s) => {
-                              const on = selOffered.has(keyOf(s));
+                              const on = !offOffered.has(keyOf(s));
                               return (
                                 <button
                                   key={keyOf(s)}
                                   type="button"
-                                  onClick={() => toggle(setSelOffered, keyOf(s))}
+                                  onClick={() => toggle(setOffOffered, keyOf(s))}
                                   className={`rounded-full px-3 py-1 text-xs font-semibold transition-all ${on ? "bg-[color:var(--fifa-blue)] text-white" : "border border-[color:var(--fifa-blue)]/40 text-[color:var(--fifa-blue)] opacity-60 hover:opacity-100"}`}
                                 >
                                   {s.name}
