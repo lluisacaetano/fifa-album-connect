@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Search, MapPin, Star, ArrowLeftRight, Check, Sparkles, Lock, Repeat, Bell, Navigation, MessageCircle } from "lucide-react";
 import { collection, getDocs } from "firebase/firestore";
 import { squads } from "@/data/squads";
-import { traders, type Trader } from "@/data/traders";
+import { type Trader } from "@/data/traders";
 import { initials } from "@/data/players";
 import { useAuth } from "@/lib/auth";
 import { db } from "@/lib/firebase";
@@ -36,7 +36,7 @@ export function ConnectSection() {
 
   const [query, setQuery] = useState("");
   const [onlyMatches, setOnlyMatches] = useState(false);
-  const [selected, setSelected] = useState<Trader | null>(traders[0]);
+  const [selected, setSelected] = useState<Trader | null>(null);
   const [requested, setRequested] = useState<Set<number>>(new Set());
   const [mounted, setMounted] = useState(false);
   const [Map, setMap] = useState<any>(null);
@@ -123,8 +123,8 @@ export function ConnectSection() {
   };
 
   // Colecionadores REAIS (Firestore) com figurinhas para troca e localização.
+  // Carrega mesmo deslogado (leitura pública) para a prévia também mostrar gente real.
   useEffect(() => {
-    if (!user) return;
     let alive = true;
     getDocs(collection(db, "users"))
       .then((snap) => {
@@ -132,7 +132,7 @@ export function ConnectSection() {
         const list: Trader[] = [];
         snap.forEach((docSnap) => {
           const u = docSnap.data() as any;
-          const isMe = docSnap.id === user.uid;
+          const isMe = !!user && docSnap.id === user.uid;
           if (isMe && typeof u.lat === "number" && typeof u.lng === "number") setMyLoc({ lat: u.lat, lng: u.lng });
           const rawTrades: any[] = Array.isArray(u.trades) ? u.trades : [];
           const has = rawTrades.map((t) => (typeof t === "string" ? t : t?.name)).filter(Boolean) as string[];
@@ -170,8 +170,8 @@ export function ConnectSection() {
     [requests, user],
   );
 
-  // Colecionadores reais primeiro, depois os de exemplo.
-  const everyone = useMemo(() => [...realTraders, ...traders], [realTraders]);
+  // Apenas colecionadores reais (sem demonstração).
+  const everyone = realTraders;
 
   const distOf = (t: Trader) => (myLoc ? haversineKm(myLoc, { lat: t.lat, lng: t.lng }) : null);
 
@@ -246,7 +246,7 @@ export function ConnectSection() {
               {mounted && Map ? (
                 <Map.MapContainer center={[-15.78, -47.92]} zoom={4} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false} zoomControl={false} dragging={false} attributionControl={false}>
                   <Map.TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  {traders.map((t) => (
+                  {realTraders.map((t) => (
                     <Map.Marker key={t.id} position={[t.lat, t.lng]} icon={iconOf(t)} />
                   ))}
                 </Map.MapContainer>
@@ -255,7 +255,7 @@ export function ConnectSection() {
             <div className="absolute inset-0 grid place-items-center bg-[color:var(--fifa-night)]/70 px-6 text-center backdrop-blur-[1px]">
               <div className="max-w-lg">
                 <span className="inline-flex items-center gap-2 rounded-full bg-[color:var(--fifa-yellow)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[color:var(--fifa-green-deep)]">
-                  <MapPin className="h-3.5 w-3.5" /> {traders.length} colecionadores online
+                  <MapPin className="h-3.5 w-3.5" /> {realTraders.length > 0 ? `${realTraders.length} colecionadores no mapa` : "Entre e apareça no mapa"}
                 </span>
                 <h3 className="mt-4 font-display text-4xl leading-tight text-white sm:text-5xl">Sua próxima figurinha pode estar mais perto do que você imagina</h3>
                 <p className="mx-auto mt-3 max-w-md text-sm text-white/80">Crie sua conta para revelar o mapa e descobrir quem troca as figurinhas que faltam no seu álbum.</p>

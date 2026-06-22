@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Send } from "lucide-react";
+import { X, Send, Check, Ban } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTrades } from "@/lib/trades-context";
 import { chatId, listenMessages, sendMessage, type ChatMessage } from "@/lib/chat";
@@ -8,12 +8,27 @@ import { Avatar } from "@/components/Avatar";
 
 export function ChatDrawer() {
   const { user } = useAuth();
-  const { chatTarget, closeChat } = useTrades();
+  const { chatTarget, closeChat, requests, accept, decline } = useTrades();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
 
   const cid = user && chatTarget ? chatId(user.uid, chatTarget.uid) : null;
+
+  // Pedido de troca entre nós dois (para refletir aceitar/cancelar feito no chat).
+  const linked = chatTarget ? requests.find((r) => r.participants?.includes(chatTarget.uid)) : undefined;
+
+  async function confirmTrade() {
+    if (!cid || !user) return;
+    await sendMessage(cid, { from: user.uid, fromName: user.name, text: "✅ Fechado! Troca combinada por aqui." });
+    if (linked && linked.status === "pending") accept(linked.id);
+  }
+
+  async function cancelTrade() {
+    if (!cid || !user) return;
+    await sendMessage(cid, { from: user.uid, fromName: user.name, text: "❌ Vou ter que cancelar essa troca, foi mal." });
+    if (linked && linked.status === "pending") decline(linked.id);
+  }
 
   useEffect(() => {
     if (!cid) {
@@ -94,8 +109,26 @@ export function ChatDrawer() {
               <div ref={endRef} />
             </div>
 
+            {/* Ações de troca */}
+            <div className="flex gap-2 border-t border-border bg-background px-3 pt-3">
+              <button
+                type="button"
+                onClick={confirmTrade}
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]"
+              >
+                <Check className="h-4 w-4" /> Troca feita
+              </button>
+              <button
+                type="button"
+                onClick={cancelTrade}
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10"
+              >
+                <Ban className="h-4 w-4" /> Cancelar troca
+              </button>
+            </div>
+
             {/* Caixa de envio */}
-            <form onSubmit={submit} className="flex items-center gap-2 border-t border-border bg-background px-3 py-3">
+            <form onSubmit={submit} className="flex items-center gap-2 bg-background px-3 py-3">
               <input
                 value={text}
                 onChange={(e) => setText(e.target.value)}
