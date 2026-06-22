@@ -1,4 +1,4 @@
-import { addDoc, arrayUnion, collection, doc, onSnapshot, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
+import { addDoc, arrayUnion, collection, doc, increment, onSnapshot, query, serverTimestamp, updateDoc, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 // Figurinha de uma troca: número (ex.: "BRA10") + nome do jogador.
@@ -22,6 +22,7 @@ export type TradeRequest = {
   confirms?: string[]; // uids que já confirmaram a entrega
   delivery?: Record<string, DeliveryInfo>; // entrega informada por cada um
   appliedBy?: string[]; // uids que já deram baixa no álbum
+  ratedBy?: string[]; // uids que já avaliaram o outro nesta troca
   createdAt?: { seconds: number } | null;
   updatedAt?: { seconds: number } | null;
 };
@@ -72,4 +73,10 @@ export async function confirmDelivery(id: string, uid: string, info: DeliveryInf
 // Marca que o usuário já deu baixa no álbum por causa desta troca (idempotente entre aparelhos).
 export async function markTradeApplied(id: string, uid: string): Promise<void> {
   await updateDoc(doc(db, "tradeRequests", id), { appliedBy: arrayUnion(uid) });
+}
+
+// Avalia o outro colecionador (1–5 estrelas) numa troca concluída. Uma vez por troca.
+export async function rateUser(ratedUid: string, raterUid: string, stars: number, tradeId: string): Promise<void> {
+  await updateDoc(doc(db, "users", ratedUid), { ratingSum: increment(stars), ratingCount: increment(1) });
+  await updateDoc(doc(db, "tradeRequests", tradeId), { ratedBy: arrayUnion(raterUid) });
 }

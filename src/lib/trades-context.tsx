@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
-import { confirmDelivery, listenTradeRequests, setRequestStatus, type DeliveryInfo, type TradeRequest } from "@/lib/trades";
+import { confirmDelivery, listenTradeRequests, rateUser, setRequestStatus, type DeliveryInfo, type TradeRequest } from "@/lib/trades";
 import { listenMyChats, type ChatSummary } from "@/lib/chat";
 import { playPing } from "@/lib/sound";
 
@@ -14,6 +14,7 @@ type TradesContextValue = {
   markSeen: () => void;
   confirm: (req: TradeRequest, info: DeliveryInfo) => Promise<void>;
   decline: (id: string) => void;
+  rate: (req: TradeRequest, stars: number) => void;
   panelOpen: boolean;
   openPanel: () => void;
   closePanel: () => void;
@@ -120,6 +121,11 @@ export function TradesProvider({ children }: { children: ReactNode }) {
           await confirmDelivery(req.id, user.uid, info, otherConfirmed);
         },
         decline: (id) => setRequestStatus(id, "declined"),
+        rate: (req, stars) => {
+          if (!user) return;
+          const other = req.participants.find((p) => p !== user.uid);
+          if (other) rateUser(other, user.uid, stars, req.id);
+        },
         panelOpen,
         openPanel: () => setPanelOpen(true),
         closePanel: () => setPanelOpen(false),

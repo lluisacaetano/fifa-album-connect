@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Check, Ban, Clock, MessageCircle, Truck, MapPin, Package } from "lucide-react";
+import { X, Check, Ban, Clock, MessageCircle, Truck, MapPin, Package, Star } from "lucide-react";
 import type { DeliveryInfo, DeliveryMethod, TradeItem, TradeRequest } from "@/lib/trades";
 import type { ChatTarget } from "@/lib/trades-context";
 
@@ -12,6 +12,7 @@ type Props = {
   onConfirm: (req: TradeRequest, info: DeliveryInfo) => void;
   onDecline: (id: string) => void;
   onChat: (t: ChatTarget) => void;
+  onRate: (req: TradeRequest, stars: number) => void;
 };
 
 function Chips({ items, tone }: { items: TradeItem[]; tone: "green" | "blue" }) {
@@ -36,7 +37,7 @@ function deliveryLabel(d?: DeliveryInfo) {
   return `${d.carrier || "Transportadora"} · ${d.tracking ?? "—"}`;
 }
 
-function RequestCard({ r, myUid, onConfirm, onDecline, onChat }: { r: TradeRequest; myUid: string } & Pick<Props, "onConfirm" | "onDecline" | "onChat">) {
+function RequestCard({ r, myUid, onConfirm, onDecline, onChat, onRate }: { r: TradeRequest; myUid: string } & Pick<Props, "onConfirm" | "onDecline" | "onChat" | "onRate">) {
   const iAmFrom = r.fromUid === myUid;
   const otherUid = iAmFrom ? r.toUid : r.fromUid;
   const otherName = iAmFrom ? r.toName : r.fromName;
@@ -153,6 +154,22 @@ function RequestCard({ r, myUid, onConfirm, onDecline, onChat }: { r: TradeReque
         </div>
       ) : null}
 
+      {r.status === "accepted" &&
+        ((r.ratedBy ?? []).includes(myUid) ? (
+          <p className="mt-2 text-xs text-muted-foreground">Você avaliou {otherName.split(" ")[0]}. Valeu!</p>
+        ) : (
+          <div className="mt-3">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Como foi trocar com {otherName.split(" ")[0]}?</div>
+            <div className="mt-1 flex gap-1">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button key={n} onClick={() => onRate(r, n)} aria-label={`${n} estrela(s)`} className="text-[color:var(--fifa-yellow)] transition-transform hover:scale-110">
+                  <Star className="h-6 w-6 fill-current" />
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+
       <div className="mt-3 flex gap-2">
         <button onClick={() => onChat({ uid: otherUid, name: otherName })} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[color:var(--fifa-green)]/40 px-4 py-2 text-sm font-semibold text-[color:var(--fifa-green)] transition-all hover:bg-[color:var(--fifa-green)]/10">
           <MessageCircle className="h-4 w-4" /> Conversar
@@ -170,7 +187,7 @@ function RequestCard({ r, myUid, onConfirm, onDecline, onChat }: { r: TradeReque
   );
 }
 
-export function TradeRequestsPanel({ open, onClose, requests, myUid, onConfirm, onDecline, onChat }: Props) {
+export function TradeRequestsPanel({ open, onClose, requests, myUid, onConfirm, onDecline, onChat, onRate }: Props) {
   const mine = requests.filter((r) => r.participants.includes(myUid));
 
   return (
@@ -198,7 +215,7 @@ export function TradeRequestsPanel({ open, onClose, requests, myUid, onConfirm, 
               {mine.length === 0 ? (
                 <p className="py-10 text-center text-sm text-muted-foreground">Nenhuma troca ainda. Peça uma no mapa!</p>
               ) : (
-                mine.map((r) => <RequestCard key={r.id} r={r} myUid={myUid} onConfirm={onConfirm} onDecline={onDecline} onChat={onChat} />)
+                mine.map((r) => <RequestCard key={r.id} r={r} myUid={myUid} onConfirm={onConfirm} onDecline={onDecline} onChat={onChat} onRate={onRate} />)
               )}
             </div>
           </motion.aside>

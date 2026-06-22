@@ -16,6 +16,7 @@ import { TradesProvider } from "../lib/trades-context";
 import { LoginModal } from "../components/LoginModal";
 import { EditProfileModal } from "../components/EditProfileModal";
 import { TradesOverlays } from "../components/TradesOverlays";
+import { AppLoader } from "../components/AppLoader";
 
 function NotFoundComponent() {
   return (
@@ -98,6 +99,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <AppLoader />
         {children}
         <Scripts />
       </body>
