@@ -118,6 +118,16 @@
   }
 }
 
+/* No celular, campos com fonte < 16px fazem o iOS dar aquele zoom ao focar.
+   Forçando 16px evitamos o zoom — mantendo a pinça (zoom) livre no mapa e na página. */
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 @utility bg-fifa-gradient {
   background: linear-gradient(135deg, var(--fifa-yellow) 0%, var(--fifa-green) 65%, var(--fifa-green-deep) 100%);
 }

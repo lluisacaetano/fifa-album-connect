@@ -64,7 +64,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Álbum FIFA 2026 — Colecione, troque e complete" },
       { name: "description", content: "Rede social para colecionadores do álbum FIFA World Cup 2026: jogadores, partidas e trocas em tempo real." },
       { property: "og:title", content: "Álbum FIFA 2026" },

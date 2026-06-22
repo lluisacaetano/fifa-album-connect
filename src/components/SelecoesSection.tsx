@@ -50,7 +50,7 @@ export function SelecoesSection() {
   return (
     <section
       id="selecoes"
-      className="relative overflow-hidden py-24 text-white"
+      className="relative overflow-hidden py-14 text-white sm:py-24"
       style={{ background: "var(--fifa-night)" }}
     >
       {/* leve textura de luz no fundo */}
@@ -60,7 +60,7 @@ export function SelecoesSection() {
         style={{ background: "radial-gradient(60% 50% at 50% 0%, color-mix(in oklab, var(--fifa-green) 40%, transparent), transparent)" }}
       />
 
-      <div className="relative mx-auto mb-12 max-w-7xl px-4 text-center sm:px-6">
+      <div className="relative mx-auto mb-8 max-w-7xl px-4 text-center sm:mb-12 sm:px-6">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

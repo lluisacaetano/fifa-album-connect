@@ -47,7 +47,7 @@ export function PlayersCarousel() {
   const initial = p.name.replace(/^\p{Lu}\.\s*/u, "").trim().charAt(0).toUpperCase() || p.name.charAt(0).toUpperCase();
 
   return (
-    <section id="jogadores" className="relative overflow-hidden py-20 text-white" style={{ background: sectionBg }}>
+    <section id="jogadores" className="relative overflow-hidden py-14 text-white sm:py-20" style={{ background: sectionBg }}>
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-7 flex flex-col items-center text-center">
           <motion.h2
@@ -95,7 +95,7 @@ export function PlayersCarousel() {
                 exit={{ opacity: 0, x: dir * 80 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
               >
-                <h3 className="font-display text-6xl text-white drop-shadow-[3px_3px_0_rgba(0,0,0,0.35)] sm:text-7xl">{p.name}</h3>
+                <h3 className="font-display text-[2.75rem] leading-[0.95] text-white drop-shadow-[3px_3px_0_rgba(0,0,0,0.35)] sm:text-7xl">{p.name}</h3>
 
                 <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-widest">
                   <span className="rounded-full bg-[color:var(--fifa-green)] px-3 py-1 text-white">{p.position}</span>

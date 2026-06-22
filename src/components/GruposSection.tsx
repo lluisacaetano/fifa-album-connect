@@ -82,7 +82,7 @@ export function GruposSection() {
   }
 
   return (
-    <section id="grupos" className="bg-muted/30 py-24">
+    <section id="grupos" className="bg-muted/30 py-14 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-10 text-center">
           <motion.h2

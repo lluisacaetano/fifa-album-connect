@@ -67,7 +67,7 @@ export function NotificationsMenu() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-12 z-50 w-80 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-2xl"
+            className="absolute right-0 top-12 z-50 w-[calc(100vw-1.5rem)] max-w-80 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-2xl"
           >
             <div className="border-b border-border px-4 py-3 font-display text-lg">Notificações</div>
             <div className="max-h-80 overflow-auto">

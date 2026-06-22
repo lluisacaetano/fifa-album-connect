@@ -141,7 +141,7 @@ export function MatchesSection() {
     .sort((a, z) => a.name.localeCompare(z.name, "pt"));
 
   return (
-    <section id="partidas" className="relative overflow-hidden bg-[#2F9645] py-24 text-white">
+    <section id="partidas" className="relative overflow-hidden bg-[#2F9645] py-14 text-white sm:py-24">
       <div className="relative mx-auto max-w-5xl px-4 sm:px-6">
         <div className="mb-8 text-center">
           <motion.h2

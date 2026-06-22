@@ -21,8 +21,8 @@ export function Footer() {
       {/* Faixa colorida no topo */}
       <div className="absolute inset-x-0 top-0 h-2.5 bg-[repeating-linear-gradient(90deg,#002776_0_60px,#FFDF00_60px_120px,#009739_120px_180px,#FFFFFF_180px_240px)]" />
 
-      <div className="mx-auto max-w-7xl px-4 pb-10 pt-16 sm:px-6">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1.2fr]">
+      <div className="mx-auto max-w-7xl px-4 pb-10 pt-12 sm:px-6 sm:pt-16">
+        <div className="grid gap-8 md:grid-cols-2 sm:gap-10 lg:grid-cols-[1.5fr_1fr_1.2fr]">
           {/* Marca */}
           <div>
             <div className="flex items-center gap-2.5 font-display text-2xl tracking-wide">

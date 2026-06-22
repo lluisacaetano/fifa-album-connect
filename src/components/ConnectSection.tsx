@@ -228,7 +228,7 @@ export function ConnectSection() {
   const selDist = selected ? distOf(selected) : null;
 
   return (
-    <section id="conectar" className="relative bg-background py-24">
+    <section id="conectar" className="relative bg-background py-14 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-8 text-center">
           <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="font-display text-6xl text-[color:var(--fifa-green)] sm:text-7xl">
@@ -241,7 +241,7 @@ export function ConnectSection() {
           <div className="grid h-[420px] place-items-center rounded-3xl border border-border bg-card text-sm text-muted-foreground">Carregando…</div>
         ) : !user ? (
           /* ---------- Prévia (chamariz): mapa borrado + chamada para cadastro ---------- */
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative h-[480px] overflow-hidden rounded-3xl border-2 border-border bg-muted shadow-xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative h-[420px] overflow-hidden rounded-3xl border-2 border-border bg-muted shadow-xl sm:h-[480px]">
             <div className="pointer-events-none absolute inset-0 scale-105 blur-[3px]" aria-hidden>
               {mounted && Map ? (
                 <Map.MapContainer center={[-15.78, -47.92]} zoom={4} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false} zoomControl={false} dragging={false} attributionControl={false}>
@@ -345,7 +345,7 @@ export function ConnectSection() {
 
             <div className="grid items-stretch gap-6 lg:grid-cols-[1.4fr_1fr]">
               {/* Mapa — acompanha a altura do card ao lado */}
-              <div className="relative h-full min-h-[480px] overflow-hidden rounded-3xl border-2 border-border bg-muted shadow-xl">
+              <div className="relative h-full min-h-[360px] overflow-hidden rounded-3xl border-2 border-border bg-muted shadow-xl sm:min-h-[480px]">
                 {mounted && Map ? (
                   <Map.MapContainer center={[-15.78, -47.92]} zoom={4} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
                     <Map.TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

@@ -231,7 +231,7 @@ export function AlbumSection() {
   const titleLabel = isAll ? "Todas as seleções" : squad!.name;
 
   return (
-    <section id="album" className="relative overflow-hidden py-24 text-white" style={{ background: sectionBg }}>
+    <section id="album" className="relative overflow-hidden py-14 text-white sm:py-24" style={{ background: sectionBg }}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-6">
           <div>
@@ -248,15 +248,15 @@ export function AlbumSection() {
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="grid w-full grid-cols-4 gap-2 sm:flex sm:w-auto sm:gap-3">
             {[
               { l: "Total", v: allCards.length },
               { l: "Tenho", v: ownedCount },
               { l: "Faltam", v: allCards.length - ownedCount },
               { l: "Troco", v: tradeCount },
             ].map((s) => (
-              <div key={s.l} className="rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-center backdrop-blur-sm">
-                <div className="font-display text-3xl text-[color:var(--fifa-yellow)]">{s.v}</div>
+              <div key={s.l} className="rounded-2xl border border-white/15 bg-white/10 px-2 py-3 text-center backdrop-blur-sm sm:px-5">
+                <div className="font-display text-2xl text-[color:var(--fifa-yellow)] sm:text-3xl">{s.v}</div>
                 <div className="text-[10px] font-bold uppercase tracking-widest text-white/70">{s.l}</div>
               </div>
             ))}
