@@ -240,13 +240,12 @@ export function ConnectSection() {
       const cid = chatId(user.uid, target.uid);
       const greeting = message.trim() || "Oi! Topa combinar uma troca?";
       await sendMessage(cid, { from: user.uid, fromName: user.name, to: target.uid, toName: target.name, text: greeting });
-      const wTxt = wanted.map((s) => (s.code ? `${s.name} (${s.code})` : s.name)).join(", ");
       await sendMessage(cid, {
         from: user.uid,
         fromName: user.name,
         to: target.uid,
         toName: target.name,
-        text: `Proposta de troca · quero: ${wTxt}`,
+        text: "📩 Nova proposta de troca",
         kind: "trade",
         meta: { action: "propose", wanted, offered: [], by: user.uid },
       });

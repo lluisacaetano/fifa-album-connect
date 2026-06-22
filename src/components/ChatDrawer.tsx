@@ -154,20 +154,18 @@ export function ChatDrawer() {
       return next;
     });
 
-  function cardText(action: TradeAction, w: TradeItem[], o: TradeItem[], v?: number) {
-    const names = (arr: TradeItem[]) => arr.map((s) => s.name).join(", ");
-    if (action === "accept") return "✅ Aceitou a troca.";
-    if (action === "refuse") return "🚫 Recusou a troca.";
-    const parts = [`🎯 quer: ${names(w) || "—"}`];
-    if (o.length) parts.push(`🔁 dá: ${names(o)}`);
-    if (v) parts.push(`💰 ${fmtBRL(v)}`);
-    return `${action === "propose" ? "Proposta" : "Contraproposta"} · ${parts.join(" · ")}`;
+  // Texto curto só p/ a prévia/notificação (o cartão mostra os detalhes).
+  function cardText(action: TradeAction) {
+    if (action === "accept") return "✅ Aceitou a troca";
+    if (action === "refuse") return "🚫 Recusou a troca";
+    if (action === "counter") return "🔁 Nova contraproposta";
+    return "📩 Nova proposta de troca";
   }
 
   async function postCard(action: TradeAction, w: TradeItem[], o: TradeItem[], v?: number) {
     if (!cid || !user || !chatTarget) return;
     const meta: TradeCardMeta = { action, wanted: w, offered: o, by: user.uid, ...(v ? { value: v } : {}) };
-    await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: cardText(action, w, o, v), kind: "trade", meta });
+    await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: cardText(action), kind: "trade", meta });
   }
 
   function enterEdit() {
@@ -294,6 +292,9 @@ export function ChatDrawer() {
   }
 
   const dealEmpty = iGet.length === 0 && iGive.length === 0;
+  // Só dá pra aceitar quando é justo: contagens iguais (>0) ou há um valor combinado.
+  // Senão, a pessoa precisa Responder (escolher o que quer / combinar R$).
+  const canAccept = !!value || (iGet.length === iGive.length && iGet.length > 0);
 
   return (
     <AnimatePresence>
@@ -421,17 +422,31 @@ export function ChatDrawer() {
                         <div className="rounded-xl bg-card p-2.5 shadow-sm">
                           <DealRows get={iGet} give={iGive} value={value} />
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
-                          <button type="button" onClick={doAccept} disabled={dealEmpty} className="inline-flex items-center justify-center gap-1 rounded-full bg-[color:var(--fifa-green)] px-2 py-2.5 text-xs font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50">
-                            <Check className="h-3.5 w-3.5" /> Aceitar
-                          </button>
-                          <button type="button" onClick={enterEdit} className="inline-flex items-center justify-center gap-1 rounded-full border border-[color:var(--fifa-green)] px-2 py-2.5 text-xs font-bold text-[color:var(--fifa-green)] transition-all hover:bg-[color:var(--fifa-green)]/10">
-                            <Repeat className="h-3.5 w-3.5" /> Contrapor
-                          </button>
-                          <button type="button" onClick={doRefuse} className="inline-flex items-center justify-center gap-1 rounded-full border border-destructive/40 px-2 py-2.5 text-xs font-bold text-destructive transition-all hover:bg-destructive/10">
-                            <Ban className="h-3.5 w-3.5" /> Recusar
-                          </button>
-                        </div>
+                        {canAccept ? (
+                          <div className="grid grid-cols-3 gap-2">
+                            <button type="button" onClick={doAccept} className="inline-flex items-center justify-center gap-1 rounded-full bg-[color:var(--fifa-green)] px-2 py-2.5 text-xs font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]">
+                              <Check className="h-3.5 w-3.5" /> Aceitar
+                            </button>
+                            <button type="button" onClick={enterEdit} className="inline-flex items-center justify-center gap-1 rounded-full border border-[color:var(--fifa-green)] px-2 py-2.5 text-xs font-bold text-[color:var(--fifa-green)] transition-all hover:bg-[color:var(--fifa-green)]/10">
+                              <Repeat className="h-3.5 w-3.5" /> Contrapor
+                            </button>
+                            <button type="button" onClick={doRefuse} className="inline-flex items-center justify-center gap-1 rounded-full border border-destructive/40 px-2 py-2.5 text-xs font-bold text-destructive transition-all hover:bg-destructive/10">
+                              <Ban className="h-3.5 w-3.5" /> Recusar
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-[11px] leading-snug text-muted-foreground">Escolha o que você quer em troca (ou combine um valor) antes de fechar.</p>
+                            <div className="grid grid-cols-3 gap-2">
+                              <button type="button" onClick={enterEdit} className="col-span-2 inline-flex items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-2 py-2.5 text-xs font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]">
+                                <Repeat className="h-3.5 w-3.5" /> Responder proposta
+                              </button>
+                              <button type="button" onClick={doRefuse} className="inline-flex items-center justify-center gap-1 rounded-full border border-destructive/40 px-2 py-2.5 text-xs font-bold text-destructive transition-all hover:bg-destructive/10">
+                                <Ban className="h-3.5 w-3.5" /> Recusar
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </>
                     ) : (
                       /* Aguardando o outro — enxuto, sem repetir o deal (já está no cartão acima) */
