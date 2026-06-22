@@ -38,11 +38,7 @@ for (const [code, squad] of Object.entries(data)) {
     const src = `${dir}/${file}`;
     const out = `${dir}/${outName}`;
     try {
-      if (ext === "png" && file === outName) {
-        // já está no formato/nome final
-      } else {
-        execFileSync("sips", ["-s", "format", "png", src, "--out", out], { stdio: "ignore" });
-      }
+      execFileSync("magick", [src, "-fuzz", "12%", "-trim", "+repage", out], { stdio: "ignore" });
     } catch (e) { console.log(`!  erro convertendo ${file}: ${e.message}`); skipped++; continue; }
 
     player.photo = `/players/custom/${code}/${outName}`;
