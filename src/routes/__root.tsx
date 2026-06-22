@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../lib/auth";
 import { LoginModal } from "../components/LoginModal";
+import { EditProfileModal } from "../components/EditProfileModal";
 
 function NotFoundComponent() {
   return (
@@ -105,6 +106,7 @@ function RootComponent() {
       <AuthProvider>
         <Outlet />
         <LoginModal />
+        <EditProfileModal />
       </AuthProvider>
     </QueryClientProvider>
   );

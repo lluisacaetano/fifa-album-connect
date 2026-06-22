@@ -1,0 +1,38 @@
+rules_version = '2';
+
+// Regras de segurança do Álbum FIFA.
+// Aplique em: Firebase Console -> Firestore Database -> aba "Regras" -> colar -> Publicar.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Perfis: leitura pública (os pontos do mapa de trocas).
+    // Cada usuário só escreve o próprio documento.
+    match /users/{uid} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Pedidos de troca: visíveis apenas aos dois participantes.
+    match /tradeRequests/{id} {
+      allow read: if request.auth != null
+        && request.auth.uid in resource.data.participants;
+
+      // Só o remetente cria, e nunca para si mesmo; começa como "pending".
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.fromUid
+        && request.resource.data.fromUid != request.resource.data.toUid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.participants.hasOnly([request.resource.data.fromUid, request.resource.data.toUid]);
+
+      // Participantes podem atualizar (aceitar/recusar), sem trocar quem é quem.
+      allow update: if request.auth != null
+        && request.auth.uid in resource.data.participants
+        && request.resource.data.participants == resource.data.participants
+        && request.resource.data.fromUid == resource.data.fromUid
+        && request.resource.data.toUid == resource.data.toUid;
+
+      allow delete: if request.auth != null
+        && request.auth.uid in resource.data.participants;
+    }
+  }
+}

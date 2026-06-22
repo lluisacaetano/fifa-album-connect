@@ -41,13 +41,24 @@ export async function geocodeCity(label: string): Promise<{ lat: number; lng: nu
   return cap ? { lat: cap[0], lng: cap[1] } : { lat: -15.78, lng: -47.93 }; // centro do Brasil
 }
 
-// Salva o álbum (por número) + as figurinhas para troca no perfil do usuário.
-export async function saveUserAlbum(uid: string, album: Record<string, number>, trades: TradeSticker[]): Promise<void> {
+// Salva o álbum (por número) + figurinhas para troca + as que faltam (wants).
+export async function saveUserAlbum(uid: string, album: Record<string, number>, trades: TradeSticker[], wants: string[]): Promise<void> {
   try {
-    await setDoc(doc(db, "users", uid), { album, trades, updatedAt: Date.now() }, { merge: true });
+    await setDoc(doc(db, "users", uid), { album, trades, wants, updatedAt: Date.now() }, { merge: true });
   } catch {
     /* Firestore pode estar indisponível — ignora */
   }
+}
+
+// Distância em km entre dois pontos (Haversine).
+export function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
+  const R = 6371;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const lat1 = (a.lat * Math.PI) / 180;
+  const lat2 = (b.lat * Math.PI) / 180;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
 }
 
 // Garante que o usuário tenha coordenadas (preenche quem cadastrou antes do mapa real).

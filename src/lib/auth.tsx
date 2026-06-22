@@ -24,7 +24,11 @@ type AuthContextValue = {
   register: (data: RegisterData) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  updateProfileData: (data: { name: string; city: string }) => Promise<void>;
   logout: () => Promise<void>;
+  editOpen: boolean;
+  openEdit: () => void;
+  closeEdit: () => void;
   authOpen: boolean;
   authMode: AuthMode;
   openAuth: (mode?: AuthMode) => void;
@@ -59,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
+  const [editOpen, setEditOpen] = useState(false);
 
   // Observa a sessão do Firebase (mantém logado entre recarregamentos).
   useEffect(() => {
@@ -113,6 +118,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthOpen(false);
   };
 
+  const updateProfileData = async ({ name, city }: { name: string; city: string }) => {
+    const current = auth.currentUser;
+    if (!current) return;
+    await updateProfile(current, { displayName: name });
+    const loc = city ? await geocodeCity(city) : null;
+    try {
+      await setDoc(doc(db, "users", current.uid), { name, city, lat: loc?.lat ?? null, lng: loc?.lng ?? null }, { merge: true });
+    } catch {
+      /* ignora */
+    }
+    setUser((u) => (u ? { ...u, name, city } : u));
+    setEditOpen(false);
+  };
+
   const logout = async () => {
     await signOut(auth);
     setUser(null);
@@ -126,6 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         login,
         loginWithGoogle,
+        updateProfileData,
         logout,
         authOpen,
         authMode,
@@ -134,6 +154,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setAuthOpen(true);
         },
         closeAuth: () => setAuthOpen(false),
+        editOpen,
+        openEdit: () => setEditOpen(true),
+        closeEdit: () => setEditOpen(false),
       }}
     >
       {children}

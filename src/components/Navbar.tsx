@@ -18,7 +18,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [dark, setDark] = useState(false);
   const [active, setActive] = useState("home");
-  const { user, hydrated, openAuth, logout } = useAuth();
+  const { user, hydrated, openAuth, openEdit, logout } = useAuth();
   const firstName = user?.name.split(" ")[0] ?? "";
 
   useEffect(() => {
@@ -107,12 +107,16 @@ export function Navbar() {
           </button>
           {hydrated && user ? (
             <div className="hidden items-center gap-2 sm:flex">
-              <span className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 py-1 pl-1 pr-3">
+              <button
+                onClick={openEdit}
+                title="Editar perfil"
+                className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 py-1 pl-1 pr-3 transition-colors hover:bg-white/20"
+              >
                 <span className="grid h-7 w-7 place-items-center rounded-full bg-fifa-gradient text-[11px] font-bold text-white">
                   {firstName.slice(0, 1)}
                 </span>
                 <span className="max-w-[90px] truncate text-sm font-semibold">{firstName}</span>
-              </span>
+              </button>
               <button
                 onClick={logout}
                 aria-label="Sair"

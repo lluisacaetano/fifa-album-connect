@@ -16,6 +16,7 @@ export type Trader = {
   lng: number;
   avatar: string;
   isMe?: boolean; // marca o próprio usuário no mapa
+  uid?: string; // presente só nos colecionadores reais (Firestore)
 };
 
 const CITIES: { city: string; lat: number; lng: number }[] = [

@@ -175,28 +175,31 @@ export function AlbumSection() {
   const inc = (c: string, id: number) => setCount(c, id, getCount(c, id) + 1);
   const dec = (c: string, id: number) => setCount(c, id, Math.max(1, getCount(c, id) - 1)); // mín. 1: para zerar, clique na figurinha
 
-  // Monta o álbum por NÚMERO da figurinha (ex.: "BRA1") + a lista para troca (2+).
+  // Monta o álbum por NÚMERO ("BRA1") + figurinhas para troca (2+) + as que faltam (wants).
   const syncPayload = useMemo(() => {
     const album: Record<string, number> = {};
     const trades: TradeSticker[] = [];
+    const wants: string[] = [];
     for (const s of squads) {
-      const counts = countMap[s.code];
-      if (!counts) continue;
+      const counts = countMap[s.code] ?? {};
       for (const card of albumCards(s)) {
         const n = counts[card.id] ?? 0;
-        if (n < 1) continue;
-        const key = card.sticker ?? `${card.code}#${card.id}`;
-        album[key] = n;
-        if (n >= 2 && card.kind === "player") trades.push({ code: key, name: card.name });
+        if (n >= 1) {
+          const key = card.sticker ?? `${card.code}#${card.id}`;
+          album[key] = n;
+          if (n >= 2 && card.kind === "player") trades.push({ code: key, name: card.name });
+        } else if (card.kind === "player") {
+          wants.push(card.name);
+        }
       }
     }
-    return { album, trades };
+    return { album, trades, wants };
   }, [countMap]);
 
   // Salva no Firestore (com debounce) quando logado — só após carregar o álbum do banco.
   useEffect(() => {
     if (!user || !synced) return;
-    const t = setTimeout(() => saveUserAlbum(user.uid, syncPayload.album, syncPayload.trades), 700);
+    const t = setTimeout(() => saveUserAlbum(user.uid, syncPayload.album, syncPayload.trades, syncPayload.wants), 700);
     return () => clearTimeout(t);
   }, [syncPayload, user, synced]);
 
