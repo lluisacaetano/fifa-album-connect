@@ -384,7 +384,7 @@ export function ConnectSection() {
                 <div className="mb-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[color:var(--fifa-green)]">
                   <Sparkles className="h-4 w-4" /> Colecionadores perto de você
                 </div>
-                <div className="flex gap-3 overflow-x-auto pb-2">
+                <div className="flex gap-3 overflow-x-auto pb-4">
                   {topMatches.map((t) => {
                     const d = distOf(t);
                     return (
