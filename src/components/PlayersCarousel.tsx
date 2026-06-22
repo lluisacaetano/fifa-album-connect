@@ -196,6 +196,18 @@ export function PlayersCarousel() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Camada de swipe: arrastar a foto pro lado troca de jogador (mobile). */}
+            <motion.div
+              className="absolute inset-0 z-20 touch-pan-y"
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.18}
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -60 || info.velocity.x < -400) paginate(1);
+                else if (info.offset.x > 60 || info.velocity.x > 400) paginate(-1);
+              }}
+            />
           </div>
         </div>
 
