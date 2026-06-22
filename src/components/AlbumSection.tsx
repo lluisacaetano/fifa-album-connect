@@ -9,7 +9,40 @@ const ACCENTS = new RegExp("[\\u0300-\\u036f]", "g");
 const norm = (s: string) => s.normalize("NFD").replace(ACCENTS, "").toLowerCase();
 
 // Cada figurinha exibida carrega o país a que pertence (necessário na visão "Todos").
-type Card = { id: number; name: string; position: string; number?: string | null; photo: string | null; photoCutout?: boolean; photoScale?: number; code: string; country: string };
+// kind: jogador, ou as figurinhas especiais da seleção (escudo / foto oficial).
+type Card = {
+  id: number;
+  name: string;
+  kind: "player" | "crest" | "photo";
+  sticker?: string; // código no álbum, ex.: "BRA1"
+  no?: number; // posição da figurinha
+  position?: string;
+  number?: string | null;
+  photo?: string | null;
+  photoCutout?: boolean;
+  photoScale?: number;
+  code: string;
+  country: string;
+};
+
+// Monta as 20 figurinhas oficiais de uma seleção (escudo + 18 jogadores + foto),
+// na ordem certa. Se ainda não migrada ao álbum, mostra o elenco bruto (sem especiais).
+function albumCards(s: (typeof squads)[number]): Card[] {
+  const base = { code: s.code, country: s.name };
+  const players = s.players.filter((p) => p.inAlbum);
+  if (players.length === 0 || !s.album) {
+    return s.players.map((p) => ({ ...p, kind: "player" as const, ...base }));
+  }
+  const { crestNo, photoNo, prefix, crest, photo } = s.album;
+  const cards: Card[] = [
+    { id: -1, no: crestNo, kind: "crest", name: `Escudo · ${s.name}`, photo: crest, ...base },
+    { id: -2, no: photoNo, kind: "photo", name: `Seleção ${s.name}`, photo, ...base },
+    ...players.map((p) => ({ ...p, no: p.albumNo ?? 0, kind: "player" as const, ...base })),
+  ];
+  return cards
+    .sort((a, b) => (a.no ?? 0) - (b.no ?? 0))
+    .map((c) => ({ ...c, sticker: `${prefix}${c.no}` }));
+}
 
 const BRAZIL_COLORS: [string, string] = ["#009739", "#FFDF00"];
 
@@ -59,7 +92,7 @@ export function AlbumSection() {
 
   const allCards: Card[] = useMemo(() => {
     const source = isAll ? squads : [squad!];
-    return source.flatMap((s) => s.players.map((p) => ({ ...p, code: s.code, country: s.name })));
+    return source.flatMap((s) => albumCards(s));
   }, [isAll, squad]);
 
   const ownedCount = allCards.filter((c) => ownedHas(c.code, c.id)).length;
@@ -73,7 +106,9 @@ export function AlbumSection() {
   const visible = useMemo(() => {
     const q = norm(query.trim());
     if (!q) return allCards;
-    return allCards.filter((c) => norm(c.name).includes(q));
+    // busca por nome OU pelo número da figurinha (ex.: "BRA1", "bra 1", "1")
+    const qNum = q.replace(/\s+/g, "");
+    return allCards.filter((c) => norm(c.name).includes(q) || (c.sticker && norm(c.sticker).includes(qNum)));
   }, [allCards, query]);
 
   const titleLabel = isAll ? "Todas as seleções" : squad!.name;
@@ -151,7 +186,7 @@ export function AlbumSection() {
                 setQuery(v);
                 if (v.trim() && !isAll) setCode("all"); // digitou: busca em todas
               }}
-              placeholder="Buscar jogador em todas as seleções..."
+              placeholder="Buscar por jogador ou nº da figurinha (ex.: BRA1)..."
               className="w-full rounded-full border border-white/20 bg-white py-2.5 pl-9 pr-4 text-sm text-[color:var(--fifa-green-deep)] outline-none placeholder:text-[color:var(--fifa-green-deep)]/50"
             />
           </div>
@@ -204,21 +239,28 @@ export function AlbumSection() {
                     {has ? "✓" : "+"}
                   </span>
 
-                  {/* No modo "Todos" mostra a bandeira; senão, o número da camisa */}
-                  {isAll ? (
+                  {/* No modo "Todos" a bandeira; o número da figurinha (BRA2) sempre que houver */}
+                  {isAll && (
                     <img
                       src={`https://flagcdn.com/w40/${c.code}.png`}
                       alt={c.country}
                       className="absolute left-1.5 top-1.5 z-10 h-3.5 w-5 rounded-[2px] object-cover shadow ring-1 ring-black/20"
                     />
-                  ) : (
-                    c.number && (
-                      <span className={`absolute left-1.5 top-1 z-10 font-display text-lg leading-none ${has ? "text-white/90" : "text-white/70"}`}>{c.number}</span>
-                    )
+                  )}
+                  {c.sticker && (
+                    <span className={`absolute bottom-7 left-1.5 z-10 rounded-md bg-black/45 px-1 text-[9px] font-bold tracking-wide ${has ? "text-[color:var(--fifa-yellow)]" : "text-white/85"}`}>
+                      {c.sticker}
+                    </span>
                   )}
 
                   <div className={`relative flex h-full w-full flex-col items-center justify-end overflow-hidden rounded-lg ${has ? "" : "opacity-80 grayscale"}`}>
-                    {c.photo && c.photoCutout ? (
+                    {c.kind === "crest" ? (
+                      <div className="absolute inset-0 grid place-items-center bg-white/10 p-3">
+                        <img src={c.photo!} alt={c.name} loading="lazy" className="max-h-full max-w-full object-contain drop-shadow-[0_3px_5px_rgba(0,0,0,0.4)]" />
+                      </div>
+                    ) : c.kind === "photo" ? (
+                      <img src={c.photo!} alt={c.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                    ) : c.photo && c.photoCutout ? (
                       <img
                         src={c.photo}
                         alt={c.name}

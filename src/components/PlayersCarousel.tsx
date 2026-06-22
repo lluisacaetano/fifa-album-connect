@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { squads, squadByCode } from "@/data/squads";
+import { squads, squadByCode, squadRoster } from "@/data/squads";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function PlayersCarousel() {
@@ -9,7 +9,8 @@ export function PlayersCarousel() {
   const [[index, dir], setIndex] = useState<[number, number]>([0, 0]);
 
   const squad = squadByCode(code) ?? squads[0];
-  const p = squad.players[Math.min(index, squad.players.length - 1)];
+  const players = squadRoster(squad); // só o elenco oficial (26) quando migrada
+  const p = players[Math.min(index, players.length - 1)];
 
   // Fundo muda com a seleção (cor do país misturada com verde-noite para leitura).
   const [c1] = squad.colors;
@@ -17,7 +18,7 @@ export function PlayersCarousel() {
 
   const paginate = (delta: number) => {
     setIndex(([i]) => {
-      const next = (i + delta + squad.players.length) % squad.players.length;
+      const next = (i + delta + players.length) % players.length;
       return [next, delta];
     });
   };
@@ -209,7 +210,7 @@ export function PlayersCarousel() {
           </button>
 
           <div className="min-w-[5rem] rounded-full bg-white/15 px-4 py-2 text-center font-display text-lg tracking-wider text-white ring-1 ring-white/25">
-            {index + 1} / {squad.players.length}
+            {index + 1} / {players.length}
           </div>
 
           <button

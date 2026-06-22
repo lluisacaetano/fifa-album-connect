@@ -22,6 +22,9 @@ export type SquadPlayer = {
   assists?: number | null;
   apps?: number | null;
   desc?: string | null;
+  inSquad?: boolean; // entra no elenco oficial (seção Jogadores)
+  inAlbum?: boolean; // entra na seção de figurinhas (lista oficial: 18/seleção)
+  albumNo?: number | null; // posição da figurinha no álbum (BRA<n>)
   // Carreira completa vinda da Wikipédia (infobox). Hoje só o Brasil tem.
   wiki?: {
     height?: string | null;
@@ -33,14 +36,17 @@ export type SquadPlayer = {
   } | null;
 };
 
+export type AlbumMeta = { crestNo: number; photoNo: number; prefix: string; crest: string; photo: string };
+
 export type CountrySquad = {
   code: string;
   name: string;
   colors: [string, string];
   players: SquadPlayer[];
+  album?: AlbumMeta; // layout oficial do álbum (escudo/foto) — só seleções migradas
 };
 
-type GeneratedSquad = { name: string; players: SquadPlayer[] };
+type GeneratedSquad = { name: string; players: SquadPlayer[]; album?: AlbumMeta };
 const generated = rawSquads as Record<string, GeneratedSquad>;
 
 const meta = Object.fromEntries(nations.map((n) => [n.code, n]));
@@ -60,12 +66,11 @@ const squadList: CountrySquad[] = Object.entries(generated)
     code,
     name: squad.name ?? meta[code]?.name ?? code,
     colors: meta[code]?.colors ?? DEFAULT_COLORS,
-    players: byNumber(squad.players ?? [])
-      .slice(0, 26) // elenco da Copa = máx. 26
-      .map((p) => {
-        const ov = photoOverrides[`${code}-${p.number}`];
-        return ov?.scale ? { ...p, photoScale: ov.scale } : p;
-      }),
+    album: squad.album,
+    players: byNumber(squad.players ?? []).map((p) => {
+      const ov = photoOverrides[`${code}-${p.number}`];
+      return ov?.scale ? { ...p, photoScale: ov.scale } : p;
+    }),
   }))
   .filter((s) => s.players.length > 0)
   // Brasil sempre primeiro, depois as outras em ordem alfabética.
@@ -75,4 +80,21 @@ export const squads: CountrySquad[] = squadList;
 
 export function squadByCode(code: string): CountrySquad | undefined {
   return squads.find((s) => s.code === code);
+}
+
+// Elenco da seção Jogadores: os oficiais (inSquad) quando a seleção foi migrada;
+// senão, o elenco bruto (até 26) — comportamento antigo p/ as ainda não migradas.
+export function squadRoster(s: CountrySquad): SquadPlayer[] {
+  const official = s.players.filter((p) => p.inSquad);
+  return official.length ? official : s.players.slice(0, 26);
+}
+
+// A seleção já foi alinhada ao álbum oficial? (tem figurinhas marcadas)
+export function isAlbumReady(s: CountrySquad): boolean {
+  return s.players.some((p) => p.inAlbum);
+}
+
+// Os jogadores que entram no álbum, em ordem de figurinha (albumNo).
+export function albumPlayers(s: CountrySquad): SquadPlayer[] {
+  return s.players.filter((p) => p.inAlbum).sort((a, b) => (a.albumNo ?? 0) - (b.albumNo ?? 0));
 }
