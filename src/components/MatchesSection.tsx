@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, MapPin, Minus, Plus, Lock, ChevronDown, Check, Trophy, BarChart3 } from "lucide-react";
+import { Star, MapPin, Minus, Plus, Lock, ChevronDown, Check, Trophy, BarChart3, Target } from "lucide-react";
 import wc from "@/data/worldcup.json";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
@@ -53,6 +53,7 @@ export function MatchesSection() {
   const [country, setCountry] = useState(BRAZIL_ID);
   const [phase, setPhase] = useState<"all" | "groups" | "knockout">("all");
   const [onlyStarred, setOnlyStarred] = useState(false);
+  const [onlyPredicted, setOnlyPredicted] = useState(false);
   const [starred, setStarred] = useState<Set<number>>(new Set());
 
   // palpites
@@ -69,6 +70,9 @@ export function MatchesSection() {
     return () => clearInterval(t);
   }, []);
   useEffect(() => listenPredictions(setPreds), []);
+  useEffect(() => {
+    if (!user) setOnlyPredicted(false);
+  }, [user]);
 
   // jogos marcados (localStorage)
   useEffect(() => {
@@ -207,9 +211,10 @@ export function MatchesSection() {
       if (phase === "knockout" && !m.knockout) return false;
       if (country !== "all" && m.homeId !== country && m.awayId !== country) return false;
       if (onlyStarred && !starred.has(m.id)) return false;
+      if (onlyPredicted && !myPred(m.id)) return false;
       return true;
     });
-  }, [country, phase, onlyStarred, starred]);
+  }, [country, phase, onlyStarred, starred, onlyPredicted, preds, user]);
 
   // agrupa por data
   const byDate = useMemo(() => {
@@ -281,6 +286,18 @@ export function MatchesSection() {
             <Star className={`h-4 w-4 ${onlyStarred ? "fill-current" : ""}`} />
             Marcados
           </button>
+
+          {user && (
+            <button
+              onClick={() => setOnlyPredicted((v) => !v)}
+              className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                onlyPredicted ? "border-[color:var(--fifa-yellow)] bg-[color:var(--fifa-yellow)] text-[color:var(--fifa-green-deep)]" : "border-white/20 text-white hover:bg-white/10"
+              }`}
+            >
+              <Target className="h-4 w-4" />
+              Palpitei
+            </button>
+          )}
         </div>
 
         {byDate.length === 0 ? (
