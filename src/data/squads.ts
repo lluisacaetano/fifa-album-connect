@@ -22,6 +22,15 @@ export type SquadPlayer = {
   assists?: number | null;
   apps?: number | null;
   desc?: string | null;
+  // Carreira completa vinda da Wikipédia (infobox). Hoje só o Brasil tem.
+  wiki?: {
+    height?: string | null;
+    foot?: string | null;
+    clubs?: { years: string; club: string; apps: number | null; goals: number | null }[];
+    careerApps?: number | null;
+    careerGoals?: number | null;
+    nat?: { years: string; apps: number | null; goals: number | null } | null;
+  } | null;
 };
 
 export type CountrySquad = {
