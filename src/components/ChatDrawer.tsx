@@ -257,7 +257,8 @@ export function ChatDrawer() {
     if (method === "presencial") body = "📍 Vou entregar pessoalmente.";
     else if (method === "correios") body = `📦 Vou enviar pelos Correios. Rastreio: ${code}\nhttps://rastreamento.correios.com.br/app/index.php?codigo=${encodeURIComponent(code)}`;
     else body = `🚚 Vou enviar por transportadora${carrier.trim() ? ` (${carrier.trim()})` : ""}. Rastreio: ${code}`;
-    await informShipment(linked, { method, tracking: code || undefined, carrier: carrier.trim() || undefined });
+    // Sem campos undefined (Firestore rejeita) — só inclui tracking/carrier se preenchidos.
+    await informShipment(linked, { method, ...(code ? { tracking: code } : {}), ...(carrier.trim() ? { carrier: carrier.trim() } : {}) });
     await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: body });
     setTracking("");
     setCarrier("");

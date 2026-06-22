@@ -144,7 +144,9 @@ export function receiversOf(r: Pick<TradeRequest, "fromUid" | "toUid">): string[
 // Registra como a pessoa vai enviar (presencial/correios/transportadora + rastreio).
 // Obrigatório p/ quem envia figurinha antes do outro confirmar o recebimento.
 export async function recordShipment(id: string, uid: string, info: DeliveryInfo): Promise<void> {
-  await updateDoc(doc(db, "tradeRequests", id), { [`delivery.${uid}`]: info, updatedAt: serverTimestamp() });
+  // Sem undefined (Firestore rejeita): só inclui tracking/carrier quando há valor.
+  const clean: DeliveryInfo = { method: info.method, ...(info.tracking ? { tracking: info.tracking } : {}), ...(info.carrier ? { carrier: info.carrier } : {}) };
+  await updateDoc(doc(db, "tradeRequests", id), { [`delivery.${uid}`]: clean, updatedAt: serverTimestamp() });
 }
 
 // Marca que o usuário já deu baixa no álbum por causa desta troca (idempotente entre aparelhos).
