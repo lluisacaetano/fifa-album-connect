@@ -82,21 +82,28 @@ function RequestCard({ r, myUid, onConfirm, onDecline, onChat, onRate }: { r: Tr
       </div>
       {r.message && <p className="mt-2 rounded-lg bg-muted px-3 py-2 text-sm">{r.message}</p>}
 
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Você entrega</div>
-          <div className="mt-1"><Chips items={iGive} tone="blue" /></div>
-        </div>
-        <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Você recebe</div>
-          <div className="mt-1"><Chips items={iGet} tone="green" /></div>
-        </div>
+      <div className="mt-3 space-y-2">
+        {iGive.length > 0 && (
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 w-14 shrink-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Entrega</span>
+            <Chips items={iGive} tone="blue" />
+          </div>
+        )}
+        {iGet.length > 0 && (
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 w-14 shrink-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Recebe</span>
+            <Chips items={iGet} tone="green" />
+          </div>
+        )}
+        {!!r.value && (
+          <div className="flex items-center gap-2">
+            <span className="w-14 shrink-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Valor</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--fifa-yellow)] px-2.5 py-0.5 text-[11px] font-bold text-[color:var(--fifa-green-deep)]">
+              💰 R$ {r.value.toFixed(2).replace(".", ",")}
+            </span>
+          </div>
+        )}
       </div>
-      {!!r.value && (
-        <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-[color:var(--fifa-green)]/10 px-2.5 py-0.5 text-[11px] font-bold text-[color:var(--fifa-green-deep)]">
-          💰 R$ {r.value.toFixed(2).replace(".", ",")}
-        </div>
-      )}
 
       {/* Estado da confirmação */}
       {r.status === "accepted" ? (

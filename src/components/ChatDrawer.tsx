@@ -8,7 +8,6 @@ import { useTrades } from "@/lib/trades-context";
 import { chatId, listenMessages, sendMessage, type ChatMessage, type TradeCardMeta } from "@/lib/chat";
 import type { TradeAction, TradeItem } from "@/lib/trades";
 import { Avatar } from "@/components/Avatar";
-import { ValueModal } from "@/components/ValueModal";
 
 const keyOf = (s: TradeItem) => `${s.code}-${s.name}`;
 const fmtBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
@@ -64,8 +63,11 @@ function DealRows({ get, give, value }: { get: TradeItem[]; give: TradeItem[]; v
         </div>
       )}
       {!!value && (
-        <div className="inline-flex items-center gap-1 rounded-full bg-[color:var(--fifa-yellow)]/30 px-2 py-0.5 text-[11px] font-bold text-[color:var(--fifa-green-deep)]">
-          💰 {fmtBRL(value)}
+        <div className="flex items-center gap-2 pt-0.5">
+          <span className="w-10 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-green-deep)]">valor</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--fifa-yellow)] px-3 py-1 text-xs font-bold text-[color:var(--fifa-green-deep)] shadow-sm">
+            💰 {fmtBRL(value)}
+          </span>
         </div>
       )}
     </div>
@@ -85,7 +87,7 @@ export function ChatDrawer() {
   const [editing, setEditing] = useState(false);
   const [editGet, setEditGet] = useState<Set<string>>(new Set());
   const [editGive, setEditGive] = useState<Set<string>>(new Set());
-  const [valueOpen, setValueOpen] = useState(false);
+  const [editValue, setEditValue] = useState(""); // R$ inline quando as quantidades não batem
   const [otherPool, setOtherPool] = useState<TradeItem[]>([]);
   const [myPool, setMyPool] = useState<TradeItem[]>([]);
   const [otherWants, setOtherWants] = useState<Set<string>>(new Set());
@@ -154,7 +156,7 @@ export function ChatDrawer() {
   // Sai do modo edição quando a troca muda de rodada/conversa.
   useEffect(() => {
     setEditing(false);
-    setValueOpen(false);
+    setEditValue("");
   }, [linked?.id, linked?.round, linked?.status]);
 
   const toggle = (set: React.Dispatch<React.SetStateAction<Set<string>>>, key: string) =>
@@ -183,6 +185,7 @@ export function ChatDrawer() {
     if (!linked) return;
     setEditGet(new Set(iGet.map(keyOf)));
     setEditGive(new Set(iGive.map(keyOf)));
+    setEditValue(value ? String(value).replace(".", ",") : "");
     setEditing(true);
   }
 
@@ -193,13 +196,13 @@ export function ChatDrawer() {
     await counter(linked, { wanted, offered, value: v });
     await postCard("counter", wanted, offered, v);
     setEditing(false);
-    setValueOpen(false);
   }
 
   function trySubmit() {
     if (editGetItems.length === 0 && editGiveItems.length === 0) return;
-    if (editGetItems.length !== editGiveItems.length) setValueOpen(true);
-    else submitCounter(undefined);
+    const mismatch = editGetItems.length !== editGiveItems.length;
+    const v = mismatch ? Math.max(0, Math.round((Number(editValue.replace(",", ".")) || 0) * 100) / 100) || undefined : undefined;
+    submitCounter(v);
   }
 
   async function doAccept() {
@@ -411,10 +414,24 @@ export function ChatDrawer() {
                                 );
                               })
                             ) : (
-                              <span className="text-[11px] text-muted-foreground">Você não tem repetidas para oferecer (marque em “Meu Álbum”).</span>
+                              <span className="text-[11px] text-muted-foreground">Você não tem repetidas que a {otherFirst} precise — combine um valor abaixo.</span>
                             )}
                           </div>
                         </div>
+
+                        {/* Campo de valor — aparece quando as quantidades não batem (venda/compra). */}
+                        {editGetItems.length !== editGiveItems.length && (
+                          <div className="rounded-xl border border-[color:var(--fifa-yellow)]/50 bg-[color:var(--fifa-yellow)]/10 p-2.5">
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[color:var(--fifa-green-deep)]">
+                              💰 Valor (R$) — recebe {editGetItems.length} × dá {editGiveItems.length}
+                            </div>
+                            <div className="mt-1.5 flex items-center gap-2 rounded-lg border border-border bg-card px-2.5 ring-[color:var(--fifa-green)] focus-within:ring-2">
+                              <span className="text-xs font-bold text-muted-foreground">R$</span>
+                              <input value={editValue} onChange={(e) => setEditValue(e.target.value)} inputMode="decimal" placeholder="0,00" className="h-9 flex-1 bg-transparent text-sm outline-none" />
+                            </div>
+                          </div>
+                        )}
+
                         <div className="flex gap-2">
                           <button type="button" onClick={() => setEditing(false)} className="flex-1 rounded-full border border-border px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted">
                             Cancelar
@@ -564,8 +581,6 @@ export function ChatDrawer() {
               </button>
             </form>
           </motion.aside>
-
-          <ValueModal open={valueOpen} receiveCount={editGetItems.length} giveCount={editGiveItems.length} initial={value} onCancel={() => setValueOpen(false)} onConfirm={(v) => submitCounter(v)} />
         </motion.div>
       )}
     </AnimatePresence>
