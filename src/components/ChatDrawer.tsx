@@ -45,20 +45,24 @@ function ItemChips({ items, tone }: { items: TradeItem[]; tone: "green" | "blue"
   );
 }
 
-// Resumo de um deal: "recebe / dá / R$" — usado nos cartões e no painel ao vivo.
+// Resumo de um deal: "recebe / dá / R$". Lados vazios não aparecem.
 function DealRows({ get, give, value }: { get: TradeItem[]; give: TradeItem[]; value?: number }) {
   return (
     <div className="space-y-1.5">
-      <div className="flex items-start gap-2">
-        <span className="mt-1 w-10 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-green)]">recebe</span>
-        <ItemChips items={get} tone="green" />
-      </div>
-      <div className="flex items-start gap-2">
-        <span className="mt-1 w-10 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-blue)]">dá</span>
-        <ItemChips items={give} tone="blue" />
-      </div>
+      {get.length > 0 && (
+        <div className="flex items-start gap-2">
+          <span className="mt-1 w-10 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-green)]">recebe</span>
+          <ItemChips items={get} tone="green" />
+        </div>
+      )}
+      {give.length > 0 && (
+        <div className="flex items-start gap-2">
+          <span className="mt-1 w-10 shrink-0 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-blue)]">dá</span>
+          <ItemChips items={give} tone="blue" />
+        </div>
+      )}
       {!!value && (
-        <div className="ml-12 inline-flex items-center gap-1 rounded-full bg-[color:var(--fifa-yellow)]/30 px-2 py-0.5 text-[11px] font-bold text-[color:var(--fifa-green-deep)]">
+        <div className="inline-flex items-center gap-1 rounded-full bg-[color:var(--fifa-yellow)]/30 px-2 py-0.5 text-[11px] font-bold text-[color:var(--fifa-green-deep)]">
           💰 {fmtBRL(value)}
         </div>
       )}
