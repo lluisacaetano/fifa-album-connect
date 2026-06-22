@@ -10,7 +10,7 @@ import {
   updateProfile,
   type User as FirebaseUser,
 } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { deleteField, doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { ensureUserLocation, geocodeCity } from "@/lib/profile";
 
@@ -84,9 +84,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Geocodifica a cidade e guarda o perfil + coordenadas no Firestore — best-effort.
     try {
       const loc = city ? await geocodeCity(city) : null;
+      // OBS: o e-mail NÃO vai para o doc público (fica só no Firebase Auth).
       await setDoc(doc(db, "users", cred.user.uid), {
         name,
-        email,
         city: city ?? null,
         lat: loc?.lat ?? null,
         lng: loc?.lng ?? null,
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await setDoc(
         doc(db, "users", cred.user.uid),
-        { name: cred.user.displayName ?? "", email: cred.user.email ?? "", photo: cred.user.photoURL ?? null },
+        { name: cred.user.displayName ?? "", photo: cred.user.photoURL ?? null, email: deleteField() },
         { merge: true },
       );
     } catch {
@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await updateProfile(current, { displayName: name });
     const loc = city ? await geocodeCity(city) : null;
     try {
-      const patch: Record<string, unknown> = { name, city, lat: loc?.lat ?? null, lng: loc?.lng ?? null };
+      const patch: Record<string, unknown> = { name, city, lat: loc?.lat ?? null, lng: loc?.lng ?? null, email: deleteField() };
       if (photo !== undefined) patch.photo = photo;
       await setDoc(doc(db, "users", current.uid), patch, { merge: true });
     } catch {

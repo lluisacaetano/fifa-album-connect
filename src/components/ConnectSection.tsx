@@ -31,7 +31,7 @@ function fmtDist(km: number): string {
 }
 
 export function ConnectSection() {
-  const { user, hydrated, openAuth, openEdit } = useAuth();
+  const { user, hydrated, openAuth } = useAuth();
   const { requests, incomingPending, openPanel, openChat } = useTrades();
 
   const [query, setQuery] = useState("");
@@ -536,11 +536,6 @@ export function ConnectSection() {
               )}
             </div>
 
-            <div className="mt-6 text-center text-xs text-muted-foreground">
-              <button onClick={openEdit} className="font-semibold text-[color:var(--fifa-green)] underline-offset-2 hover:underline">
-                Editar meu perfil
-              </button>
-            </div>
           </>
         )}
       </div>
