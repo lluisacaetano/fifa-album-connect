@@ -5,7 +5,7 @@ Rede social e álbum digital de figurinhas da **Copa do Mundo FIFA 2026** (Canad
 > 🔗 **App no ar (Vercel):** `https://fifa-album.vercel.app` · **Preview (Lovable):** `https://fifa-album-connect.lovable.app`
 > _(confirme as URLs finais no seu deploy)_
 
-Projeto acadêmico da disciplina de **Inteligência Artificial** — desenvolvido com ferramentas de IA (**Lovable** + **Claude Code**, este usado em duas instâncias em paralelo). Não afiliado à FIFA.
+Projeto acadêmico da disciplina de **Inteligência Artificial** — desenvolvido com ferramentas de IA (**Lovable** + **Claude Code**). Não afiliado à FIFA.
 
 ---
 
@@ -118,7 +118,6 @@ scripts/            # coleta de dados das APIs
 ## 🤖 Ferramentas de IA usadas
 
 - **Lovable** — scaffold inicial do app web (low-code) e deploy de preview.
-- **Claude Code (instância 1)** — features complexas (Firebase Auth/Firestore, mapa de trocas, chat em tempo real, palpites, reputação, responsividade, deploy), debug e refactor.
-- **Claude Code (instância 2, em paralelo)** — curadoria de dados e fotos das seleções (pipelines de coleta).
+- **Claude Code** — desenvolvimento das features complexas (Firebase Auth/Firestore, mapa de trocas, chat em tempo real, palpites, reputação, responsividade, deploy), curadoria de dados e fotos das seleções, debug e refactor.
 
 Detalhes do uso da IA e a documentação descritiva completa estão em [`DOCUMENTACAO.md`](./DOCUMENTACAO.md).

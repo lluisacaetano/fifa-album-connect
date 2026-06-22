@@ -100,7 +100,7 @@ O projeto foi desenvolvido **majoritariamente com ferramentas de IA**, do scaffo
   - **Responsividade** web/mobile, correções de UX, e **deploy** (configuração do Nitro para a Vercel).
   - **Debug e refactor** (ex.: correção de bug de hidratação, vazamento de e-mail público, etc.).
   - Geração da **documentação** (este arquivo, README e a spec de negociação em `docs/`).
-- **Claude Code (segunda instância, em paralelo)** — usada simultaneamente para **curadoria de dados e fotos** das seleções (pipelines de coleta). Ou seja, o **Claude Code foi usado em duas instâncias ao mesmo tempo**, cada uma cuidando de uma frente do projeto.
+  - **Curadoria de dados e fotos** das seleções (pipelines de coleta) também foi feita com o **Claude Code**.
 
 **Prompt engineering:** o desenvolvimento foi guiado por instruções em linguagem natural (descrição de funcionalidades, ajustes de UI por captura de tela, correções pontuais), com a IA propondo a implementação, explicando trade-offs e iterando a partir do feedback — incluindo o uso de uma "skill" de design de frontend para decisões visuais.
 
@@ -135,9 +135,10 @@ A versão **mobile** tem o mesmo conjunto de funcionalidades (menu adaptado, swi
 |---|---|
 | Luísa Caetano | `@luisacaetano` / `@lluisacaetano` |
 | Yasmim Stefane Faria | `@yasmimffaria` |
-| _(adicionar demais integrantes, se houver)_ | |
+| Flávio | _(adicionar usuário/sobrenome)_ |
+| Maria Luzia | _(adicionar usuário/sobrenome)_ |
 
-> ⚠️ Preencha/ajuste os nomes completos e usuários conforme o grupo.
+> ⚠️ Confirme os nomes completos e os usuários de GitHub de cada integrante.
 
 ---
 
@@ -146,7 +147,7 @@ A versão **mobile** tem o mesmo conjunto de funcionalidades (menu adaptado, swi
 | Critério | Como o projeto atende |
 |---|---|
 | **Funcionalidade (25%)** | App completo e funcional em **web e mobile**, com 3+ funcionalidades (álbum, trocas com chat, palpites) testadas com contas reais. |
-| **Uso da ferramenta de IA (25%)** | Desenvolvimento de ponta a ponta com **Lovable + Claude Code** (este em **duas instâncias paralelas**): geração de código, integração de backend, debug, refactor e deploy. |
+| **Uso da ferramenta de IA (25%)** | Desenvolvimento de ponta a ponta com **Lovable + Claude Code**: geração de código, integração de backend, debug, refactor e deploy. |
 | **Qualidade do código (20%)** | TypeScript tipado, organização por **componentes/lib/data/routes**, comentários, ESLint/Prettier, regras de segurança no banco. |
 | **Documentação (15%)** | Este documento + **README.md** (como rodar/testar/deploy) + spec técnica em `docs/`. |
 | **Criatividade e inovação (15%)** | Mapa de trocas com **pino-figurinha**, fluxo de **entrega com rastreio**, **reputação**, **palpites com ranking** e tempo real. |
