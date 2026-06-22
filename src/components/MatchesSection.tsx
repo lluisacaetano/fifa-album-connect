@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, MapPin, Minus, Plus, Lock, ChevronDown, Check } from "lucide-react";
+import { Star, MapPin, Minus, Plus, Lock, ChevronDown, Check, Trophy, BarChart3 } from "lucide-react";
 import wc from "@/data/worldcup.json";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { listenPredictions, savePrediction, type Prediction } from "@/lib/predictions";
 
@@ -169,6 +170,37 @@ export function MatchesSection() {
     return { rows, total, max: rows[0]?.n ?? 1 };
   }
 
+  // Avisa (toast) quando um palpite SEU cravou o placar final de um jogo encerrado.
+  useEffect(() => {
+    if (!user) return;
+    let seen: Set<string>;
+    try {
+      seen = new Set(JSON.parse(localStorage.getItem(`palpite-hits-${user.uid}`) || "[]") as string[]);
+    } catch {
+      seen = new Set();
+    }
+    const novos: string[] = [];
+    for (const p of preds) {
+      if (p.uid !== user.uid || seen.has(p.id)) continue;
+      const m = matches.find((x) => x.id === p.matchId);
+      if (!m || !m.homeId || !m.awayId) continue;
+      const res = scoreFor(m);
+      if (!res || res.state !== "post") continue;
+      if (`${p.h}×${p.a}` === `${res.h}×${res.a}`) {
+        toast.success(`🎯 Cravou! ${teams[m.homeId].name} ${res.h}×${res.a} ${teams[m.awayId].name}`, { description: "Seu palpite bateu o placar final." });
+        novos.push(p.id);
+      }
+    }
+    if (novos.length) {
+      novos.forEach((id) => seen.add(id));
+      try {
+        localStorage.setItem(`palpite-hits-${user.uid}`, JSON.stringify([...seen]));
+      } catch {
+        /* ignora */
+      }
+    }
+  }, [preds, scores, user]);
+
   const filtered = useMemo(() => {
     return matches.filter((m) => {
       if (phase === "groups" && m.knockout) return false;
@@ -323,61 +355,81 @@ export function MatchesSection() {
 
                         <AnimatePresence initial={false}>
                           {open && hasTeams && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="border-t border-black/5">
-                              <div className="space-y-4 px-4 py-4">
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="border-t border-black/5 bg-[color:var(--fifa-green)]/[0.05]">
+                              <div className="space-y-3.5 p-4">
+                                {/* Resultado final */}
+                                {resultKey && sc && (
+                                  <div className="flex items-center justify-center gap-2 rounded-xl bg-[color:var(--fifa-green)] py-2 font-display text-lg tracking-wide text-white">
+                                    <Trophy className="h-4 w-4 text-[color:var(--fifa-yellow)]" /> Resultado final · {sc.h}–{sc.a}
+                                  </div>
+                                )}
+
                                 {/* Seu palpite */}
                                 {canP ? (
-                                  <div>
-                                    <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-[color:var(--fifa-green)]">Seu palpite</div>
+                                  <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-black/[0.04]">
+                                    <div className="mb-2.5 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-[color:var(--fifa-green)]">Crave o placar</div>
                                     <div className="flex items-center justify-center gap-3">
                                       <PalpiteStepper value={d.h} onChange={(v) => setDraft(m.id, v, d.a)} />
-                                      <span className="font-display text-xl text-black/30">×</span>
+                                      <span className="font-display text-2xl text-black/25">×</span>
                                       <PalpiteStepper value={d.a} onChange={(v) => setDraft(m.id, d.h, v)} />
-                                      <button
-                                        onClick={() => savePalpite(m)}
-                                        disabled={savingId === m.id}
-                                        className="ml-2 inline-flex items-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-5 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-60"
-                                      >
-                                        {mine ? <Check className="h-4 w-4" /> : null}
-                                        {savingId === m.id ? "Salvando…" : !user ? "Entrar para palpitar" : mine ? "Atualizar" : "Salvar"}
-                                      </button>
                                     </div>
+                                    <button
+                                      onClick={() => savePalpite(m)}
+                                      disabled={savingId === m.id}
+                                      className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] py-2.5 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-60"
+                                    >
+                                      {mine && savingId !== m.id ? <Check className="h-4 w-4" /> : null}
+                                      {savingId === m.id ? "Salvando…" : !user ? "Entrar para palpitar" : mine ? `Atualizar palpite (${mine.h}×${mine.a})` : "Salvar meu palpite"}
+                                    </button>
                                   </div>
                                 ) : (
-                                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                                  <div className="flex items-center justify-center gap-2 rounded-xl bg-black/[0.04] py-2.5 text-sm font-medium text-muted-foreground">
                                     <Lock className="h-4 w-4" />
-                                    {mine ? <>Palpites encerrados · seu palpite: <strong className="text-[color:var(--fifa-green-deep)]">{mine.h}×{mine.a}</strong></> : "Palpites encerrados (fecham 1h antes do jogo)"}
+                                    {mine ? (
+                                      <span>
+                                        Você cravou <strong className="text-[color:var(--fifa-green-deep)]">{mine.h}×{mine.a}</strong>
+                                        {resultKey && `${mine.h}×${mine.a}` === resultKey ? <span className="ml-1 font-bold text-[color:var(--fifa-green)]">· acertou em cheio! 🎯</span> : null}
+                                      </span>
+                                    ) : (
+                                      "Palpites encerrados — fecham 1h antes do jogo"
+                                    )}
                                   </div>
                                 )}
 
                                 {/* Gráfico de palpites */}
                                 <div>
-                                  <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{total} palpite{total === 1 ? "" : "s"} da galera</div>
+                                  <div className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                                    <BarChart3 className="h-3.5 w-3.5" /> Palpites da galera
+                                    {total > 0 && <span className="rounded-full bg-[color:var(--fifa-green)]/12 px-1.5 text-[color:var(--fifa-green-deep)]">{total}</span>}
+                                  </div>
                                   {total === 0 ? (
-                                    <p className="text-sm text-muted-foreground">Ninguém palpitou ainda. Seja o primeiro!</p>
+                                    <p className="rounded-xl bg-white/60 py-4 text-center text-sm text-muted-foreground ring-1 ring-black/[0.04]">
+                                      {canP ? "Seja o primeiro a cravar o placar." : "Esse jogo não recebeu palpites."}
+                                    </p>
                                   ) : (
                                     <div className="space-y-1.5">
                                       {rows.slice(0, 7).map((r) => {
                                         const isResult = r.s === resultKey;
-                                        const isMine = mine && `${mine.h}×${mine.a}` === r.s;
+                                        const isMine = !!mine && `${mine.h}×${mine.a}` === r.s;
+                                        const pct = Math.round((r.n / total) * 100);
                                         return (
-                                          <div key={r.s} className="flex items-center gap-2">
-                                            <span className={`w-9 text-right font-display text-base ${isResult ? "text-[color:var(--fifa-green)]" : ""}`}>{r.s}</span>
-                                            <div className="h-4 flex-1 overflow-hidden rounded-full bg-black/5">
+                                          <div key={r.s} className="flex items-center gap-2.5">
+                                            <span className={`grid w-12 shrink-0 place-items-center rounded-md py-0.5 font-display text-base ${isResult ? "bg-[color:var(--fifa-green)] text-white" : "bg-black/[0.05] text-[color:var(--fifa-green-deep)]"}`}>{r.s}</span>
+                                            <div className="relative h-6 flex-1 overflow-hidden rounded-lg bg-black/[0.04]">
                                               <div
-                                                className={`h-full rounded-full ${isResult ? "bg-[color:var(--fifa-green)]" : "bg-[color:var(--fifa-green)]/45"}`}
-                                                style={{ width: `${Math.max(8, (r.n / max) * 100)}%` }}
+                                                className={`h-full rounded-lg transition-all ${isResult ? "bg-[color:var(--fifa-green)]" : isMine ? "bg-[color:var(--fifa-green)]/65" : "bg-[color:var(--fifa-green)]/35"}`}
+                                                style={{ width: `${Math.max(6, (r.n / max) * 100)}%` }}
                                               />
+                                              <span className="absolute inset-y-0 right-2 flex items-center text-[11px] font-bold text-[color:var(--fifa-green-deep)]">{r.n} · {pct}%</span>
                                             </div>
-                                            <span className="w-16 text-right text-xs text-muted-foreground">
-                                              {r.n} · {Math.round((r.n / total) * 100)}%{isMine ? " ⬅" : ""}
-                                            </span>
+                                            {isMine && <span className="shrink-0 rounded-full bg-[color:var(--fifa-yellow)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[color:var(--fifa-green-deep)]">você</span>}
+                                            {isResult && !isMine && <Trophy className="h-4 w-4 shrink-0 text-[color:var(--fifa-green)]" />}
                                           </div>
                                         );
                                       })}
+                                      {rows.length > 7 && <p className="pt-0.5 text-center text-[11px] text-muted-foreground">+{rows.length - 7} outros placares</p>}
                                     </div>
                                   )}
-                                  {resultKey && <p className="mt-2 text-xs font-semibold text-[color:var(--fifa-green)]">Resultado: {resultKey} (em verde)</p>}
                                 </div>
                               </div>
                             </motion.div>

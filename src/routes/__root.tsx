@@ -17,6 +17,7 @@ import { LoginModal } from "../components/LoginModal";
 import { EditProfileModal } from "../components/EditProfileModal";
 import { TradesOverlays } from "../components/TradesOverlays";
 import { AppLoader } from "../components/AppLoader";
+import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -101,6 +102,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <body>
         <AppLoader />
         {children}
+        <Toaster position="top-center" richColors />
         <Scripts />
       </body>
     </html>
