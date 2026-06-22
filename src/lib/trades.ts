@@ -22,8 +22,9 @@ export type TradeRequest = {
   message?: string;
   status: TradeStatus;
   participants: string[];
-  confirms?: string[]; // uids que já confirmaram a entrega
+  confirms?: string[]; // (legado) uids que confirmaram a entrega
   delivery?: Record<string, DeliveryInfo>; // entrega informada por cada um
+  received?: string[]; // uids que confirmaram o RECEBIMENTO (fecha a troca)
   appliedBy?: string[]; // uids que já deram baixa no álbum
   ratedBy?: string[]; // uids que já avaliaram o outro nesta troca
   // Negociação por rodadas (turn-based) até os DOIS concordarem com a rodada atual.
@@ -123,16 +124,24 @@ export async function setRequestStatus(id: string, status: TradeStatus): Promise
   await updateDoc(doc(db, "tradeRequests", id), { status, updatedAt: serverTimestamp() });
 }
 
-// Confirma a entrega do usuário. Quando os DOIS confirmam, a troca vira "accepted".
-// `otherConfirmed` = o outro participante já tinha confirmado antes desta chamada.
-export async function confirmDelivery(id: string, uid: string, info: DeliveryInfo, otherConfirmed: boolean): Promise<void> {
+// Quem RECEBE figurinha confirma o recebimento. Quando todos que recebem
+// confirmam (`finalize`), a troca vira "accepted" (finalizada). Uma vez só.
+export async function confirmReceipt(id: string, uid: string, finalize: boolean): Promise<void> {
   const patch: Record<string, unknown> = {
-    confirms: arrayUnion(uid),
-    [`delivery.${uid}`]: info,
+    received: arrayUnion(uid),
+    lastActionBy: uid,
     updatedAt: serverTimestamp(),
   };
-  if (otherConfirmed) patch.status = "accepted"; // os dois confirmaram
+  if (finalize) patch.status = "accepted";
   await updateDoc(doc(db, "tradeRequests", id), patch);
+}
+
+// Participantes que RECEBEM figurinha nesta troca (precisam confirmar recebimento).
+export function receiversOf(r: Pick<TradeRequest, "fromUid" | "toUid" | "wanted" | "offered">): string[] {
+  const recv: string[] = [];
+  if ((r.wanted?.length ?? 0) > 0) recv.push(r.fromUid); // requisitante recebe `wanted`
+  if ((r.offered?.length ?? 0) > 0) recv.push(r.toUid); // o outro recebe `offered`
+  return recv;
 }
 
 // Marca que o usuário já deu baixa no álbum por causa desta troca (idempotente entre aparelhos).

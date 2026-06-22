@@ -76,7 +76,7 @@ function DealRows({ get, give, value }: { get: TradeItem[]; give: TradeItem[]; v
 
 export function ChatDrawer() {
   const { user } = useAuth();
-  const { chatTarget, closeChat, requests, confirm, decline, counter, accept, refuse } = useTrades();
+  const { chatTarget, closeChat, requests, confirmReceipt, counter, accept, refuse } = useTrades();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const [showDelivery, setShowDelivery] = useState(false);
@@ -100,10 +100,6 @@ export function ChatDrawer() {
   const between = chatTarget ? requests.filter((r) => r.participants?.includes(chatTarget.uid)) : [];
   const linked = between.find((r) => r.status === "pending") ?? between.find((r) => r.status === "accepted");
 
-  const iConfirmed = !!(linked && user && (linked.confirms ?? []).includes(user.uid));
-  const shipped = Object.values(linked?.delivery ?? {}).some((d) => d.method === "correios" || d.method === "transportadora");
-  const canCancel = linked?.status === "pending" && !shipped;
-
   // Relativo a quem está vendo.
   const iAmFrom = !!(linked && user && linked.fromUid === user.uid);
   const iGet: TradeItem[] = linked ? (iAmFrom ? linked.wanted : linked.offered) : []; // o que EU recebo
@@ -113,6 +109,14 @@ export function ChatDrawer() {
   const bothAgreed = agreedBy.length >= 2;
   const myTurn = !!(linked && user && linked.turn === user.uid);
   const otherFirst = chatTarget?.name.split(" ")[0] ?? "";
+
+  // Recebimento (fecha a troca): quem recebe figurinha confirma.
+  const received = linked?.received ?? [];
+  const iAmReceiver = iGet.length > 0;
+  const iReceived = !!(user && received.includes(user.uid));
+  const otherUid = linked ? (iAmFrom ? linked.toUid : linked.fromUid) : "";
+  const otherIsReceiver = iGive.length > 0; // o que EU dou = o que o OUTRO recebe
+  const otherReceived = received.includes(otherUid);
 
   // Pools: o que EU recebo = trades do outro; o que EU dou = meus trades.
   // "Quero dele" = repetidas DELE que EU preciso. "Ofereço" = minhas repetidas que ELE precisa.
@@ -216,28 +220,27 @@ export function ChatDrawer() {
     await postCard("refuse", linked.wanted, linked.offered, linked.value);
   }
 
-  async function cancelTrade() {
-    if (!cid || !user || !chatTarget) return;
-    await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: "❌ Vou ter que cancelar essa troca, foi mal." });
-    if (linked && linked.status === "pending") decline(linked.id);
-  }
-
-  // Confirmar entrega no chat = meu "OK" na entrega (vira aceita quando os dois confirmam).
-  async function sendDelivery() {
+  // Avisar envio (opcional, p/ quem ENVIA) — só posta no chat, não fecha a troca.
+  async function notifyShipment() {
     if (!cid || !user || !chatTarget) return;
     const code = tracking.trim();
     if (method !== "presencial" && !code) return;
     let body = "";
-    if (method === "presencial") body = "📍 Combinei entregar pessoalmente.";
+    if (method === "presencial") body = "📍 Vou entregar pessoalmente.";
     else if (method === "correios") body = `📦 Enviei pelos Correios. Rastreio: ${code}\nhttps://rastreamento.correios.com.br/app/index.php?codigo=${encodeURIComponent(code)}`;
     else body = `🚚 Enviei por transportadora${carrier.trim() ? ` (${carrier.trim()})` : ""}. Rastreio: ${code}`;
     await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: body });
-    if (linked && linked.status === "pending" && !iConfirmed) {
-      await confirm(linked, { method, tracking: code || undefined, carrier: carrier.trim() || undefined });
-    }
     setShowDelivery(false);
     setTracking("");
     setCarrier("");
+  }
+
+  // Confirmar recebimento (p/ quem RECEBE) — uma vez só; fecha quando todos confirmam.
+  async function doConfirmReceipt() {
+    if (!cid || !user || !chatTarget || !linked) return;
+    if (!window.confirm("Confirmar que você JÁ recebeu as figurinhas? Isso não pode ser desfeito.")) return;
+    await sendMessage(cid, { from: user.uid, fromName: user.name, to: chatTarget.uid, toName: chatTarget.name, text: "✅ Recebi! Confirmado." });
+    await confirmReceipt(linked);
   }
 
   useEffect(() => {
@@ -374,7 +377,7 @@ export function ChatDrawer() {
               <div className="space-y-2 border-t border-border bg-background px-3 pt-3">
                 {linked.status === "accepted" ? (
                   <div className="flex items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-2 text-sm font-bold text-[color:var(--fifa-green)]">
-                    <Check className="h-4 w-4" /> Troca concluída pelos dois!
+                    <Check className="h-4 w-4" /> Troca finalizada! ✅
                   </div>
                 ) : !bothAgreed ? (
                   /* ---------- NEGOCIAÇÃO ---------- */
@@ -488,77 +491,70 @@ export function ChatDrawer() {
                       </div>
                     )}
                   </div>
-                ) : iConfirmed ? (
-                  <div className="flex items-center gap-2">
-                    <span className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-2 text-xs font-semibold text-[color:var(--fifa-green)]">
-                      <Check className="h-3.5 w-3.5" /> Você confirmou — aguardando o outro
-                    </span>
-                    {canCancel && (
-                      <button type="button" onClick={cancelTrade} className="inline-flex items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10">
-                        <Ban className="h-4 w-4" /> Cancelar
-                      </button>
-                    )}
-                  </div>
                 ) : (
-                  <>
-                    {!!value && (
-                      <div className="flex items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-1.5 text-xs font-bold text-[color:var(--fifa-green-deep)]">
-                        Acordo fechado · 💰 {fmtBRL(value)} combinado
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setShowDelivery((v) => !v)}
-                      className={`inline-flex w-full items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
-                        showDelivery ? "border-[color:var(--fifa-green)] text-[color:var(--fifa-green)]" : "border-border text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <Truck className="h-4 w-4" /> Confirmar entrega
-                    </button>
+                  /* ---------- ACORDO FECHADO: recebimento ---------- */
+                  <div className="space-y-2.5 rounded-2xl border border-border bg-muted/40 p-3">
+                    <div className="flex items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-1.5 text-xs font-bold text-[color:var(--fifa-green-deep)]">
+                      <Handshake className="h-3.5 w-3.5" /> Acordo fechado{value ? ` · 💰 ${fmtBRL(value)}` : ""}
+                    </div>
+                    <div className="rounded-xl bg-card p-2.5 shadow-sm">
+                      <DealRows get={iGet} give={iGive} value={value} />
+                    </div>
 
-                    {showDelivery && (
-                      <div className="space-y-2 rounded-2xl border border-border bg-muted/40 p-3">
-                        <div className="grid grid-cols-3 gap-1.5">
-                          {([
-                            ["presencial", "Pessoal"],
-                            ["correios", "Correios"],
-                            ["transportadora", "Transp."],
-                          ] as const).map(([key, label]) => (
-                            <button
-                              key={key}
-                              type="button"
-                              onClick={() => setMethod(key)}
-                              className={`rounded-lg px-2 py-1.5 text-xs font-semibold transition-all ${method === key ? "bg-[color:var(--fifa-green)] text-white" : "border border-border bg-card hover:border-[color:var(--fifa-green)]"}`}
-                            >
-                              {label}
-                            </button>
-                          ))}
-                        </div>
-                        {method === "transportadora" && (
-                          <input value={carrier} onChange={(e) => setCarrier(e.target.value)} placeholder="Transportadora (ex.: Jadlog)" className="h-10 w-full rounded-lg border border-border bg-card px-3 text-sm outline-none ring-[color:var(--fifa-green)] focus:ring-2" />
-                        )}
-                        {method !== "presencial" && (
-                          <input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="Código de rastreio" className="h-10 w-full rounded-lg border border-border bg-card px-3 text-sm outline-none ring-[color:var(--fifa-green)] focus:ring-2" />
-                        )}
+                    {/* Avisar envio — opcional, para quem envia (correios/transportadora) */}
+                    {iGive.length > 0 && (
+                      <>
                         <button
                           type="button"
-                          onClick={sendDelivery}
-                          disabled={method !== "presencial" && !tracking.trim()}
-                          className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50"
+                          onClick={() => setShowDelivery((v) => !v)}
+                          className={`inline-flex w-full items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-xs font-semibold transition-all ${showDelivery ? "border-[color:var(--fifa-green)] text-[color:var(--fifa-green)]" : "border-border text-foreground hover:bg-muted"}`}
                         >
-                          {method === "presencial" ? <MapPin className="h-4 w-4" /> : <Truck className="h-4 w-4" />} Confirmar minha entrega
+                          <Truck className="h-3.5 w-3.5" /> Avisar envio (opcional)
                         </button>
-                      </div>
+                        {showDelivery && (
+                          <div className="space-y-2 rounded-2xl border border-border bg-card p-3">
+                            <div className="grid grid-cols-3 gap-1.5">
+                              {([
+                                ["presencial", "Pessoal"],
+                                ["correios", "Correios"],
+                                ["transportadora", "Transp."],
+                              ] as const).map(([key, label]) => (
+                                <button key={key} type="button" onClick={() => setMethod(key)} className={`rounded-lg px-2 py-1.5 text-xs font-semibold transition-all ${method === key ? "bg-[color:var(--fifa-green)] text-white" : "border border-border bg-card hover:border-[color:var(--fifa-green)]"}`}>
+                                  {label}
+                                </button>
+                              ))}
+                            </div>
+                            {method === "transportadora" && (
+                              <input value={carrier} onChange={(e) => setCarrier(e.target.value)} placeholder="Transportadora (ex.: Jadlog)" className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none ring-[color:var(--fifa-green)] focus:ring-2" />
+                            )}
+                            {method !== "presencial" && (
+                              <input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="Código de rastreio" className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none ring-[color:var(--fifa-green)] focus:ring-2" />
+                            )}
+                            <button type="button" onClick={notifyShipment} disabled={method !== "presencial" && !tracking.trim()} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)] disabled:opacity-50">
+                              {method === "presencial" ? <MapPin className="h-4 w-4" /> : <Truck className="h-4 w-4" />} Avisar
+                            </button>
+                          </div>
+                        )}
+                      </>
                     )}
 
-                    {canCancel ? (
-                      <button type="button" onClick={cancelTrade} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive transition-all hover:bg-destructive/10">
-                        <Ban className="h-4 w-4" /> Cancelar troca
-                      </button>
+                    {/* Confirmar recebimento — só para quem recebe */}
+                    {iAmReceiver ? (
+                      iReceived ? (
+                        <div className="flex items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)]/10 px-3 py-2 text-xs font-semibold text-[color:var(--fifa-green)]">
+                          <Check className="h-3.5 w-3.5" /> Você confirmou o recebimento{otherIsReceiver && !otherReceived ? ` — aguardando ${otherFirst}` : ""}
+                        </div>
+                      ) : (
+                        <button type="button" onClick={doConfirmReceipt} className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[color:var(--fifa-green)] px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-[color:var(--fifa-green-deep)]">
+                          <Check className="h-4 w-4" /> Confirmar recebimento
+                        </button>
+                      )
                     ) : (
-                      <p className="text-center text-[11px] text-muted-foreground">Já enviado pelos Correios/transportadora — não dá mais para cancelar.</p>
+                      <div className="flex items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5" /> Aguardando {otherFirst} confirmar o recebimento
+                      </div>
                     )}
-                  </>
+                  </div>
                 )}
               </div>
             )}

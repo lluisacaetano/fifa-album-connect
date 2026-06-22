@@ -7,11 +7,11 @@ import { MessagesInbox } from "@/components/MessagesInbox";
 // Painel de pedidos + caixa de mensagens + chat, montados uma vez (abrem de qualquer lugar).
 export function TradesOverlays() {
   const { user } = useAuth();
-  const { requests, panelOpen, closePanel, confirm, decline, rate, openChat, chatSummaries, chatReads, chatHidden, hideChat, messagesOpen, closeMessages } = useTrades();
+  const { requests, panelOpen, closePanel, confirmReceipt, decline, rate, openChat, chatSummaries, chatReads, chatHidden, hideChat, messagesOpen, closeMessages } = useTrades();
   if (!user) return null;
   return (
     <>
-      <TradeRequestsPanel open={panelOpen} onClose={closePanel} requests={requests} myUid={user.uid} onConfirm={confirm} onDecline={decline} onChat={openChat} onRate={rate} />
+      <TradeRequestsPanel open={panelOpen} onClose={closePanel} requests={requests} myUid={user.uid} onConfirmReceipt={confirmReceipt} onDecline={decline} onChat={openChat} onRate={rate} />
       <MessagesInbox open={messagesOpen} onClose={closeMessages} summaries={chatSummaries} myUid={user.uid} reads={chatReads} hidden={chatHidden} onOpenChat={openChat} onDelete={hideChat} />
       <ChatDrawer />
     </>

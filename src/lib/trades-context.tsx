@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
-import { acceptDeal, confirmDelivery, listenTradeRequests, rateUser, refuseDeal, setRequestStatus, submitProposal, type DeliveryInfo, type TradeItem, type TradeRequest } from "@/lib/trades";
+import { acceptDeal, confirmReceipt as doConfirmReceipt, listenTradeRequests, rateUser, receiversOf, refuseDeal, setRequestStatus, submitProposal, type TradeItem, type TradeRequest } from "@/lib/trades";
 import { chatId, listenMyChats, type ChatSummary } from "@/lib/chat";
 import { playPing } from "@/lib/sound";
 
@@ -12,7 +12,7 @@ type TradesContextValue = {
   incomingPending: number;
   unread: number;
   markSeen: () => void;
-  confirm: (req: TradeRequest, info: DeliveryInfo) => Promise<void>;
+  confirmReceipt: (req: TradeRequest) => Promise<void>;
   decline: (id: string) => void;
   rate: (req: TradeRequest, stars: number) => void;
   counter: (req: TradeRequest, deal: { wanted: TradeItem[]; offered: TradeItem[]; value?: number }) => Promise<void>;
@@ -159,11 +159,13 @@ export function TradesProvider({ children }: { children: ReactNode }) {
         incomingPending,
         unread,
         markSeen,
-        confirm: async (req, info) => {
+        confirmReceipt: async (req) => {
           if (!user) return;
-          const other = req.participants.find((p) => p !== user.uid);
-          const otherConfirmed = !!other && (req.confirms ?? []).includes(other);
-          await confirmDelivery(req.id, user.uid, info, otherConfirmed);
+          const receivers = receiversOf(req);
+          const already = new Set(req.received ?? []);
+          already.add(user.uid);
+          const finalize = receivers.every((u) => already.has(u));
+          await doConfirmReceipt(req.id, user.uid, finalize);
         },
         decline: (id) => setRequestStatus(id, "declined"),
         rate: (req, stars) => {
