@@ -234,8 +234,8 @@ export function ConnectSection() {
     });
   }
 
-  // Ranking: quem tem mais figurinhas que faltam no seu álbum (melhores trocas).
-  const topMatches = useMemo(() => filtered.filter((t) => !t.isMe && matchCount(t) > 0).slice(0, 12), [filtered, missing]);
+  // Colecionadores perto/compatíveis (mais matches primeiro, depois os demais).
+  const topMatches = useMemo(() => filtered.filter((t) => !t.isMe).slice(0, 16), [filtered]);
 
   // Sem ninguém selecionado, o painel mostra o SEU perfil (evita espaço vazio
   // ao lado do mapa) até você escolher outro colecionador.
@@ -366,7 +366,7 @@ export function ConnectSection() {
             {topMatches.length > 0 && (
               <div className="mb-6">
                 <div className="mb-2.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[color:var(--fifa-green)]">
-                  <Sparkles className="h-4 w-4" /> Quem tem mais figurinhas que faltam pra você
+                  <Sparkles className="h-4 w-4" /> Colecionadores perto de você
                 </div>
                 <div className="flex gap-3 overflow-x-auto pb-2">
                   {topMatches.map((t) => {
@@ -386,7 +386,11 @@ export function ConnectSection() {
                             {t.city}
                             {d != null ? ` · ${fmtDist(d)}` : ""}
                           </div>
-                          <div className="mt-0.5 text-sm font-bold text-[color:var(--fifa-green)]">{matchCount(t)} que você precisa</div>
+                          {matchCount(t) > 0 ? (
+                            <div className="mt-0.5 text-sm font-bold text-[color:var(--fifa-green)]">{matchCount(t)} que você precisa</div>
+                          ) : (
+                            <div className="mt-0.5 text-sm font-semibold text-muted-foreground">{t.has.length} pra trocar</div>
+                          )}
                         </div>
                       </button>
                     );
