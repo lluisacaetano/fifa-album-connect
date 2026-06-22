@@ -180,13 +180,12 @@ export function ConnectSection() {
     const qCode = q.replace(/\s+/g, "");
     let list = everyone;
     if (q) {
+      // Busca por FIGURINHA que a pessoa TEM para trocar (nome ou código), ou por cidade.
       list = list.filter(
         (t) =>
           t.has.some((s) => norm(s).includes(q)) ||
-          t.wants.some((s) => norm(s).includes(q)) ||
-          norm(t.name).includes(q) ||
-          norm(t.city).includes(q) ||
-          codesOf(t).some((code) => norm(code).includes(qCode)),
+          codesOf(t).some((code) => norm(code).includes(qCode)) ||
+          norm(t.city).includes(q),
       );
     }
     if (onlyMatches) list = list.filter((t) => matchCount(t) > 0);
