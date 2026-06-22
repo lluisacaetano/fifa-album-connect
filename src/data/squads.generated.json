@@ -17467,14 +17467,17 @@
     "position": "Defesa",
     "number": null,
     "age": null,
-    "photo": null,
+    "photo": "/players/pt/27.png",
     "club": null,
     "inSquad": true,
     "inAlbum": true,
     "albumNo": 18,
     "apps": 0,
     "goals": 0,
-    "assists": 0
+    "assists": 0,
+    "photoCutout": true,
+    "photoLocal": true,
+    "photoTsdbDone": true
    },
    {
     "id": 6,
