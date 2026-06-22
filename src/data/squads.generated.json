@@ -17338,14 +17338,17 @@
     "position": "Defesa",
     "number": null,
     "age": null,
-    "photo": null,
+    "photo": "/players/jo/27.png",
     "club": null,
     "inSquad": true,
     "inAlbum": true,
     "albumNo": 6,
     "apps": 0,
     "goals": 0,
-    "assists": 0
+    "assists": 0,
+    "photoCutout": true,
+    "photoLocal": true,
+    "photoTsdbDone": true
    },
    {
     "id": 16,
@@ -17448,14 +17451,17 @@
     "position": "Ataque",
     "number": null,
     "age": null,
-    "photo": null,
+    "photo": "/players/jo/28.png",
     "club": null,
     "inSquad": true,
     "inAlbum": true,
     "albumNo": 12,
     "apps": 0,
     "goals": 0,
-    "assists": 0
+    "assists": 0,
+    "photoCutout": true,
+    "photoLocal": true,
+    "photoTsdbDone": true
    },
    {
     "id": 15,
@@ -17501,14 +17507,17 @@
     "position": "Defesa",
     "number": null,
     "age": null,
-    "photo": null,
+    "photo": "/players/jo/29.png",
     "club": null,
     "inSquad": true,
     "inAlbum": true,
     "albumNo": 16,
     "apps": 0,
     "goals": 0,
-    "assists": 0
+    "assists": 0,
+    "photoCutout": true,
+    "photoLocal": true,
+    "photoTsdbDone": true
    },
    {
     "id": 6,
@@ -17535,14 +17544,17 @@
     "position": "Meio",
     "number": null,
     "age": null,
-    "photo": null,
+    "photo": "/players/jo/30.png",
     "club": null,
     "inSquad": true,
     "inAlbum": true,
     "albumNo": 18,
     "apps": 0,
     "goals": 0,
-    "assists": 0
+    "assists": 0,
+    "photoCutout": true,
+    "photoLocal": true,
+    "photoTsdbDone": true
    },
    {
     "id": 31,
@@ -17550,14 +17562,17 @@
     "position": "Meio",
     "number": null,
     "age": null,
-    "photo": null,
+    "photo": "/players/jo/31.png",
     "club": null,
     "inSquad": true,
     "inAlbum": true,
     "albumNo": 19,
     "apps": 0,
     "goals": 0,
-    "assists": 0
+    "assists": 0,
+    "photoCutout": true,
+    "photoLocal": true,
+    "photoTsdbDone": true
    },
    {
     "id": 32,
@@ -17565,14 +17580,17 @@
     "position": "Ataque",
     "number": null,
     "age": null,
-    "photo": null,
+    "photo": "/players/jo/32.png",
     "club": null,
     "inSquad": true,
     "inAlbum": true,
     "albumNo": 20,
     "apps": 0,
     "goals": 0,
-    "assists": 0
+    "assists": 0,
+    "photoCutout": true,
+    "photoLocal": true,
+    "photoTsdbDone": true
    }
   ],
   "album": {
